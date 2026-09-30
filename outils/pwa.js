@@ -94,7 +94,7 @@
       if (r && r.error && invitePar()) await sb.from('profils').insert(ligne).then(() => {}, () => {});   // colonne pas encore créée
       return;
     }
-    moi.admin = !!p.admin; moi.pseudo = p.pseudo || moi.pseudo; majBouton();
+    moi.admin = !!p.admin; moi.pseudo = p.pseudo || moi.pseudo; majBouton(); chatDemarrer();
     const distant = p.maj_le || '1970-01-01T00:00:00Z';
     let f, c;
     if (fusion) {
@@ -309,6 +309,8 @@
     const sansMail = !moi.email || /@bawss\.app$/.test(moi.email);
     const el = ouvrir(logo + '<h1>Salut <span>' + esc2(moi.pseudo) + '</span></h1>'
       + '<button type="button" class="bw-go bw-inv" data-inviter>👋 Inviter un pote</button>'
+      + (moi.admin ? '<button type="button" class="bw-choix" data-boite><b>📥 Boîte de réception' + (CHAT.non_lus ? ' · ' + CHAT.non_lus : '') + '</b><span>Les messages de la bande</span></button>'
+                   : '<button type="button" class="bw-choix" data-messages><b>💬 Écris au Bawss' + (CHAT.non_lus ? ' · ' + CHAT.non_lus + ' nouveau' + (CHAT.non_lus > 1 ? 'x' : '') : '') + '</b><span>Une question, un plat raté, une idée : Jakez te répond</span></button>')
       + '<p>Tes favoris et ta liste de courses sont gardés sur ton compte : tu les retrouves en te connectant sur un autre appareil.</p>'
       + (sansMail ? '<form data-ajout-mail style="display:grid;gap:12px" novalidate><div class="bw-alert">Ajoute ton mail : c\'est lui qui te permettra de retrouver ton mot de passe si tu l\'oublies.</div>'
                    + '<label for="bw-mail-a">Mail</label><input id="bw-mail-a" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false">'
@@ -320,6 +322,8 @@
       + (standalone ? '' : '<button type="button" class="bw-later" data-installer-app>Installer l\'appli sur ce téléphone</button>')
       + '<button type="button" class="bw-later" data-tuto>Revoir le tour du proprio</button>'
       + '<button type="button" class="bw-later" data-deco>Me déconnecter</button>');
+    const bx = el.querySelector('[data-boite]'); if (bx) bx.addEventListener('click', boiteReception);
+    const ms = el.querySelector('[data-messages]'); if (ms) ms.addEventListener('click', () => ecranChat());
     el.querySelector('[data-inviter]').addEventListener('click', () => { if (window.inviterPote) window.inviterPote(); });
     el.querySelector('[data-tuto]').addEventListener('click', () => { fermer(); if (window.revoirTuto) window.revoirTuto(); });
     el.querySelector('[data-retour]').addEventListener('click', fermer);
@@ -337,6 +341,7 @@
     });
     el.querySelector('[data-deco]').addEventListener('click', async () => {
       try { await sb.auth.signOut(); } catch (e) {}
+      if (CHAT.canal) { try { sb.removeChannel(CHAT.canal); } catch (e) {} CHAT.canal = null; } pastille(0);
       moi = null; majBouton(); ls.del('bawss-maj'); rzRafraichir();
       appliquer([], { recipes: {}, checked: [] });
       toast('Déconnecté'); ecranCompte('connexion');

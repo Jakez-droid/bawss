@@ -9,7 +9,9 @@ js = open(os.path.join(here, 'pwa.js'), encoding='utf-8').read()
 rz = os.path.join(here, 'realisations.js')
 if os.path.exists(rz):
     st = os.path.join(here, 'story.js')
-    js = js.replace('/*@REALISATIONS@*/', open(rz, encoding='utf-8').read() + ('\n' + open(st, encoding='utf-8').read() if os.path.exists(st) else ''))
+    ch = os.path.join(here, 'chat.js')
+    extra = ''.join('\n' + open(f, encoding='utf-8').read() for f in (st, ch) if os.path.exists(f))
+    js = js.replace('/*@REALISATIONS@*/', open(rz, encoding='utf-8').read() + extra)
 meta = ('<html lang="fr"><head><meta charset="utf-8">'
   '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">'
   '<title>Bawss · Les recettes 2 Jakez</title>'
@@ -54,6 +56,8 @@ if os.path.exists(ex):
     ids = {r['id'] for r in extras}
     R = [r for r in R if r['id'] not in ids] + extras
     h = h[:m.start(1)] + json.dumps(R, ensure_ascii=False).replace('</', '<\\/') + h[m.end(1):]
+# pas de numéro de téléphone dans l'appli publique : « Appelle le bawss » devient le chat
+h = re.sub(r'const BOSS_PHONE = "[^"]*";', 'const BOSS_PHONE = "chat";', h, count=1)
 # script de l'appli installable, en dernier
 i = h.rindex('</script>')
 h = h[:i] + '\n' + js + h[i:]

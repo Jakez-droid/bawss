@@ -104,6 +104,33 @@
 /* invitation */
 .bw-invite-par { justify-self: start; background: var(--cire); color: var(--cire-ink); border-radius: 999px; padding: 8px 16px; font: 600 16px var(--f-body); animation: bw-monte .4s cubic-bezier(.3, 1.4, .5, 1); }
 .bw-inv { font-size: 22px; padding: 12px 18px; }
+
+/* chat « Écris au Bawss » */
+.me-btn { position: relative; }
+.chat-dot { position: absolute; top: -4px; right: -4px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 999px; background: var(--red, #E4322B); color: #fff; font: 700 11.5px var(--f-body); display: grid; place-items: center; box-shadow: 0 0 0 2px var(--slate); }
+.bw-chat .bw-in { min-height: 100%; padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); gap: 12px; }
+.chat-tete { display: flex; align-items: center; gap: 10px; }
+.chat-tete h1 { font-size: 40px; }
+.chat-retour { width: 42px; height: 42px; border-radius: 50%; border: 0; background: color-mix(in srgb, var(--on-slate) 12%, transparent); color: var(--on-slate); font-size: 26px; line-height: 1; cursor: pointer; flex: none; }
+.chat-intro { font-size: 15px !important; }
+.chat-fil, .chat-boite { list-style: none; margin: 0; padding: 4px 0; display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto; min-height: 200px; }
+.msg { max-width: 82%; padding: 10px 14px 6px; border-radius: 18px; display: grid; gap: 3px; }
+.msg p { margin: 0; font-size: 16px !important; line-height: 1.4; color: inherit !important; overflow-wrap: anywhere; }
+.msg time { font: 500 11px var(--f-mono); opacity: .6; justify-self: end; }
+.msg.moi { align-self: flex-end; background: var(--cire); color: var(--cire-ink); border-bottom-right-radius: 6px; }
+.msg.lui { align-self: flex-start; background: color-mix(in srgb, var(--on-slate) 14%, transparent); color: var(--on-slate); border-bottom-left-radius: 6px; }
+.msg-rec { font: 600 12.5px var(--f-body); color: inherit; opacity: .8; text-decoration: underline; }
+.msg-vide { align-self: center; opacity: .6; font-size: 14px; padding: 30px 0; }
+.chat-ctx { margin: 0; font-size: 14px !important; display: flex; align-items: center; gap: 6px; }
+.chat-ctx button { border: 0; background: none; color: var(--on-slate); cursor: pointer; opacity: .7; }
+.chat-saisie { display: flex; gap: 8px; align-items: flex-end; position: sticky; bottom: 0; background: var(--slate); padding-top: 6px; }
+.chat-saisie textarea { flex: 1; resize: none; border: 0; border-radius: 20px; padding: 12px 16px; font: 500 16px var(--f-body); background: #fff; color: var(--ink); max-height: 140px; }
+.chat-saisie button { width: 46px; height: 46px; flex: none; border: 0; border-radius: 50%; background: var(--cire); color: var(--cire-ink); font-size: 18px; cursor: pointer; }
+.chat-boite button { width: 100%; text-align: left; border: 0; border-radius: 14px; background: color-mix(in srgb, var(--on-slate) 8%, transparent); color: var(--on-slate); padding: 12px 14px; display: grid; gap: 3px; cursor: pointer; font: inherit; }
+.chat-boite b { font-size: 17px; display: flex; align-items: center; gap: 8px; }
+.chat-boite span { font-size: 14px; opacity: .8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chat-boite time { font: 500 11px var(--f-mono); opacity: .55; }
+.chat-n { background: var(--red, #E4322B); color: #fff; border-radius: 999px; padding: 1px 7px; font-size: 12px; opacity: 1 !important; }
 </style></head><body>
 <style>
 /* tuto */
@@ -789,7 +816,7 @@ function rang(r) {
   if (!r.photo) return 3000;
   return EN_BAS.includes(r.id) ? 2000 : 1000;
 }
-const BOSS_PHONE = "06 13 87 09 09";
+const BOSS_PHONE = "chat";
 const BY_ID = Object.fromEntries(RECIPES.map(r => [r.id, r]));
 const BY_TITLE = Object.fromEntries(RECIPES.map(r => [r.title, r]));
 const $ = (s, el = document) => el.querySelector(s);
@@ -2059,7 +2086,7 @@ window.lancerIntro = (opts = {}) => {
       if (r && r.error && invitePar()) await sb.from('profils').insert(ligne).then(() => {}, () => {});   // colonne pas encore créée
       return;
     }
-    moi.admin = !!p.admin; moi.pseudo = p.pseudo || moi.pseudo; majBouton();
+    moi.admin = !!p.admin; moi.pseudo = p.pseudo || moi.pseudo; majBouton(); chatDemarrer();
     const distant = p.maj_le || '1970-01-01T00:00:00Z';
     let f, c;
     if (fusion) {
@@ -2274,6 +2301,8 @@ window.lancerIntro = (opts = {}) => {
     const sansMail = !moi.email || /@bawss\.app$/.test(moi.email);
     const el = ouvrir(logo + '<h1>Salut <span>' + esc2(moi.pseudo) + '</span></h1>'
       + '<button type="button" class="bw-go bw-inv" data-inviter>👋 Inviter un pote</button>'
+      + (moi.admin ? '<button type="button" class="bw-choix" data-boite><b>📥 Boîte de réception' + (CHAT.non_lus ? ' · ' + CHAT.non_lus : '') + '</b><span>Les messages de la bande</span></button>'
+                   : '<button type="button" class="bw-choix" data-messages><b>💬 Écris au Bawss' + (CHAT.non_lus ? ' · ' + CHAT.non_lus + ' nouveau' + (CHAT.non_lus > 1 ? 'x' : '') : '') + '</b><span>Une question, un plat raté, une idée : Jakez te répond</span></button>')
       + '<p>Tes favoris et ta liste de courses sont gardés sur ton compte : tu les retrouves en te connectant sur un autre appareil.</p>'
       + (sansMail ? '<form data-ajout-mail style="display:grid;gap:12px" novalidate><div class="bw-alert">Ajoute ton mail : c\'est lui qui te permettra de retrouver ton mot de passe si tu l\'oublies.</div>'
                    + '<label for="bw-mail-a">Mail</label><input id="bw-mail-a" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false">'
@@ -2285,6 +2314,8 @@ window.lancerIntro = (opts = {}) => {
       + (standalone ? '' : '<button type="button" class="bw-later" data-installer-app>Installer l\'appli sur ce téléphone</button>')
       + '<button type="button" class="bw-later" data-tuto>Revoir le tour du proprio</button>'
       + '<button type="button" class="bw-later" data-deco>Me déconnecter</button>');
+    const bx = el.querySelector('[data-boite]'); if (bx) bx.addEventListener('click', boiteReception);
+    const ms = el.querySelector('[data-messages]'); if (ms) ms.addEventListener('click', () => ecranChat());
     el.querySelector('[data-inviter]').addEventListener('click', () => { if (window.inviterPote) window.inviterPote(); });
     el.querySelector('[data-tuto]').addEventListener('click', () => { fermer(); if (window.revoirTuto) window.revoirTuto(); });
     el.querySelector('[data-retour]').addEventListener('click', fermer);
@@ -2302,6 +2333,7 @@ window.lancerIntro = (opts = {}) => {
     });
     el.querySelector('[data-deco]').addEventListener('click', async () => {
       try { await sb.auth.signOut(); } catch (e) {}
+      if (CHAT.canal) { try { sb.removeChannel(CHAT.canal); } catch (e) {} CHAT.canal = null; } pastille(0);
       moi = null; majBouton(); ls.del('bawss-maj'); rzRafraichir();
       appliquer([], { recipes: {}, checked: [] });
       toast('Déconnecté'); ecranCompte('connexion');
@@ -2698,6 +2730,129 @@ window.lancerIntro = (opts = {}) => {
     e.preventDefault(); e.stopPropagation();
     ecranPartage(r);
   }, true);
+
+  /* ---------- « Écris au Bawss » : conversation privée entre chaque membre et Jakez ---------- */
+  const CHAT = { non_lus: 0, canal: null, fil: null, cible: null, recette: null };
+  const heure = d => { const t = new Date(d), auj = new Date().toDateString() === t.toDateString(); return auj ? t.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : t.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) + ' · ' + t.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }); };
+  function pastille(n) {
+    CHAT.non_lus = n;
+    if (!bouton) return;
+    let p = bouton.querySelector('.chat-dot');
+    if (n > 0) { if (!p) { p = document.createElement('span'); p.className = 'chat-dot'; bouton.appendChild(p); } p.textContent = n > 9 ? '9+' : n; }
+    else if (p) p.remove();
+  }
+  async function compterNonLus() {
+    if (!sb || !moi) { pastille(0); return; }
+    let q = sb.from('messages').select('id', { count: 'exact', head: true }).eq('lu', false);
+    q = moi.admin ? q.eq('de_admin', false) : q.eq('user_id', moi.id).eq('de_admin', true);
+    const r = await q.then(x => x, e => ({ error: e }));
+    if (!r.error) pastille(r.count || 0);
+  }
+  function ecouter() {
+    if (!sb || !moi || CHAT.canal) return;
+    const opts = { event: 'INSERT', schema: 'public', table: 'messages' };
+    if (!moi.admin) opts.filter = 'user_id=eq.' + moi.id;
+    CHAT.canal = sb.channel('bawss-messages').on('postgres_changes', opts, p => {
+      const m = p.new; if (!m) return;
+      const pourMoi = moi.admin ? !m.de_admin : m.de_admin;
+      if (CHAT.fil && ecran && (moi.admin ? m.user_id === CHAT.cible : true)) { ajouterBulle(m); if (pourMoi) marquerLus(); }
+      else if (pourMoi) { compterNonLus(); toast(moi.admin ? 'Nouveau message sur Bawss' : 'Le Bawss t’a répondu'); }
+    }).subscribe();
+  }
+  async function marquerLus() {
+    if (!sb || !moi) return;
+    let q = sb.from('messages').update({ lu: true }).eq('lu', false);
+    q = moi.admin ? q.eq('user_id', CHAT.cible).eq('de_admin', false) : q.eq('user_id', moi.id).eq('de_admin', true);
+    await q.then(() => {}, () => {});
+    compterNonLus();
+  }
+  function bulle(m) {
+    const mien = moi.admin ? m.de_admin : !m.de_admin;
+    const r = m.recette && BY_ID[m.recette];
+    return '<li class="msg ' + (mien ? 'moi' : 'lui') + '">' + (r ? '<a class="msg-rec" href="#' + esc2(m.recette) + '">À propos de : ' + esc2(r.title) + '</a>' : '')
+      + '<p>' + esc2(m.texte).replace(/\n/g, '<br>') + '</p><time>' + heure(m.cree_le) + '</time></li>';
+  }
+  function ajouterBulle(m) {
+    if (!CHAT.fil || CHAT.fil.querySelector('[data-id="' + m.id + '"]')) return;
+    const vide = CHAT.fil.querySelector('.msg-vide'); if (vide) vide.remove();
+    CHAT.fil.insertAdjacentHTML('beforeend', bulle(m).replace('<li ', '<li data-id="' + m.id + '" '));
+    CHAT.fil.scrollTop = CHAT.fil.scrollHeight;
+  }
+  /* la conversation : pour un membre, avec le Bawss ; pour Jakez, avec le membre choisi */
+  async function ecranChat(cible, pseudoCible, recette) {
+    if (!sb) return;
+    if (!moi) { ecranCompte('connexion'); return; }
+    CHAT.cible = moi.admin ? cible : moi.id; CHAT.recette = recette || null;
+    const titre = moi.admin ? esc2(pseudoCible || 'Membre') : 'Le <span>Bawss</span>';
+    const el = ouvrir('<div class="chat-tete"><button type="button" class="chat-retour" data-chat-retour aria-label="Retour">‹</button><h1>' + titre + '</h1></div>'
+      + (moi.admin ? '' : '<p class="chat-intro">Une question sur une recette, un plat qui tourne mal, une idée ? Écris ici : Jakez te répond dès qu’il peut.</p>')
+      + '<ul class="chat-fil" aria-live="polite"><li class="msg-vide">Chargement…</li></ul>'
+      + (CHAT.recette && BY_ID[CHAT.recette] ? '<p class="chat-ctx">À propos de : <b>' + esc2(BY_ID[CHAT.recette].title) + '</b> <button type="button" data-chat-sans aria-label="Ne pas joindre la recette">✕</button></p>' : '')
+      + '<form class="chat-saisie" data-chat-form><textarea rows="1" maxlength="2000" placeholder="Ton message…" aria-label="Ton message"></textarea><button type="submit" aria-label="Envoyer">➤</button></form>');
+    el.classList.add('bw-chat');
+    CHAT.fil = el.querySelector('.chat-fil');
+    el.querySelector('[data-chat-retour]').addEventListener('click', () => { CHAT.fil = null; if (moi.admin) boiteReception(); else fermer(); });
+    const sans = el.querySelector('[data-chat-sans]'); if (sans) sans.addEventListener('click', () => { CHAT.recette = null; sans.parentElement.remove(); });
+    const ta = el.querySelector('textarea'), form = el.querySelector('[data-chat-form]');
+    ta.addEventListener('input', () => { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 140) + 'px'; });
+    ta.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey && matchMedia('(pointer: fine)').matches) { e.preventDefault(); form.requestSubmit(); } });
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      const t = ta.value.trim(); if (!t) return;
+      const btn = form.querySelector('button'); btn.disabled = true;
+      const row = { texte: t, recette: CHAT.recette, user_id: CHAT.cible };
+      const r = await sb.from('messages').insert(row).select().single().then(x => x, x => ({ error: x }));
+      btn.disabled = false;
+      if (r.error) { toast('Pas envoyé, vérifie ton réseau'); return; }
+      ta.value = ''; ta.style.height = 'auto';
+      if (CHAT.recette) { CHAT.recette = null; const c = el.querySelector('.chat-ctx'); if (c) c.remove(); }
+      ajouterBulle(r.data);
+    });
+    const r = await sb.from('messages').select('*').eq('user_id', CHAT.cible).order('cree_le', { ascending: true }).limit(300).then(x => x, e => ({ error: e }));
+    if (!CHAT.fil) return;
+    const L = (r && r.data) || [];
+    CHAT.fil.innerHTML = L.length ? L.map(m => bulle(m).replace('<li ', '<li data-id="' + m.id + '" ')).join('') : '<li class="msg-vide">' + (moi.admin ? 'Pas encore de message.' : 'Pas encore de message. Lance-toi !') + '</li>';
+    CHAT.fil.scrollTop = CHAT.fil.scrollHeight;
+    CHAT.fil.addEventListener('click', e => { if (e.target.closest('.msg-rec')) { CHAT.fil = null; fermer(); } });
+    marquerLus();
+    if (!ios) setTimeout(() => ta.focus(), 200);
+  }
+  /* la boîte de réception de Jakez */
+  async function boiteReception() {
+    const el = ouvrir('<div class="chat-tete"><button type="button" class="chat-retour" data-chat-retour aria-label="Retour">‹</button><h1>Boîte de <span>réception</span></h1></div><ul class="chat-boite"><li class="msg-vide">Chargement…</li></ul>');
+    el.querySelector('[data-chat-retour]').addEventListener('click', ecranMonCompte);
+    const r = await sb.from('messages').select('user_id,texte,de_admin,lu,cree_le,recette').order('cree_le', { ascending: false }).limit(500).then(x => x, e => ({ error: e }));
+    const box = el.querySelector('.chat-boite'); if (!box) return;
+    const fils = new Map();
+    ((r && r.data) || []).forEach(m => {
+      if (!fils.has(m.user_id)) fils.set(m.user_id, { dernier: m, non_lus: 0 });
+      if (!m.de_admin && !m.lu) fils.get(m.user_id).non_lus++;
+    });
+    if (!fils.size) { box.innerHTML = '<li class="msg-vide">Aucun message pour l’instant.</li>'; return; }
+    const ps = await sb.from('profils').select('id,pseudo').in('id', [...fils.keys()]).then(x => x, () => ({ data: [] }));
+    const nom = {}; ((ps && ps.data) || []).forEach(p => { nom[p.id] = p.pseudo; });
+    box.innerHTML = [...fils.entries()].map(([id, f]) => '<li><button type="button" data-fil="' + id + '" data-nom="' + esc2(nom[id] || 'Membre') + '">'
+      + '<b>' + esc2(nom[id] || 'Membre') + (f.non_lus ? ' <span class="chat-n">' + f.non_lus + '</span>' : '') + '</b>'
+      + '<span>' + (f.dernier.de_admin ? 'Toi : ' : '') + esc2(f.dernier.texte.slice(0, 80)) + '</span><time>' + heure(f.dernier.cree_le) + '</time></button></li>').join('');
+    box.querySelectorAll('[data-fil]').forEach(b => b.addEventListener('click', () => ecranChat(b.dataset.fil, b.dataset.nom)));
+  }
+  /* sur chaque fiche, « Appelle le bawss » devient « Écris au Bawss » */
+  function boutonsBoss() {
+    document.querySelectorAll('.boss').forEach(b => {
+      const bt = b.querySelector('[data-boss]'); if (!bt || bt.dataset.chat) return;
+      bt.dataset.chat = '1'; bt.textContent = '💬 Écris au Bawss';
+      const p = b.querySelector('p'); if (p) p.innerHTML = 'Un problème ?<span>Un doute sur une étape, un plat qui tourne mal… écris-moi, je te réponds.</span>';
+    });
+  }
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-boss]'); if (!b || !sb) return;
+    e.preventDefault(); e.stopPropagation();
+    if (moi && moi.admin) { boiteReception(); return; }
+    const sec = b.closest('section.recipe');
+    ecranChat(null, null, sec ? sec.id.replace(/^r-/, '') : null);
+  }, true);
+  boutonsBoss();
+  function chatDemarrer() { compterNonLus(); ecouter(); }
 
 
   /* ---------- au démarrage ---------- */

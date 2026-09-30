@@ -103,3 +103,30 @@
 /* invitation */
 .bw-invite-par { justify-self: start; background: var(--cire); color: var(--cire-ink); border-radius: 999px; padding: 8px 16px; font: 600 16px var(--f-body); animation: bw-monte .4s cubic-bezier(.3, 1.4, .5, 1); }
 .bw-inv { font-size: 22px; padding: 12px 18px; }
+
+/* chat « Écris au Bawss » */
+.me-btn { position: relative; }
+.chat-dot { position: absolute; top: -4px; right: -4px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 999px; background: var(--red, #E4322B); color: #fff; font: 700 11.5px var(--f-body); display: grid; place-items: center; box-shadow: 0 0 0 2px var(--slate); }
+.bw-chat .bw-in { min-height: 100%; padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); gap: 12px; }
+.chat-tete { display: flex; align-items: center; gap: 10px; }
+.chat-tete h1 { font-size: 40px; }
+.chat-retour { width: 42px; height: 42px; border-radius: 50%; border: 0; background: color-mix(in srgb, var(--on-slate) 12%, transparent); color: var(--on-slate); font-size: 26px; line-height: 1; cursor: pointer; flex: none; }
+.chat-intro { font-size: 15px !important; }
+.chat-fil, .chat-boite { list-style: none; margin: 0; padding: 4px 0; display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto; min-height: 200px; }
+.msg { max-width: 82%; padding: 10px 14px 6px; border-radius: 18px; display: grid; gap: 3px; }
+.msg p { margin: 0; font-size: 16px !important; line-height: 1.4; color: inherit !important; overflow-wrap: anywhere; }
+.msg time { font: 500 11px var(--f-mono); opacity: .6; justify-self: end; }
+.msg.moi { align-self: flex-end; background: var(--cire); color: var(--cire-ink); border-bottom-right-radius: 6px; }
+.msg.lui { align-self: flex-start; background: color-mix(in srgb, var(--on-slate) 14%, transparent); color: var(--on-slate); border-bottom-left-radius: 6px; }
+.msg-rec { font: 600 12.5px var(--f-body); color: inherit; opacity: .8; text-decoration: underline; }
+.msg-vide { align-self: center; opacity: .6; font-size: 14px; padding: 30px 0; }
+.chat-ctx { margin: 0; font-size: 14px !important; display: flex; align-items: center; gap: 6px; }
+.chat-ctx button { border: 0; background: none; color: var(--on-slate); cursor: pointer; opacity: .7; }
+.chat-saisie { display: flex; gap: 8px; align-items: flex-end; position: sticky; bottom: 0; background: var(--slate); padding-top: 6px; }
+.chat-saisie textarea { flex: 1; resize: none; border: 0; border-radius: 20px; padding: 12px 16px; font: 500 16px var(--f-body); background: #fff; color: var(--ink); max-height: 140px; }
+.chat-saisie button { width: 46px; height: 46px; flex: none; border: 0; border-radius: 50%; background: var(--cire); color: var(--cire-ink); font-size: 18px; cursor: pointer; }
+.chat-boite button { width: 100%; text-align: left; border: 0; border-radius: 14px; background: color-mix(in srgb, var(--on-slate) 8%, transparent); color: var(--on-slate); padding: 12px 14px; display: grid; gap: 3px; cursor: pointer; font: inherit; }
+.chat-boite b { font-size: 17px; display: flex; align-items: center; gap: 8px; }
+.chat-boite span { font-size: 14px; opacity: .8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chat-boite time { font: 500 11px var(--f-mono); opacity: .55; }
+.chat-n { background: var(--red, #E4322B); color: #fff; border-radius: 999px; padding: 1px 7px; font-size: 12px; opacity: 1 !important; }
