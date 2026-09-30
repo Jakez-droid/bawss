@@ -96,6 +96,10 @@
 /* carte story */
 .rz-story { width: min(100%, 300px); aspect-ratio: 9 / 16; object-fit: cover; border-radius: 14px; justify-self: center; align-self: center; box-shadow: 0 16px 40px rgba(0, 0, 0, .45); display: block; margin: 0 auto; }
 [data-story] svg { width: 18px; height: 18px; }
+.bw-choix { appearance: none; border: 0; border-radius: 14px; background: color-mix(in srgb, var(--on-slate) 10%, transparent); color: var(--on-slate); text-align: left; padding: 16px 18px; display: grid; gap: 4px; cursor: pointer; font: inherit; }
+.bw-choix b { font-family: var(--f-display); font-weight: 900; text-transform: uppercase; font-size: 28px; line-height: 1; }
+.bw-choix span { font-size: 14.5px; opacity: .8; }
+.bw-choix:active { background: color-mix(in srgb, var(--on-slate) 18%, transparent); }
 </style></head><body>
 <style>
 /* filtres : panneau (téléphone) et menus déroulants (ordi) */
@@ -2282,7 +2286,7 @@ window.lancerIntro = (opts = {}) => {
     const r = BY_ID[id]; if (!r) return;
     toast('Je prépare ta carte…');
     let image = null; if (r.photo) { try { image = await chargerImage(r.photo); } catch (e) {} }
-    const blob = await carteStory({ image, emoji: r.emoji, legende: 'La recette de Jakez', droite: (EFFORT[r.effort] || [''])[0] ? r.effort : '', titre: r.title + '.', sousTitre: 'À toi de Bawsser.', accroche: '' });
+    const blob = await carteStory({ image, emoji: r.emoji, legende: 'La recette de Jakez', droite: (EFFORT[r.effort] || [''])[0] ? r.effort : '', titre: r.title + '.', sousTitre: 'Comme un Bawss.', accroche: auHasard(STORY.punch) });
     ecranStory(blob, r.title);
   }
   async function storyRealisation(id, blobPhoto, note) {
@@ -2304,16 +2308,32 @@ window.lancerIntro = (opts = {}) => {
     el.querySelector('[data-story-go]').addEventListener('click', () => partagerStory(blob, titre));
     el.querySelector('[data-story-non]').addEventListener('click', () => { fermer(); URL.revokeObjectURL(src); });
   }
-  /* le bouton « Story Insta » sur chaque fiche, à côté de « Partager » */
-  function boutonStory(id) {
-    const sec = document.getElementById('r-' + id); if (!sec || !BY_ID[id] || BY_ID[id].prank) return;
-    if (sec.querySelector('[data-story]')) return;
-    const p = sec.querySelector('[data-share]'); if (!p) return;
-    p.insertAdjacentHTML('afterend', '<button class="btn" type="button" data-story><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>Story Insta</button>');
-    sec.querySelector('[data-story]').addEventListener('click', () => storyRecette(id));
+  /* « Partager » propose deux choix : envoyer le lien, ou la carte story Insta */
+  async function envoyerLien(r) {
+    const url = 'https://jakez-droid.github.io/bawss/r/' + r.id + '.html', texte = r.title + ', la recette de Jakez sur Bawss 🔥';
+    if (navigator.share) {
+      try { await navigator.share({ title: r.title, text: texte, url }); return; } catch (e) { if (e && e.name === 'AbortError') return; }
+    }
+    try { await navigator.clipboard.writeText(texte + '\n' + url); toast('Lien copié, colle-le où tu veux'); }
+    catch (e) { prompt('Copie ce lien :', url); }
   }
-  addEventListener('hashchange', () => boutonStory(location.hash.slice(1)));
-  boutonStory(location.hash.slice(1));
+  function ecranPartage(r) {
+    const el = ouvrir('<h1>Partager <span>' + esc2(r.title) + '</span></h1>'
+      + '<button type="button" class="bw-choix" data-lien><b>Envoyer le lien</b><span>WhatsApp, Messenger, Insta en message, SMS…</span></button>'
+      + '<button type="button" class="bw-choix" data-insta><b>Story Insta</b><span>Une carte photo prête à poster, avec une punchline</span></button>'
+      + '<button type="button" class="bw-later" data-annuler>Annuler</button>');
+    el.querySelector('[data-lien]').addEventListener('click', () => { fermer(); envoyerLien(r); });
+    el.querySelector('[data-insta]').addEventListener('click', () => storyRecette(r.id));
+    el.querySelector('[data-annuler]').addEventListener('click', fermer);
+  }
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-share]');
+    if (!b || b.dataset.share) return;              // « Piéger un pote » garde le partage direct du lien
+    const sec = b.closest('section.recipe'), r = sec && BY_ID[sec.id.replace(/^r-/, '')];
+    if (!r || r.prank) return;
+    e.preventDefault(); e.stopPropagation();
+    ecranPartage(r);
+  }, true);
 
 
   /* ---------- au démarrage ---------- */
