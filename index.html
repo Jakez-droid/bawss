@@ -134,6 +134,7 @@
 .mag-list button[aria-pressed="true"] { opacity: .45; }
 .mag-list button[aria-pressed="true"] .mag-c { background: #F4B400; border-color: #F4B400; }
 .mag-list button[aria-pressed="true"] .mag-t { text-decoration: line-through; }
+.mag-h { font: 500 12px var(--f-mono); letter-spacing: .14em; text-transform: uppercase; color: #F4B400; padding: 12px 4px 2px; }
 .mag-aide { margin: 10px 0 0; text-align: center; font-size: 13px; opacity: .55; }
 .mag-fin { margin: auto 0; display: grid; gap: 22px; }
 .mag-fin h2 { margin: 0; font: 900 64px/.92 var(--f-display); text-transform: uppercase; }
@@ -1251,6 +1252,7 @@ async function ouvrirMagasin() {
     if (Math.abs(dx) < 70) return;
     const rs = magRayons(), i = rs.findIndex(r => r.code === magRayon), j = i + (dx < 0 ? 1 : -1);
     if (rs[j]) { magRayon = rs[j].code; renderMagasin(); }
+    else if (j === -1 && magRayon !== 'tout') { magRayon = 'tout'; renderMagasin(); }
   }, { passive: true });
   mag.addEventListener('click', e => {
     if (e.target.closest('[data-mag-x]')) { fermerMagasin(); return; }
@@ -1263,7 +1265,7 @@ async function ouvrirMagasin() {
     if (on && navigator.vibrate) navigator.vibrate(15);
     renderMagasin();
     const r = magRayons().find(r => r.code === magRayon);
-    if (on && r && r.items.every(i => cart.checked.includes(i.key))) {
+    if (on && magRayon !== 'tout' && r && r.items.every(i => cart.checked.includes(i.key))) {
       setTimeout(() => { const suiv = magRayons().find(r => r.items.some(i => !cart.checked.includes(i.key))); if (suiv && mag) { magRayon = suiv.code; renderMagasin(); } }, 550);
     }
   });
@@ -1276,12 +1278,18 @@ function renderMagasin() {
       <button type="button" class="mag-go" data-mag-vider>Vider la liste</button><button type="button" class="mag-ghost" data-mag-x>Garder la liste et fermer</button></div>`;
     return;
   }
-  const r = rs.find(r => r.code === magRayon) || rs[0];
-  const tri = r ? [...r.items].sort((a, b) => (cart.checked.includes(a.key) - cart.checked.includes(b.key)) || a.a.localeCompare(b.a, 'fr')) : [];
+  const total = magRayon === 'tout';
+  const r = total ? null : (rs.find(r => r.code === magRayon) || rs[0]);
+  const trier = l => [...l].sort((a, b) => (cart.checked.includes(a.key) - cart.checked.includes(b.key)) || a.a.localeCompare(b.a, 'fr'));
+  const ligneMag = i => { const on = cart.checked.includes(i.key), qs = i.uses.filter(u => u.q).map(u => u.q); return `<li><button type="button" data-mag-k="${esc(i.key)}" aria-pressed="${on}"><span class="mag-c" aria-hidden="true">${on ? '✓' : ''}</span><span class="mag-t">${esc(i.a)}${qs.length ? `<em>${esc(totalQ(qs))}</em>` : ''}</span></button></li>`; };
+  const corps = total
+    ? rs.map(x => `<li class="mag-h">${x.label}</li>` + trier(x.items).map(ligneMag).join('')).join('')
+    : (r ? trier(r.items).map(ligneMag).join('') : '');
+  const resteTout = tout.length - pris;
   mag.innerHTML = `<div class="mag-top"><div><p class="mag-k">En magasin</p><p class="mag-n"><b>${pris}</b> / ${tout.length}</p></div><button type="button" class="mag-x" data-mag-x aria-label="Quitter le mode magasin">✕</button></div>
     <div class="mag-bar"><i style="width:${tout.length ? pris / tout.length * 100 : 0}%"></i></div>
-    <div class="mag-tabs">${rs.map(x => { const n = x.items.filter(i => !cart.checked.includes(i.key)).length; return `<button type="button" data-mag-r="${x.code}" aria-pressed="${x.code === (r && r.code)}">${x.label}${n ? ` <span>${n}</span>` : ' ✓'}</button>`; }).join('')}</div>
-    <ul class="mag-list">${tri.map(i => { const on = cart.checked.includes(i.key), qs = i.uses.filter(u => u.q).map(u => u.q); return `<li><button type="button" data-mag-k="${esc(i.key)}" aria-pressed="${on}"><span class="mag-c" aria-hidden="true">${on ? '✓' : ''}</span><span class="mag-t">${esc(i.a)}${qs.length ? `<em>${esc(totalQ(qs))}</em>` : ''}</span></button></li>`; }).join('')}</ul>
+    <div class="mag-tabs"><button type="button" data-mag-r="tout" aria-pressed="${total}">Tout${resteTout ? ` <span>${resteTout}</span>` : ' ✓'}</button>${rs.map(x => { const n = x.items.filter(i => !cart.checked.includes(i.key)).length; return `<button type="button" data-mag-r="${x.code}" aria-pressed="${!total && x.code === (r && r.code)}">${x.label}${n ? ` <span>${n}</span>` : ' ✓'}</button>`; }).join('')}</div>
+    <ul class="mag-list">${corps}</ul>
     <p class="mag-aide">Touche un article pour le cocher · glisse pour changer de rayon</p>`;
 }
 function fermerMagasin() {
