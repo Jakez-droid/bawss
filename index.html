@@ -94,6 +94,44 @@
 @keyframes bw-monte { from { transform: translateY(120%); } }
 </style></head><body>
 <style>
+/* filtres : panneau (téléphone) et menus déroulants (ordi) */
+.chip .icon, .filtres-btn svg { width: 16px; height: 16px; vertical-align: -3px; margin-right: 6px; }
+.chip b { display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 5px; margin-left: 4px; border-radius: 999px; background: var(--cire); color: var(--cire-ink); font-size: 11.5px; }
+#extras .filtres-btn { border-color: var(--ink); font-weight: 700; }
+#extras .dd-btn { font-weight: 600; }
+#extras .dd-btn[aria-pressed="true"] { background: transparent; color: var(--ink); border-color: var(--ink); }
+#extras .on-pill { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+#extras .efface { border: 0; text-decoration: underline; text-underline-offset: 3px; color: var(--muted); }
+@media (max-width: 680px) { #extras .dd-btn { display: none; } }
+@media (min-width: 681px) { #extras .filtres-btn { display: none; } }
+.fp { position: fixed; inset: 0; z-index: 80; background: rgba(6, 12, 18, 0); transition: background-color .2s ease; }
+.fp.open { background: rgba(6, 12, 18, .5); }
+.fp-box { position: absolute; left: 0; right: 0; bottom: 0; max-height: 84vh; overflow-y: auto; overscroll-behavior: contain; background: var(--paper); color: var(--ink); border-radius: 20px 20px 0 0; padding: 18px 18px calc(env(safe-area-inset-bottom, 0px) + 14px); display: grid; gap: 18px; transform: translateY(100%); transition: transform .24s cubic-bezier(.3, .9, .3, 1); box-shadow: 0 -10px 40px rgba(0, 0, 0, .25); }
+.fp.open .fp-box { transform: none; }
+.fp-head { display: flex; justify-content: space-between; align-items: center; }
+.fp-head h2 { margin: 0; font-family: var(--f-display); font-weight: 900; text-transform: uppercase; font-size: 30px; line-height: 1; }
+.fp-x { border: 0; background: color-mix(in srgb, var(--ink) 8%, transparent); width: 38px; height: 38px; border-radius: 50%; font-size: 16px; cursor: pointer; color: var(--ink); }
+.fp section h3 { margin: 0 0 10px; font-family: var(--f-mono); font-weight: 500; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.fp-opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.fp-o { display: inline-flex; align-items: center; gap: 8px; border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 9px 14px; font: 600 15px var(--f-body); cursor: pointer; }
+.fp-o span { font: 500 12px var(--f-mono); color: var(--muted); }
+.fp-o[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.fp-o[aria-pressed="true"] span { color: color-mix(in srgb, var(--paper) 70%, transparent); }
+.fp-o:disabled { opacity: .35; cursor: default; }
+.fp-foot { position: sticky; bottom: calc(-14px - env(safe-area-inset-bottom, 0px)); display: flex; gap: 10px; background: var(--paper); padding-block: 12px 4px; border-top: 1px solid var(--line); }
+.fp-foot .btn { flex: 1; justify-content: center; }
+.fp-foot .btn:disabled { opacity: .45; }
+@media (min-width: 681px) {
+  .fp[data-vue="all"] .fp-box { left: 50%; right: auto; bottom: auto; top: 12vh; width: 560px; transform: translate(-50%, 12px); opacity: 0; border-radius: 18px; transition: transform .2s ease, opacity .2s ease; }
+  .fp[data-vue="all"].open .fp-box { transform: translate(-50%, 0); opacity: 1; }
+  .fp:not([data-vue="all"]) { background: transparent !important; }
+  .fp:not([data-vue="all"]) .fp-box { position: fixed; right: auto; bottom: auto; width: 340px; max-height: 70vh; border-radius: 14px; transform: translateY(-6px); opacity: 0; transition: transform .16s ease, opacity .16s ease; box-shadow: 0 16px 40px rgba(0, 0, 0, .22); border: 1px solid var(--line); gap: 12px; padding: 14px; }
+  .fp:not([data-vue="all"]).open .fp-box { transform: none; opacity: 1; }
+  .fp:not([data-vue="all"]) .fp-head h2 { font-size: 22px; }
+  .fp:not([data-vue="all"]) section h3 { display: none; }
+}
+</style>
+<style>
 .share-box { position: fixed; inset: 0; z-index: 220; background: rgba(6, 12, 18, .6); display: grid; place-items: center; padding: 20px; }
 .share-box > div { background: var(--paper); color: var(--ink); border-radius: 14px; padding: 18px; width: min(420px, 100%); display: grid; gap: 12px; }
 .share-box p { margin: 0; font-weight: 600; }
@@ -569,8 +607,9 @@ body { background-image: radial-gradient(color-mix(in srgb, var(--ink) 7%, trans
     </div>
     <div class="count" id="count" aria-live="polite"></div>
     <div class="grid" id="grid"></div>
+    <div class="fp" id="fp" hidden role="dialog" aria-modal="true" aria-label="Filtres"><div class="fp-box"></div></div>
     <div class="empty" id="empty" hidden>
-      <p>Aucune recette ne correspond.</p>
+      <p><b>Rien. Nada.</b><br>Même le frigo de Jakez un dimanche soir a plus de choix.</p>
       <button class="btn" id="reset" type="button">Effacer les filtres</button>
     </div>
   </div>
@@ -815,30 +854,48 @@ function cartText() {
 }
 
 /* ---------- list ---------- */
-const state = { type: null, effort: null, season: false, favs: false, q: '' };
+const state = { types: new Set(), efforts: new Set(), bases: new Set(), favs: false, q: '' };
+const EFFORTS = ['⚡ Express', '🍳 Normal', "🔥 Plus d'1 h"];
+const BASE_LABEL = { 'Veggie': 'Végé 🌱', 'Boeuf': 'Bœuf' };
+const baseLabel = b => BASE_LABEL[b] || b;
+const effortLabel = e => e === '⚡ Express' ? '⚡ Express · moins de 30 min' : e;
+const FILTRES = {
+  types: { titre: 'Type de plat', val: r => [r.type], options: () => Object.keys(TYPE_LABEL).filter(t => RECIPES.some(r => r.type === t)), label: t => TYPE_LABEL[t] },
+  efforts: { titre: 'Temps', val: r => [r.effort], options: () => EFFORTS, label: effortLabel },
+  bases: { titre: 'Ingrédient principal', val: r => r.base, options: () => [...new Set(RECIPES.flatMap(r => r.base))].sort((a, b) => RECIPES.filter(r => r.base.includes(b)).length - RECIPES.filter(r => r.base.includes(a)).length), label: baseLabel }
+};
+const filtrage = () => state.types.size + state.efforts.size + state.bases.size > 0 || state.favs || !!state.q;
+const nbFiltres = () => state.types.size + state.efforts.size + state.bases.size + (state.favs ? 1 : 0);
 function renderChips() {
-  const types = Object.keys(TYPE_LABEL).filter(t => RECIPES.some(r => r.type === t));
-  $('#types').innerHTML = [`<button class="chip" type="button" data-type="" aria-pressed="${!state.type}">Tout</button>`]
-    .concat(types.map(t => `<button class="chip" type="button" data-type="${t}" aria-pressed="${state.type === t}">${TYPE_LABEL[t]}</button>`)).join('');
+  const types = FILTRES.types.options();
+  $('#types').innerHTML = [`<button class="chip" type="button" data-type="" aria-pressed="${!state.types.size}">Tout</button>`]
+    .concat(types.map(t => `<button class="chip" type="button" data-type="${t}" aria-pressed="${state.types.has(t)}">${TYPE_LABEL[t]}</button>`)).join('');
+  const n = nbFiltres();
+  const actifs = ['efforts', 'bases'].flatMap(k => [...state[k]].map(v => `<button class="chip on-pill" type="button" data-retire="${k}" data-v="${esc(v)}" aria-label="Retirer ${esc(FILTRES[k].label(v))}">${esc(FILTRES[k].label(v))} ✕</button>`));
   $('#extras').innerHTML =
+    `<button class="chip filtres-btn" type="button" data-open="all" aria-haspopup="dialog">${ICON.filtres}Filtres${n ? ` <b>${n}</b>` : ''}</button>` +
+    ['types', 'efforts', 'bases'].map(k => `<button class="chip dd-btn" type="button" data-open="${k}" aria-haspopup="dialog" aria-pressed="${state[k].size > 0}">${FILTRES[k].titre}${state[k].size ? ` <b>${state[k].size}</b>` : ''} ▾</button>`).join('') +
     `<button class="chip fav" type="button" data-x="favs" aria-pressed="${state.favs}">♥ Mes favoris</button>` +
-    `<button class="chip" type="button" data-x="season" aria-pressed="${state.season}">De saison · ${NOW_SEASON.toLowerCase()}</button>` +
-    ['⚡ Express', '🍳 Normal', "🔥 Plus d'1 h"].map(e => `<button class="chip" type="button" data-effort="${e}" aria-pressed="${state.effort === e}">${EFFORT[e][0]}${e === '⚡ Express' ? ' (moins de 30 min)' : ''}</button>`).join('');
+    actifs.join('') +
+    (n ? `<button class="chip efface" type="button" data-efface>Tout effacer</button>` : '');
+  if (!$('#fp').hidden) renderPanneau();
 }
-function matches(r) {
-  if (state.type && r.type !== state.type) return false;
-  if (state.effort && r.effort !== state.effort) return false;
-  if (state.season && !inSeason(r)) return false;
+function matches(r, sauf) {
+  for (const k of Object.keys(FILTRES)) {
+    if (k === sauf || !state[k].size) continue;
+    if (!FILTRES[k].val(r).some(v => state[k].has(v))) return false;
+  }
   if (state.favs && !favs.has(r.id)) return false;
   if (state.q) {
-    const hay = norm([r.title, r.intro, ...r.ingr.flatMap(g => g.items), ...r.base, ...r.origine].join(' '));
+    const hay = norm([r.title, r.intro, ...r.ingr.flatMap(g => g.items), ...r.base.map(baseLabel), ...r.origine].join(' '));
     if (!norm(state.q).split(/\s+/).filter(Boolean).every(w => hay.includes(w))) return false;
   }
   return true;
 }
+const compte = (k, o) => RECIPES.filter(r => matches(r, k) && FILTRES[k].val(r).includes(o)).length;
 function renderGrid() {
   const list = RECIPES.filter(matches).sort((a, b) => rang(a) - rang(b));
-  const big = !(state.type || state.effort || state.season || state.favs || state.q);
+  const big = !filtrage();
   $('#grid').innerHTML = list.map((r, i) => `
     <a class="card ${r.photo ? 'pic' : 'nopic'}" href="#${r.id}">
       <div class="tile" aria-hidden="true">${r.photo ? `<img src="${r.photo}" alt="" loading="lazy">` : `<span class="emo">${r.emoji}</span>`}
@@ -851,7 +908,7 @@ function renderGrid() {
     </a>`).join('');
   $('#count').textContent = list.length === RECIPES.length ? `${list.length} recettes` : `${list.length} sur ${RECIPES.length} recettes`;
   $('#empty').hidden = list.length > 0;
-  const f = BY_ID[PETITE], filtering = state.type || state.effort || state.season || state.favs || state.q;
+  const f = BY_ID[PETITE], filtering = filtrage();
   $('#feature').hidden = !f || filtering;
   if (f && !filtering) {
     $('#feature').href = '#' + f.id;
@@ -864,19 +921,66 @@ function renderGrid() {
 }
 $('#lede').textContent = `Enlève ton choupen, mets ton tablier et va dans ta cuisine. ${RECIPES.length} recettes testées et approuvées. Cherche un plat ou un ingrédient, ajuste les portions, et passe en mode cuisine une fois aux fourneaux. Si tu paniques, appelle le bawss. Prends une dose de brezhoneg à la fin et casse-toi manger avant que ça refroidisse, strouillou !`;
 
-$('#types').addEventListener('click', e => { const b = e.target.closest('[data-type]'); if (!b) return; state.type = b.dataset.type || null; renderChips(); renderGrid(); });
-$('#extras').addEventListener('click', e => {
-  const b = e.target.closest('button'); if (!b) return;
-  if (b.dataset.effort) state.effort = state.effort === b.dataset.effort ? null : b.dataset.effort;
-  if (b.dataset.x) state[b.dataset.x] = !state[b.dataset.x];
+$('#types').addEventListener('click', e => {
+  const b = e.target.closest('[data-type]'); if (!b) return;
+  const t = b.dataset.type;
+  if (!t) state.types.clear(); else state.types.has(t) ? state.types.delete(t) : state.types.add(t);
   renderChips(); renderGrid();
 });
+$('#extras').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.open) { ouvrirPanneau(b.dataset.open, b); return; }
+  if (b.dataset.x) state[b.dataset.x] = !state[b.dataset.x];
+  if (b.dataset.retire) state[b.dataset.retire].delete(b.dataset.v);
+  if (b.hasAttribute('data-efface')) toutEffacer();
+  renderChips(); renderGrid();
+});
+/* panneau de filtres : feuille qui monte du bas sur téléphone, menu déroulant sur ordi */
+let panneauVue = 'all';
+function ouvrirPanneau(vue, bouton) {
+  panneauVue = vue;
+  const fp = $('#fp');
+  fp.hidden = false; fp.dataset.vue = vue;
+  renderPanneau();
+  const box = $('.fp-box', fp);
+  if (vue !== 'all' && bouton && matchMedia('(min-width: 681px)').matches) {
+    const r = bouton.getBoundingClientRect();
+    box.style.left = Math.max(12, Math.min(r.left, innerWidth - box.offsetWidth - 12)) + 'px';
+    box.style.top = (r.bottom + 8) + 'px';
+  } else { box.style.left = ''; box.style.top = ''; }
+  requestAnimationFrame(() => fp.classList.add('open'));
+  const f = $('.fp-box button', fp); if (f) f.focus();
+}
+function fermerPanneau() { const fp = $('#fp'); fp.classList.remove('open'); setTimeout(() => { fp.hidden = true; }, 200); }
+function renderPanneau() {
+  const ks = panneauVue === 'all' ? Object.keys(FILTRES) : [panneauVue];
+  const n = RECIPES.filter(r => matches(r)).length;
+  $('#fp .fp-box').innerHTML = `<div class="fp-head"><h2>${panneauVue === 'all' ? 'Filtres' : FILTRES[panneauVue].titre}</h2><button type="button" class="fp-x" data-fp-close aria-label="Fermer">✕</button></div>` +
+    ks.map(k => `<section><h3>${FILTRES[k].titre}</h3><div class="fp-opts">` + FILTRES[k].options().map(o => {
+      const c = compte(k, o), on = state[k].has(o);
+      return `<button type="button" class="fp-o" data-k="${k}" data-v="${esc(o)}" aria-pressed="${on}" ${!c && !on ? 'disabled' : ''}>${esc(FILTRES[k].label(o))}<span>${c}</span></button>`;
+    }).join('') + '</div></section>').join('') +
+    (panneauVue === 'all' ? `<section><h3>Moi</h3><div class="fp-opts"><button type="button" class="fp-o" data-favs aria-pressed="${state.favs}">♥ Mes favoris<span>${RECIPES.filter(r => favs.has(r.id)).length}</span></button></div></section>` : '') +
+    `<div class="fp-foot"><button type="button" class="btn" data-fp-efface ${nbFiltres() ? '' : 'disabled'}>Tout effacer</button><button type="button" class="btn primary" data-fp-close>${n ? `Voir ${n} recette${n > 1 ? 's' : ''}` : 'Aucune recette'}</button></div>`;
+}
+function toutEffacer() { state.types.clear(); state.efforts.clear(); state.bases.clear(); state.favs = false; }
+$('#fp').addEventListener('click', e => {
+  if (e.target === $('#fp') || e.target.closest('[data-fp-close]')) { fermerPanneau(); return; }
+  const o = e.target.closest('.fp-o');
+  if (o && o.hasAttribute('data-favs')) state.favs = !state.favs;
+  else if (o) { const s = state[o.dataset.k], v = o.dataset.v; s.has(v) ? s.delete(v) : s.add(v); }
+  else if (e.target.closest('[data-fp-efface]')) toutEffacer();
+  else return;
+  renderChips(); renderGrid(); renderPanneau();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#fp').hidden) fermerPanneau(); });
 $('#q').addEventListener('input', e => { state.q = e.target.value.trim(); if (location.hash) location.hash = ''; renderGrid(); });
-$('#reset').addEventListener('click', () => { Object.assign(state, { type: null, effort: null, season: false, favs: false, q: '' }); $('#q').value = ''; renderChips(); renderGrid(); });
+$('#reset').addEventListener('click', () => { toutEffacer(); state.q = ''; $('#q').value = ''; renderChips(); renderGrid(); });
 
 /* ---------- detail pages (kept in the DOM so comments stay anchored) ---------- */
 const serves = {};
 const ICON = {
+  filtres: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>',
   share: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8l7.4-4.3M8.3 13.2l7.4 4.3"/></svg>',
   heart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>',
   heartFull: '<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>',
