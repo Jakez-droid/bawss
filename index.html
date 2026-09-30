@@ -1428,6 +1428,8 @@ window.lancerIntro = (opts = {}) => {
   }
 
   /* ---------- connexion à la base ---------- */
+  const H = location.hash;
+  const lienMail = /type=recovery/.test(H) ? 'recovery' : /error_code=|error=access_denied/.test(H) ? 'erreur' : /type=(email_change|signup|magiclink|invite)/.test(H) ? 'mail' : '';
   let sb = null;
   try { if (window.supabase && SB_URL && SB_KEY) sb = window.supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: true, autoRefreshToken: true, storageKey: 'bawss-session' } }); } catch (e) { sb = null; }
   let moi = null;          // { id, pseudo, admin }
@@ -1561,64 +1563,122 @@ window.lancerIntro = (opts = {}) => {
   }
 
   /* « crée ton compte » / « j'ai déjà un compte » */
+  const RETOUR = location.origin + location.pathname;
+  const mailOk = m => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(m);
   function traduire(err) {
     const m = String((err && (err.message || err.error_description || err.msg)) || err || '');
-    if (/already registered|already exists|duplicate|unique/i.test(m)) return 'Ce pseudo est déjà pris. Ajoute un chiffre, par exemple.';
-    if (/invalid login|invalid credentials|invalid grant/i.test(m)) return 'Pseudo ou mot de passe incorrect.';
+    if (/pseudo pris/i.test(m)) return 'Ce pseudo est déjà pris. Ajoute un chiffre, par exemple.';
+    if (/already registered|already exists|already been registered|duplicate|unique/i.test(m)) return 'Il y a déjà un compte avec ce mail. Touche « J\'ai déjà un compte ».';
+    if (/invalid login|invalid credentials|invalid grant/i.test(m)) return 'Mail ou mot de passe incorrect.';
     if (/password.*(6|characters|short|weak)/i.test(m)) return 'Mot de passe trop court : 6 caractères minimum.';
+    if (/same.*password|different from the old/i.test(m)) return 'Choisis un mot de passe différent de l\'ancien.';
+    if (/invalid.*email|email.*invalid|valid email/i.test(m)) return 'Ce mail n\'a pas l\'air valide.';
     if (/confirm/i.test(m)) return 'Le compte attend une confirmation par mail : préviens Jakez.';
-    if (/rate|too many/i.test(m)) return 'Trop d\'essais d\'un coup. Attends une minute et réessaie.';
+    if (/rate|too many|security purposes/i.test(m)) return 'Trop d\'essais d\'un coup. Attends une minute et réessaie.';
     if (/fetch|network|failed|load/i.test(m) || !navigator.onLine) return 'Pas de réseau. Il en faut pour créer ton compte ou te connecter.';
     return 'Ça n\'a pas marché (' + m.slice(0, 80) + '). Réessaie.';
+  }
+  const champMdp = (id, auto) => '<label for="' + id + '">Mot de passe</label><div class="bw-mdp"><input id="' + id + '" type="password" autocomplete="' + auto + '" minlength="6" required><button type="button" class="bw-voir" aria-label="Afficher le mot de passe">Voir</button></div>';
+  function brancherVoir(el) {
+    el.querySelectorAll('.bw-voir').forEach(b => b.addEventListener('click', e => { const md = e.currentTarget.previousElementSibling, v = md.type === 'password'; md.type = v ? 'text' : 'password'; e.currentTarget.textContent = v ? 'Cacher' : 'Voir'; }));
+  }
+  function connecte(u, pseudo, message) {
+    moi = { id: u.id, pseudo: (u.user_metadata && u.user_metadata.pseudo) || pseudo || ls.get('bawss-pseudo') || 'toi', email: u.email, admin: false };
+    ls.set('bawss-pseudo', moi.pseudo);
+    return synchroniser(true).then(() => { majBouton(); fermer(); if (message) toast(message.replace('%', moi.pseudo)); });
   }
   function ecranCompte(mode) {
     const creer = mode !== 'connexion';
     const el = ouvrir(logo
-      + (creer ? '<h1>Crée ton <span>compte</span></h1><p>Un pseudo, un mot de passe, et tu retrouves tes favoris et ta liste de courses sur tous tes appareils.</p>'
-               : '<h1>Re-<span>salut</span></h1><p>Ton pseudo et ton mot de passe, et tu retrouves tout.</p>')
+      + (creer ? '<h1>Crée ton <span>compte</span></h1><p>Ton mail, un pseudo, un mot de passe, et tu retrouves tes favoris et ta liste de courses sur tous tes appareils.</p>'
+               : '<h1>Re-<span>salut</span></h1><p>Ton mail et ton mot de passe, et tu retrouves tout.</p>')
       + '<form data-compte style="display:grid;gap:12px" novalidate>'
-      + '<label for="bw-pseudo">Pseudo</label><input id="bw-pseudo" type="text" autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="24" required>'
-      + '<label for="bw-mdp">Mot de passe</label><div class="bw-mdp"><input id="bw-mdp" type="password" autocomplete="' + (creer ? 'new-password' : 'current-password') + '" minlength="6" required><button type="button" class="bw-voir" aria-label="Afficher le mot de passe">Voir</button></div>'
+      + (creer ? '<label for="bw-mail">Mail</label><input id="bw-mail" type="email" inputmode="email" autocomplete="email" autocapitalize="off" autocorrect="off" spellcheck="false" required>'
+                 + '<label for="bw-pseudo">Pseudo</label><input id="bw-pseudo" type="text" autocomplete="nickname" autocapitalize="words" maxlength="24" required>'
+               : '<label for="bw-mail">Mail</label><input id="bw-mail" type="text" inputmode="email" autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false" required>')
+      + champMdp('bw-mdp', creer ? 'new-password' : 'current-password')
       + '<p class="bw-err" role="alert" hidden></p>'
       + '<button type="submit" class="bw-go">' + (creer ? 'C\'est parti' : 'Me connecter') + '</button></form>'
+      + (creer ? '' : '<button type="button" class="bw-later" data-oubli>Mot de passe oublié ?</button>')
       + '<button type="button" class="bw-later" data-bascule>' + (creer ? 'J\'ai déjà un compte' : 'Pas de compte ? J\'en crée un') + '</button>'
-      + (creer ? '<p class="bw-note">6 caractères minimum pour le mot de passe. Personne ne peut le lire, même pas Jakez.</p>' : '<p class="bw-note">Mot de passe oublié ? Demande à Jakez de te le remettre à zéro.</p>')
+      + (creer ? '<p class="bw-note">Ton mail sert à te connecter et à retrouver ton mot de passe si tu l\'oublies. Personne ne voit ton mot de passe, même pas Jakez.</p>' : '')
       + '<button type="button" class="bw-later bw-sans" data-sans>Continuer sans compte</button>');
-    const f = el.querySelector('[data-compte]'), ps = el.querySelector('#bw-pseudo'), md = el.querySelector('#bw-mdp'), go = el.querySelector('.bw-go'), er = el.querySelector('.bw-err');
-    const dernier = ls.get('bawss-pseudo'); if (!creer && dernier) ps.value = dernier;
-    el.querySelector('.bw-voir').addEventListener('click', e => { const v = md.type === 'password'; md.type = v ? 'text' : 'password'; e.currentTarget.textContent = v ? 'Cacher' : 'Voir'; });
+    const f = el.querySelector('[data-compte]'), ml = el.querySelector('#bw-mail'), ps = el.querySelector('#bw-pseudo'), md = el.querySelector('#bw-mdp'), go = el.querySelector('.bw-go'), er = el.querySelector('.bw-err');
+    const dernier = ls.get('bawss-mail'); if (!creer && dernier) ml.value = dernier;
+    brancherVoir(el);
     el.querySelector('[data-bascule]').addEventListener('click', () => ecranCompte(creer ? 'connexion' : 'creer'));
     el.querySelector('[data-sans]').addEventListener('click', () => { fermer(); lancer({ son: true }); });
+    const ob = el.querySelector('[data-oubli]'); if (ob) ob.addEventListener('click', () => ecranOubli(ml.value.trim()));
     const dire = t => { er.textContent = t; er.hidden = !t; };
     f.addEventListener('submit', async e => {
       e.preventDefault(); dire('');
-      const pseudo = ps.value.trim().replace(/\s+/g, ' '), mdp = md.value, mail = pseudoMail(pseudo);
-      if (pseudo.length < 2 || !mail) return dire('Choisis un pseudo d\'au moins 2 lettres ou chiffres.');
+      let mail = ml.value.trim().toLowerCase();
+      const mdp = md.value, pseudo = ps ? ps.value.trim().replace(/\s+/g, ' ') : '';
+      if (!creer && mail && !mail.includes('@')) mail = pseudoMail(mail);   // anciens comptes créés avec un pseudo
+      if (!mailOk(mail)) return dire('Mets ton adresse mail, par exemple leo@gmail.com.');
+      if (creer && (pseudo.length < 2 || !pseudoMail(pseudo))) return dire('Choisis un pseudo d\'au moins 2 lettres ou chiffres.');
       if (mdp.length < 6) return dire('Mot de passe trop court : 6 caractères minimum.');
       go.disabled = true; go.textContent = '…';
       try {
         let r;
         if (creer) {
-          r = await sb.auth.signUp({ email: mail, password: mdp, options: { data: { pseudo } } });
+          const libre = await sb.rpc('pseudo_libre', { p: pseudo }).then(x => (x.error ? null : x.data), () => null);
+          if (libre === false) throw new Error('pseudo pris');
+          r = await sb.auth.signUp({ email: mail, password: mdp, options: { data: { pseudo }, emailRedirectTo: RETOUR } });
           if (!r.error && r.data && !r.data.session) throw new Error('confirm');
+          if (!r.error && r.data && r.data.user && Array.isArray(r.data.user.identities) && !r.data.user.identities.length) throw new Error('already registered');
         } else {
           r = await sb.auth.signInWithPassword({ email: mail, password: mdp });
         }
         if (r.error) throw r.error;
-        const u = r.data.user;
-        moi = { id: u.id, pseudo: (u.user_metadata && u.user_metadata.pseudo) || pseudo, admin: false };
-        ls.set('bawss-pseudo', moi.pseudo);
-        await synchroniser(true);
-        majBouton();
-        fermer();
-        toast(creer ? 'Bienvenue ' + moi.pseudo + ' !' : 'Re-salut ' + moi.pseudo + ' !');
+        if (!mail.endsWith('@bawss.app')) ls.set('bawss-mail', mail);
+        await connecte(r.data.user, pseudo, creer ? 'Bienvenue % !' : 'Re-salut % !');
         lancer({ son: true });
       } catch (err) {
         dire(traduire(err));
         go.disabled = false; go.textContent = creer ? 'C\'est parti' : 'Me connecter';
       }
     });
-    if (!ios) setTimeout(() => ps.focus(), 300);
+    if (!ios) setTimeout(() => ml.focus(), 300);
+  }
+
+  /* « mot de passe oublié » : un lien part par mail */
+  function ecranOubli(mailInit) {
+    const el = ouvrir(logo + '<h1>Mot de passe <span>oublié</span></h1><p>Mets ton mail : tu reçois un lien pour choisir un nouveau mot de passe.</p>'
+      + '<form data-oubli-f style="display:grid;gap:12px" novalidate><label for="bw-mail-o">Mail</label><input id="bw-mail-o" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" required>'
+      + '<p class="bw-err" role="alert" hidden></p><button type="submit" class="bw-go">Envoyer le lien</button></form>'
+      + '<button type="button" class="bw-later" data-retour-co>Retour</button>');
+    const ml = el.querySelector('#bw-mail-o'), go = el.querySelector('.bw-go'), er = el.querySelector('.bw-err');
+    if (mailInit && mailInit.includes('@')) ml.value = mailInit;
+    el.querySelector('[data-retour-co]').addEventListener('click', () => ecranCompte('connexion'));
+    el.querySelector('[data-oubli-f]').addEventListener('submit', async e => {
+      e.preventDefault();
+      const mail = ml.value.trim().toLowerCase();
+      if (!mailOk(mail)) { er.textContent = 'Mets ton adresse mail, par exemple leo@gmail.com.'; er.hidden = false; return; }
+      go.disabled = true; go.textContent = '…';
+      const r = await sb.auth.resetPasswordForEmail(mail, { redirectTo: RETOUR }).then(x => x, x => ({ error: x }));
+      if (r.error) { er.textContent = traduire(r.error); er.hidden = false; go.disabled = false; go.textContent = 'Envoyer le lien'; return; }
+      ouvrir(logo + '<h1>Regarde tes <span>mails</span></h1><p>Si un compte existe avec <b>' + esc2(mail) + '</b>, un lien vient de partir. Ouvre-le sur ce téléphone pour choisir ton nouveau mot de passe.</p><p class="bw-note">Rien reçu après 5 minutes ? Regarde dans les spams.</p><button type="button" class="bw-go" data-ok>OK</button>');
+      ecran.querySelector('[data-ok]').addEventListener('click', () => ecranCompte('connexion'));
+    });
+  }
+
+  /* arrivée par le lien du mail : on choisit le nouveau mot de passe */
+  function ecranNouveauMdp() {
+    const el = ouvrir(logo + '<h1>Nouveau <span>mot de passe</span></h1><p>Choisis ton nouveau mot de passe, 6 caractères minimum.</p>'
+      + '<form data-nmdp style="display:grid;gap:12px" novalidate>' + champMdp('bw-nmdp', 'new-password')
+      + '<p class="bw-err" role="alert" hidden></p><button type="submit" class="bw-go">Enregistrer</button></form>');
+    brancherVoir(el);
+    const md = el.querySelector('#bw-nmdp'), go = el.querySelector('.bw-go'), er = el.querySelector('.bw-err');
+    el.querySelector('[data-nmdp]').addEventListener('submit', async e => {
+      e.preventDefault();
+      if (md.value.length < 6) { er.textContent = 'Mot de passe trop court : 6 caractères minimum.'; er.hidden = false; return; }
+      go.disabled = true; go.textContent = '…';
+      const r = await sb.auth.updateUser({ password: md.value }).then(x => x, x => ({ error: x }));
+      if (r.error) { er.textContent = traduire(r.error); er.hidden = false; go.disabled = false; go.textContent = 'Enregistrer'; return; }
+      await connecte(r.data.user, '', 'Mot de passe changé, re-salut % !');
+      lancer();
+    });
   }
 
   /* ---------- bouton « mon compte » dans l'en-tête ---------- */
@@ -1631,14 +1691,30 @@ window.lancerIntro = (opts = {}) => {
   }
   async function ecranMonCompte() {
     if (!moi) { ecranCompte(sb ? 'connexion' : 'creer'); return; }
+    const sansMail = !moi.email || /@bawss\.app$/.test(moi.email);
     const el = ouvrir(logo + '<h1>Salut <span>' + esc2(moi.pseudo) + '</span></h1>'
       + '<p>Tes favoris et ta liste de courses sont gardés sur ton compte : tu les retrouves en te connectant sur un autre appareil.</p>'
+      + (sansMail ? '<form data-ajout-mail style="display:grid;gap:12px" novalidate><div class="bw-alert">Ajoute ton mail : c\'est lui qui te permettra de retrouver ton mot de passe si tu l\'oublies.</div>'
+                   + '<label for="bw-mail-a">Mail</label><input id="bw-mail-a" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false">'
+                   + '<p class="bw-err" role="alert" hidden></p><button type="submit" class="bw-go">Ajouter mon mail</button></form>'
+                  : '<p class="bw-note">Connecté avec ' + esc2(moi.email) + '</p>')
       + '<div data-membres></div>'
       + '<button type="button" class="bw-go" data-retour>Retour aux recettes</button>'
       + (standalone ? '' : '<button type="button" class="bw-later" data-installer-app>Installer l\'appli sur ce téléphone</button>')
       + '<button type="button" class="bw-later" data-deco>Me déconnecter</button>');
     el.querySelector('[data-retour]').addEventListener('click', fermer);
     const ia = el.querySelector('[data-installer-app]'); if (ia) ia.addEventListener('click', ecranInstall);
+    const am = el.querySelector('[data-ajout-mail]');
+    if (am) am.addEventListener('submit', async e => {
+      e.preventDefault();
+      const ml = am.querySelector('input'), er = am.querySelector('.bw-err'), go = am.querySelector('.bw-go'), mail = ml.value.trim().toLowerCase();
+      if (!mailOk(mail)) { er.textContent = 'Mets ton adresse mail, par exemple leo@gmail.com.'; er.hidden = false; return; }
+      go.disabled = true; go.textContent = '…';
+      const r = await sb.auth.updateUser({ email: mail }, { emailRedirectTo: RETOUR }).then(x => x, x => ({ error: x }));
+      if (r.error) { er.textContent = traduire(r.error); er.hidden = false; go.disabled = false; go.textContent = 'Ajouter mon mail'; return; }
+      ls.set('bawss-mail', mail);
+      am.innerHTML = '<div class="bw-alert">C\'est noté. Un lien de confirmation est parti à ' + esc2(mail) + ' : clique dessus pour valider.</div>';
+    });
     el.querySelector('[data-deco]').addEventListener('click', async () => {
       try { await sb.auth.signOut(); } catch (e) {}
       moi = null; majBouton(); ls.del('bawss-maj');
@@ -1649,31 +1725,40 @@ window.lancerIntro = (opts = {}) => {
   }
   async function membres(box) {
     box.innerHTML = '<p>Chargement des membres…</p>';
-    const r = await sb.from('profils').select('pseudo,plateforme,installee,cree_le,vu_le').order('cree_le', { ascending: false }).then(x => x, e => ({ error: e }));
+    let r = await sb.rpc('membres').then(x => x, e => ({ error: e }));
+    if (r.error) r = await sb.from('profils').select('pseudo,plateforme,installee,cree_le,vu_le').order('cree_le', { ascending: false }).then(x => x, e => ({ error: e }));
     if (r.error) { box.innerHTML = '<p>Impossible de charger les membres pour l\'instant.</p>'; return; }
     const L = r.data || [], j = d => new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
     const semaine = L.filter(m => Date.now() - new Date(m.vu_le) < 7 * 864e5).length;
     box.innerHTML = '<div class="bw-stats"><div><b>' + L.length + '</b><span>membres</span></div><div><b>' + L.filter(m => m.installee).length + '</b><span>appli installée</span></div><div><b>' + semaine + '</b><span>venus cette semaine</span></div></div>'
-      + '<ul class="bw-membres">' + L.map(m => '<li><b>' + esc2(m.pseudo) + '</b><span>' + esc2(m.plateforme || '') + (m.installee ? ' · installée' : '') + ' · inscrit le ' + j(m.cree_le) + ' · vu le ' + j(m.vu_le) + '</span></li>').join('') + '</ul>';
+      + '<ul class="bw-membres">' + L.map(m => '<li><b>' + esc2(m.pseudo) + '</b><span>' + (m.email && !/@bawss\.app$/.test(m.email) ? esc2(m.email) + ' · ' : '') + esc2(m.plateforme || '') + (m.installee ? ' · installée' : '') + ' · inscrit le ' + j(m.cree_le) + ' · vu le ' + j(m.vu_le) + '</span></li>').join('') + '</ul>';
   }
   if (bouton) bouton.addEventListener('click', ecranMonCompte);
 
   /* ---------- au démarrage ---------- */
   const telephone = ios || android;
   const recent = Date.now() - parseInt(ls.get('bawss-plus-tard') || '0', 10) < 3 * 864e5;
+  const nettoyer = () => { try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {} try { route(); } catch (e) {} };
   function demarrer() {
-    if (telephone && !standalone && !recent) { ecranInstall(); return; }
+    if (lienMail === 'recovery') return;          // l'écran « nouveau mot de passe » s'en occupe
+    if (lienMail === 'erreur') { nettoyer(); ouvrir(logo + '<h1>Lien <span>expiré</span></h1><p>Ce lien ne marche plus : il a déjà servi ou il est trop vieux. Redemande-en un.</p><button type="button" class="bw-go" data-ok>OK</button>'); ecran.querySelector('[data-ok]').addEventListener('click', () => ecranOubli(ls.get('bawss-mail') || '')); return; }
+    if (lienMail === 'mail') { nettoyer(); toast('Ton mail est confirmé'); }
+    if (telephone && !standalone && !recent && !lienMail) { ecranInstall(); return; }
     if (!moi && sb) { ecranCompte('creer'); return; }
-    lancer();
+    if (!lienMail) lancer();
   }
   if (!sb) { majBouton(); demarrer(); }
   else {
+    sb.auth.onAuthStateChange((ev, s) => {
+      if (ev === 'PASSWORD_RECOVERY') { nettoyer(); setTimeout(ecranNouveauMdp, 0); }
+      if (ev === 'USER_UPDATED' && s && s.user && moi) { moi.email = s.user.email; }
+    });
     let parti = false;
     const go = () => { if (!parti) { parti = true; majBouton(); demarrer(); } };
     setTimeout(go, 2500);  // si la session tarde (réseau), on ne bloque pas l'appli
     sb.auth.getSession().then(({ data }) => {
       const u = data && data.session && data.session.user;
-      if (u) moi = { id: u.id, pseudo: (u.user_metadata && u.user_metadata.pseudo) || ls.get('bawss-pseudo') || 'toi', admin: false };
+      if (u) moi = { id: u.id, pseudo: (u.user_metadata && u.user_metadata.pseudo) || ls.get('bawss-pseudo') || 'toi', email: u.email, admin: false };
       go();
       if (moi) synchroniser(false);
     }, go);
