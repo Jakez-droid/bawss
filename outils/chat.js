@@ -8,6 +8,24 @@
     if (n > 0) { if (!p) { p = document.createElement('span'); p.className = 'chat-dot'; bouton.appendChild(p); } p.textContent = n > 9 ? '9+' : n; }
     else if (p) p.remove();
   }
+  const enCuisine = () => { const c = document.getElementById('cook'); return !!(c && !c.hidden); };
+  const ETAPE_RE = /^Étape (\d+)\s*:/;
+  function notif(html, action, garder) {
+    const old = document.querySelector('.chat-notif'); if (old) old.remove();
+    const n = document.createElement('button'); n.type = 'button'; n.className = 'chat-notif';
+    n.innerHTML = html + '<span class="x" aria-label="Fermer">✕</span>';
+    n.addEventListener('click', e => { n.remove(); if (!e.target.closest('.x')) action(); });
+    document.body.appendChild(n);
+    try { navigator.vibrate && navigator.vibrate([90, 60, 90]); } catch (e) {}
+    if (!garder) setTimeout(() => n.remove(), 9000);
+  }
+  async function alerter(m) {
+    const court = esc2(String(m.texte || '').slice(0, 90));
+    if (!moi.admin) { notif('<b>💬 Le Bawss t’a répondu</b><span>' + court + '</span>', () => ecranChat(null, null, null), enCuisine()); return; }
+    const p = await sb.from('profils').select('pseudo').eq('id', m.user_id).maybeSingle().then(x => x, () => ({}));
+    const nom = esc2((p && p.data && p.data.pseudo) || 'Un membre'), cuisine = ETAPE_RE.test(m.texte || '');
+    notif('<b>' + (cuisine ? '🔥 ' + nom + ' est en cuisine' : '💬 ' + nom + ' t’a écrit') + '</b><span>' + court + '</span>', () => ecranChat(m.user_id, (p && p.data && p.data.pseudo) || 'Membre'), cuisine);
+  }
   async function compterNonLus() {
     if (!sb || !moi) { pastille(0); return; }
     let q = sb.from('messages').select('id', { count: 'exact', head: true }).eq('lu', false);
@@ -23,7 +41,7 @@
       const m = p.new; if (!m) return;
       const pourMoi = moi.admin ? !m.de_admin : m.de_admin;
       if (CHAT.fil && ecran && (moi.admin ? m.user_id === CHAT.cible : true)) { ajouterBulle(m); if (pourMoi) marquerLus(); }
-      else if (pourMoi) { compterNonLus(); toast(moi.admin ? 'Nouveau message sur Bawss' : 'Le Bawss t’a répondu'); }
+      else if (pourMoi) { compterNonLus(); alerter(m); }
     }).subscribe();
   }
   async function marquerLus() {
@@ -51,12 +69,15 @@
     if (!moi) { ecranCompte('connexion'); return; }
     CHAT.cible = moi.admin ? cible : moi.id; CHAT.recette = recette || null;
     const titre = moi.admin ? esc2(pseudoCible || 'Membre') : 'Le <span>Bawss</span>';
-    const el = ouvrir('<div class="chat-tete"><button type="button" class="chat-retour" data-chat-retour aria-label="Retour">‹</button><h1>' + titre + '</h1></div>'
-      + (moi.admin ? '' : '<p class="chat-intro">Une question sur une recette, un plat qui tourne mal, une idée ? Écris ici : Jakez te répond dès qu’il peut.</p>')
+    const volet = !moi.admin && enCuisine();
+    const ct = document.getElementById('cook-text'), cn = document.getElementById('cook-n');
+    const rappel = volet && ct ? '<p class="chat-etape"><b>' + esc2(cn ? cn.textContent : '') + '</b>' + esc2(ct.textContent.slice(0, 160)) + (ct.textContent.length > 160 ? '…' : '') + '</p>' : '';
+    const el = ouvrir('<div class="chat-tete"><button type="button" class="chat-retour" data-chat-retour aria-label="' + (volet ? 'Retour aux fourneaux' : 'Retour') + '">' + (volet ? '⌄' : '‹') + '</button><h1>' + titre + '</h1>' + (volet ? '<span class="chat-live">en direct</span>' : '') + '</div>' + rappel
+      + (moi.admin || volet ? '' : '<p class="chat-intro">Une question sur une recette, un plat qui tourne mal, une idée ? Écris ici : Jakez te répond dès qu’il peut.</p>')
       + '<ul class="chat-fil" aria-live="polite"><li class="msg-vide">Chargement…</li></ul>'
       + (CHAT.recette && BY_ID[CHAT.recette] ? '<p class="chat-ctx">À propos de : <b>' + esc2(BY_ID[CHAT.recette].title) + '</b> <button type="button" data-chat-sans aria-label="Ne pas joindre la recette">✕</button></p>' : '')
       + '<form class="chat-saisie" data-chat-form><textarea rows="1" maxlength="2000" placeholder="Ton message…" aria-label="Ton message"></textarea><button type="submit" aria-label="Envoyer">➤</button></form>');
-    el.classList.add('bw-chat');
+    el.classList.add('bw-chat'); el.classList.toggle('bw-sheet', volet);
     CHAT.fil = el.querySelector('.chat-fil');
     el.querySelector('[data-chat-retour]').addEventListener('click', () => { CHAT.fil = null; if (moi.admin) boiteReception(); else fermer(); });
     const sans = el.querySelector('[data-chat-sans]'); if (sans) sans.addEventListener('click', () => { CHAT.recette = null; sans.parentElement.remove(); });
@@ -90,7 +111,7 @@
     const L = (r && r.data) || [];
     CHAT.fil.innerHTML = L.length ? L.map(m => bulle(m).replace('<li ', '<li data-id="' + m.id + '" ')).join('') : '<li class="msg-vide">' + (moi.admin ? 'Pas encore de message.' : 'Pas encore de message. Lance-toi !') + '</li>';
     CHAT.fil.scrollTop = CHAT.fil.scrollHeight;
-    CHAT.fil.addEventListener('click', e => { if (e.target.closest('.msg-rec')) { CHAT.fil = null; fermer(); } });
+    CHAT.fil.addEventListener('click', e => { if (e.target.closest('.msg-rec')) { if (volet) { e.preventDefault(); return; } CHAT.fil = null; fermer(); } });
     marquerLus();
     if (!ios) setTimeout(() => ta.focus(), 200);
   }
@@ -109,7 +130,7 @@
     const ps = await sb.from('profils').select('id,pseudo').in('id', [...fils.keys()]).then(x => x, () => ({ data: [] }));
     const nom = {}; ((ps && ps.data) || []).forEach(p => { nom[p.id] = p.pseudo; });
     box.innerHTML = [...fils.entries()].map(([id, f]) => '<li><button type="button" data-fil="' + id + '" data-nom="' + esc2(nom[id] || 'Membre') + '">'
-      + '<b>' + esc2(nom[id] || 'Membre') + (f.non_lus ? ' <span class="chat-n">' + f.non_lus + '</span>' : '') + '</b>'
+      + '<b>' + esc2(nom[id] || 'Membre') + (!f.dernier.de_admin && ETAPE_RE.test(f.dernier.texte) && Date.now() - new Date(f.dernier.cree_le) < 3 * 3600e3 ? ' <span class="chat-feu">🔥 en cuisine</span>' : '') + (f.non_lus ? ' <span class="chat-n">' + f.non_lus + '</span>' : '') + '</b>'
       + '<span>' + (f.dernier.de_admin ? 'Toi : ' : '') + esc2(f.dernier.texte.slice(0, 80)) + '</span><time>' + heure(f.dernier.cree_le) + '</time></button></li>').join('');
     box.querySelectorAll('[data-fil]').forEach(b => b.addEventListener('click', () => ecranChat(b.dataset.fil, b.dataset.nom)));
   }
@@ -129,4 +150,9 @@
     ecranChat(null, null, b.dataset.rec || (sec ? sec.id.replace(/^r-/, '') : null), b.dataset.etape);
   }, true);
   boutonsBoss();
+  addEventListener('keydown', e => {
+    if (!ecran || !enCuisine() || !['Escape', 'ArrowLeft', 'ArrowRight'].includes(e.key)) return;
+    e.stopPropagation();
+    if (e.key === 'Escape' && CHAT.fil) { CHAT.fil = null; fermer(); }
+  }, true);
   function chatDemarrer() { compterNonLus(); ecouter(); }

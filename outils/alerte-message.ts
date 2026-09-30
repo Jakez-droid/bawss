@@ -22,7 +22,7 @@ Deno.serve(async (req) => {
     body: JSON.stringify({
       from: "Bawss <onboarding@resend.dev>",
       to: [Deno.env.get("ALERTE_MAIL")],
-      subject: `💬 ${pseudo} t'a écrit sur Bawss`,
+      subject: /^Étape \d+\s*:/.test(m.texte) ? `🔥 ${pseudo} est en cuisine et bloque (${String(m.texte).match(/^Étape \d+/)![0].toLowerCase()})` : `💬 ${pseudo} t'a écrit sur Bawss`,
       text: `${pseudo} :\n\n${String(m.texte).slice(0, 1000)}\n\n${m.recette ? "À propos de : " + m.recette + "\n\n" : ""}Réponds depuis Bawss > Mon compte > Boîte de réception :\nhttps://jakez-droid.github.io/bawss/`,
     }),
   });
