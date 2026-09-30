@@ -135,9 +135,11 @@
       const mot = el.querySelector('#rz-mot').value.trim().slice(0, 140);
       const ins = await sb.from('realisations').insert({ recette: id, photo: chemin, mot: mot || null, note }).then(x => x, x => ({ error: x }));
       if (ins.error) { sb.storage.from(RZ.bucket).remove([chemin]).then(() => {}, () => {}); return rate('Ça n\'a pas marché. Réessaie.'); }
-      fermer();
-      toast('Bien joué ' + moi.pseudo + ' ! Ta photo est en ligne');
       afficherRecette(id); bandeau();
+      go.textContent = 'Je prépare ta carte…';
+      let carte = null; try { carte = await storyRealisation(id, img.blob, note); } catch (e) {}
+      if (carte) ecranStory(carte, BY_ID[id].title, '<h1>C\'est en <span>ligne</span></h1><p>Bien joué ' + esc2(moi.pseudo) + ' ! Tu la balances en story ?</p>');
+      else { fermer(); toast('Bien joué ' + moi.pseudo + ' ! Ta photo est en ligne'); }
     });
   }
 
