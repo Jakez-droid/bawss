@@ -553,6 +553,7 @@ a.xref { color: var(--ink); font-weight: 700; text-decoration: underline; text-d
 .timer.open { border-radius: 18px; padding: 12px 14px 12px 18px; width: min(340px, calc(100% - 32px)); gap: 6px 12px; }
 .timer .hint { flex-basis: 100%; margin: 2px 0 0; font-family: var(--f-body); font-weight: 500; font-size: 13.5px; line-height: 1.4; text-align: left; }
 .timer .hint[hidden] { display: none; }
+.timer .hint b { display: block; font-family: var(--f-display); font-weight: 900; text-transform: uppercase; font-size: 17px; letter-spacing: .02em; }
 
 /* Titre d'accueil sur deux lignes : « Cuisine-moi ça » / « comme un BAWSS. » */
 #list .intro h1, .bt .bt-title h1 { white-space: nowrap; text-wrap: nowrap; font-size: min(118px, calc((min(100vw, 1180px) - 48px) / 10.3)); line-height: .9; }
@@ -838,7 +839,7 @@ body { background-image: radial-gradient(color-mix(in srgb, var(--ink) 7%, trans
   <span class="lbl" id="timer-lbl"></span>
   <span id="timer-t">0:00</span>
   <button type="button" id="timer-stop">Arrêter</button>
-  <p class="hint" id="timer-hint" hidden>Goûte de temps en temps et ne laisse pas cramer. Quand c’est bon, c’est la fin du minuteur.</p>
+  <p class="hint" id="timer-hint" hidden><b>Minuteur sans filet.</b> Reste dans le secteur, laisse pas cramer, goûte de temps en temps. Et quand c’est bon, c’est que c’est bon, mon champion.</p>
 </div>
 <div class="cart" id="cart" hidden>
   <div class="cart-panel" role="dialog" aria-modal="true" aria-labelledby="cart-title">
@@ -1526,7 +1527,7 @@ function renderCook() {
   $('#cook-bar').style.width = ((i + 1) / n * 100) + '%';
   const t = stepTimer(r.steps[i]);
   $('#cook-timer').innerHTML = t ? `<button class="btn" type="button" data-start="${t}">⏱ Lancer un minuteur de ${t >= 60 ? Math.floor(t / 60) + ' h' + (t % 60 ? ' ' + t % 60 : '') : t + ' min'}</button>`
-    : COOKS.test(norm(r.steps[i])) ? `<button class="btn" type="button" data-open>⏱ Lancer un minuteur au goût</button>` : '';
+    : COOKS.test(norm(r.steps[i])) ? `<button class="btn" type="button" data-open>⏱ Minuteur sans filet</button>` : '';
   $('#cook-sos').innerHTML = BOSS_PHONE ? `<button class="cook-sos" type="button" data-boss data-rec="${r.id}" data-etape="${i + 1}">Un souci à cette étape ? <b>💬 Écris au Bawss</b></button>` : '';
   $('#cook-prev').disabled = i === 0;
   $('#cook-next').textContent = i === n - 1 ? 'Terminer ✓' : 'Suivant →';
@@ -1549,7 +1550,7 @@ document.addEventListener('keydown', e => {
 
 /* ---------- timer ---------- */
 let tEnd = 0, tStart = 0, tUp = false, tInt = null, audio = null;
-/* Étapes de cuisson sans durée : on propose un minuteur « au goût » qui compte le temps écoulé. */
+/* Étapes de cuisson sans durée : on propose un « minuteur sans filet » qui compte le temps écoulé. */
 const COOKS = /\b(cui[rst]|cuisson|revenir|mijot|frir|frit|fremi|rotir|griller|dore|dorer|color|redui|saisi|marquer|bouill|ebullition|four|enfourn|chauff|fondre|sauter|caramel|confi|brais|mariner|repos|pousse|lever|epaissi|torrefi|blanchi|gratin|compot|suer)/;
 function beep() {
   try {
@@ -1995,15 +1996,21 @@ window.lancerIntro = (opts = {}) => {
     { cible: () => $(`#r-${PLAT} [data-cart]`), titre: 'Tes courses en un geste', texte: 'Coche d’abord ce que tu as déjà : c’est barré. Puis touche « Ajouter au caddy » : seuls les ingrédients qui manquent partent dans ta liste.' },
     { cible: () => $('#cart-list .cr-rayon'), titre: 'Ta liste de courses', texte: 'Les ingrédients du curry sont arrivés ici, rangés par rayon, avec les bonnes quantités. Elle t’attend toujours derrière le caddy, en haut à droite.', avant: async () => { if (!inCart(PLAT)) { cart.recipes[PLAT] = serves[PLAT]; ajoutTuto = true; saveCart(); majFiche(); } openCart(); await dormir(350); } },
     { cible: () => $('#cart-add'), titre: 'Et le reste ?', texte: 'PQ, bières, pain… Ajoute ce que tu veux ici : l’appli le range dans le bon rayon.' },
-    { cible: () => $('#cart-mag'), titre: 'Au magasin', texte: 'Lance le mode magasin : un rayon par écran, tu glisses de l’un à l’autre, de grosses cases à cocher d’une main, et l’écran reste allumé.' },
-    { cible: () => $(`#r-${PLAT} [data-cook]`), titre: 'Aux fourneaux', texte: () => 'Le mode cuisine : une étape à la fois, en gros, l’écran reste allumé et les minuteurs sont intégrés.' + (window.bawss ? ' Et si ça coince, tu écris au Bawss sans quitter ta recette.' : ''), avant: async () => { if (!$('#cart').hidden) { closeCart(); await dormir(320); } } },
-    { bawss: true, cible: () => $(`#r-${PLAT} .rz-go`), titre: 'C’est réussi ? Montre-le', texte: 'Poste la photo de ton plat : la bande la verra, et tu peux la balancer en story.' },
+    { cible: () => $('#cart-mag'), titre: 'Au magasin', texte: 'Une fois dans les rayons, touche ici : ta liste passe en mode magasin, plein écran.' },
+    { cible: () => $('.mag-tabs'), titre: 'Un rayon par écran', texte: 'Glisse à gauche ou à droite pour changer de rayon, ou touche un onglet. Le chiffre, c’est ce qu’il te reste à prendre ; « Tout » affiche la liste entière.', avant: async () => { if (!mag) { await ouvrirMagasin(); } await dormir(400); } },
+    { cible: () => mag && mag.querySelector('.mag-page[data-code="' + magRayon + '"] [data-mag-k]'), titre: 'Coche d’une main', texte: 'Un article dans le caddy ? Touche-le : il est coché. Rayon fini, l’appli passe toute seule au suivant. L’écran reste allumé jusqu’à la caisse.' },
+    { cible: () => $(`#r-${PLAT} [data-cook]`), titre: 'Aux fourneaux', texte: 'Le mode cuisine : une étape à la fois, en gros, l’écran reste allumé et les minuteurs sont intégrés.', avant: async () => { if (mag) fermerMagasin(); if (!$('#cart').hidden) { closeCart(); await dormir(320); } } },
+    { bawss: true, cible: () => $('#cook-sos [data-boss]'), titre: 'Ça coince en pleine cuisson ?', texte: 'Touche « Écris au Bawss » : le chat s’ouvre par-dessus ta recette, avec l’étape déjà jointe. Jakez te répond en direct, un bandeau s’affiche dès qu’il a écrit.', avant: async () => { if (!cook) { openCook(R()); cook.i = 1; renderCook(); } await dormir(400); } },
+    { bawss: true, cible: () => $(`#r-${PLAT} .boss [data-boss]`), titre: 'Une question sur la recette ?', texte: 'Même hors cuisine : « Écris au Bawss », en bas de chaque recette, ouvre une conversation privée avec Jakez, la recette jointe. Une pastille rouge te prévient quand il t’a répondu.', avant: async () => { if (cook) closeCook(); await dormir(250); } },
+    { bawss: true, cible: () => $(`#r-${PLAT} .rz-go`), titre: 'C’est réussi ? Montre-le', texte: 'Poste la photo de ton plat : la bande la verra, et tu peux la balancer en story.', avant: async () => { if (cook) closeCook(); } },
     { bawss: true, cible: () => $('#me-btn'), titre: 'Ton compte', texte: 'Tes favoris et ta liste de courses te suivent sur tous tes appareils. C’est aussi là que tu retrouves tes messages avec le Bawss.' },
-    { cible: () => $('#faq-btn'), titre: 'Une question ?', texte: 'Tout est expliqué dans les Questions fréquentes, en bas de la liste. Et tu peux relancer ce tour quand tu veux, juste à côté.', avant: async () => { backToList(); await dormir(350); } }
+    { cible: () => $('#faq-btn'), titre: 'Une question ?', texte: 'Tout est expliqué dans les Questions fréquentes, en bas de la liste. Et tu peux relancer ce tour quand tu veux, juste à côté.', avant: async () => { if (cook) closeCook(); if (mag) fermerMagasin(); backToList(); await dormir(350); } }
   ];
   let ov = null, i = 0, liste = [], ajoutTuto = false;
   function majFiche() { const s = $('#r-' + PLAT), b = s && $('[data-cart]', s); if (b) { b.innerHTML = cartBtnHTML(R()); b.setAttribute('aria-pressed', inCart(PLAT)); } renderCartBadge(); }
   function ranger() {
+    if (mag) fermerMagasin();
+    if (cook) closeCook();
     if (!$('#cart').hidden) closeCart();
     if (ajoutTuto) { delete cart.recipes[PLAT]; ajoutTuto = false; saveCart(); majFiche(); }
   }
@@ -2045,7 +2052,14 @@ window.lancerIntro = (opts = {}) => {
   }
   function montrer(c, e) {
     c.scrollIntoView({ block: 'center', behavior: 'smooth' });
-    setTimeout(() => placer(c, e), 380);
+    /* on attend que le défilement soit vraiment fini (les longs trajets prennent plus d'une demi-seconde) */
+    const t0 = Date.now(); let y = null, calme = 0;
+    const attendre = () => {
+      const top = c.getBoundingClientRect().top;
+      calme = y !== null && Math.abs(top - y) < 1 ? calme + 1 : 0; y = top;
+      if ((calme >= 4 && Date.now() - t0 > 250) || Date.now() - t0 > 1600) placer(c, e); else requestAnimationFrame(attendre);
+    };
+    requestAnimationFrame(attendre);
   }
   function placer(c, e) {
     if (!ov) return;
@@ -2113,7 +2127,7 @@ window.lancerIntro = (opts = {}) => {
       + Q('Comment je trouve une recette ?', '<p>Tape un plat ou un ingrédient dans la recherche : les recettes se filtrent au fur et à mesure. Pas d’idée ? Ouvre <b>Filtres</b> : type de plat, temps, ingrédient principal et tes favoris.</p>')
       + Q('J’ai déjà certains ingrédients, je fais comment ?', '<p>Sur la recette, <b>coche les ingrédients que tu as déjà</b> : ils sont barrés, ça veut dire que tu les as chez toi.</p><p>Quand tu touches <b>« Ajouter au caddy »</b>, juste au-dessus des ingrédients, <b>seuls les éléments manquants partent dans ta liste de courses</b>. Tu peux cocher avant ou après avoir ajouté la recette : la liste se met à jour toute seule. Tu décoches, ça revient dans le caddy.</p>')
       + Q('Je cuisine pour combien ?', '<p>Change le nombre de personnes avec − et + au-dessus des ingrédients : toutes les quantités suivent, jusque dans ta liste de courses.</p>')
-      + Q('C’est quoi le mode cuisine ?', '<p>Une étape à la fois, en gros, et l’écran reste allumé. Quand une étape a une durée, un bouton lance le minuteur.</p>' + (B ? '<p>Ça coince ? Touche <b>« Un souci à cette étape ? »</b> : tu écris au Bawss sans quitter ta recette, l’étape est déjà jointe au message.</p>' : ''))
+      + Q('C’est quoi le mode cuisine ?', '<p>Une étape à la fois, en gros, et l’écran reste allumé. Quand une étape a une durée, un bouton lance le minuteur. Pas de durée précise ? Le <b>minuteur sans filet</b> compte le temps qui passe : reste dans le secteur, goûte, et quand c’est bon, c’est que c’est bon.</p>' + (B ? '<p>Ça coince ? Touche <b>« Un souci à cette étape ? »</b> : tu écris au Bawss sans quitter ta recette, l’étape est déjà jointe au message.</p>' : ''))
       + `<p class="faq-cat">Liste de courses</p>`
       + Q('Comment marche la liste de courses ?', '<ul><li>Sur une recette, le bouton <b>« Ajouter au caddy »</b> (au-dessus des ingrédients) envoie ses ingrédients dans ta liste, sauf ceux que tu as cochés.</li><li>Tout est rangé par rayon, avec les quantités additionnées si plusieurs recettes utilisent la même chose.</li><li>Ajoute le reste (PQ, bières, pain…) dans le champ en bas : l’appli devine le rayon.</li><li>Ce que tu coches descend dans <b>« Dans le caddy ✓ »</b>.</li><li>L’icône copier colle ta liste dans un message ; la poubelle vide tout (touche deux fois).</li></ul>')
       + Q('C’est quoi le mode magasin ?', '<p>Ta liste en plein écran, un rayon à la fois, avec de grosses cases à cocher d’une main. L’onglet <b>Tout</b> affiche toute la liste d’un coup. L’écran reste allumé jusqu’à la caisse.</p>')
