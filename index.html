@@ -1845,14 +1845,22 @@ window.lancerIntro = (opts = {}) => {
     { cible: () => $('.search'), titre: 'On trouve quoi manger', texte: 'Ce soir, on cuisine. Tape un plat ou un ingrédient ici : les recettes se filtrent au fur et à mesure.', avant: async () => { backToList(); await dormir(250); await taper('curry'); } },
     { cible: () => $('#extras'), titre: 'Pas d’idée ? Filtre', texte: 'Type de plat, temps, ingrédient principal… et tes favoris, tous au même endroit.' },
     { cible: () => $(`#grid a[href="#${PLAT}"]`), titre: 'Allez, un curry japonais', texte: 'Chaque recette est testée et approuvée par Jakez. On l’ouvre.' },
-    { cible: () => $(`#r-${PLAT} .r-icons`), titre: 'Trois icônes à connaître', texte: '❤️ pour la garder en favori, le partage pour l’envoyer à la bande, et le caddy + pour mettre ses ingrédients dans ta liste de courses.', avant: async () => { location.hash = PLAT; await dormir(450); } },
+    { cible: () => $(`#r-${PLAT} .r-icons`), titre: 'Deux icônes à connaître', texte: '❤️ pour la garder dans tes favoris, et le caddy + pour mettre tous ses ingrédients dans ta liste de courses.', avant: async () => { location.hash = PLAT; await dormir(450); } },
+    { cible: () => $(`#r-${PLAT} .r-share`), titre: 'Envoie-la à un pote', texte: () => 'WhatsApp, Messenger, Insta en message… Ton pote reçoit la photo du plat et le lien qui ouvre direct la recette.' + (window.bawss ? ' Et sur Bawss, tu peux aussi en faire une story Insta, avec une punchline.' : '') },
     { cible: () => $(`#r-${PLAT} [data-serves]`), titre: 'Vous êtes combien ?', texte: 'Change le nombre de personnes : toutes les quantités suivent, jusque dans ta liste de courses.' },
-    { cible: () => $('#cart-btn'), titre: 'Ta liste de courses', texte: 'Tout arrive ici, rangé par rayon. Tu peux ajouter ce que tu veux en plus. Au magasin, lance le mode magasin : gros boutons, une main, le caddy dans l’autre.' },
-    { cible: () => $(`#r-${PLAT} [data-cook]`), titre: 'Aux fourneaux', texte: 'Le mode cuisine : une étape à la fois, en gros, l’écran reste allumé et les minuteurs sont intégrés.' },
+    { cible: () => $('#cart-list .cr-rayon'), titre: 'Ta liste de courses', texte: 'Le caddy + a envoyé les ingrédients du curry ici, rangés par rayon, avec les bonnes quantités. Elle t’attend toujours derrière le caddy, en haut à droite.', avant: async () => { if (!inCart(PLAT)) { cart.recipes[PLAT] = serves[PLAT]; ajoutTuto = true; saveCart(); majFiche(); } openCart(); await dormir(350); } },
+    { cible: () => $('#cart-add'), titre: 'Et le reste ?', texte: 'PQ, bières, pain… Ajoute ce que tu veux ici : l’appli le range dans le bon rayon.' },
+    { cible: () => $('#cart-mag'), titre: 'Au magasin', texte: 'Lance le mode magasin : un rayon à la fois, de grosses cases à cocher d’une main, et l’écran reste allumé.' },
+    { cible: () => $(`#r-${PLAT} [data-cook]`), titre: 'Aux fourneaux', texte: 'Le mode cuisine : une étape à la fois, en gros, l’écran reste allumé et les minuteurs sont intégrés.', avant: async () => { if (!$('#cart').hidden) { closeCart(); await dormir(320); } } },
     { bawss: true, cible: () => $(`#r-${PLAT} .rz-go`), titre: 'C’est réussi ? Montre-le', texte: 'Poste la photo de ton plat : la bande la verra, et tu peux la balancer en story.' },
     { bawss: true, cible: () => $('#me-btn'), titre: 'Ton compte', texte: 'Tes favoris et ta liste de courses te suivent sur tous tes appareils.' }
   ];
-  let ov = null, i = 0, liste = [];
+  let ov = null, i = 0, liste = [], ajoutTuto = false;
+  function majFiche() { const s = $('#r-' + PLAT), b = s && $('[data-cart]', s); if (b) { b.innerHTML = cartBtnHTML(R()); b.setAttribute('aria-pressed', inCart(PLAT)); } renderCartBadge(); }
+  function ranger() {
+    if (!$('#cart').hidden) closeCart();
+    if (ajoutTuto) { delete cart.recipes[PLAT]; ajoutTuto = false; saveCart(); majFiche(); }
+  }
   async function taper(mot) {
     const q = $('#q'); if (!q) return;
     q.value = '';
@@ -1897,7 +1905,7 @@ window.lancerIntro = (opts = {}) => {
     if (!ov) return;
     const r = c.getBoundingClientRect(), m = 8, spot = ov.querySelector('.tuto-spot'), b = ov.querySelector('.tuto-bulle');
     Object.assign(spot.style, { top: (r.top - m) + 'px', left: (r.left - m) + 'px', width: (r.width + 2 * m) + 'px', height: (r.height + 2 * m) + 'px' });
-    b.innerHTML = `<p class="tuto-n">${i + 1} / ${liste.length}</p><h3>${e.titre}</h3><p>${e.texte}</p>
+    b.innerHTML = `<p class="tuto-n">${i + 1} / ${liste.length}</p><h3>${e.titre}</h3><p>${typeof e.texte === 'function' ? e.texte() : e.texte}</p>
       <div class="tuto-bts"><button type="button" class="tuto-non" data-t-passer>Passer</button><button type="button" class="tuto-go" data-t-suiv>${i === liste.length - 1 ? 'Terminer' : 'Suivant →'}</button></div>`;
     const W = innerWidth, H = innerHeight, bw = Math.min(360, W - 32);
     b.style.width = bw + 'px';
@@ -1906,11 +1914,11 @@ window.lancerIntro = (opts = {}) => {
     b.style.top = (dessous + bh < H - 12 ? dessous : Math.max(12, r.top - m - 14 - bh)) + 'px';
     b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop');
     b.querySelector('[data-t-suiv]').onclick = () => { i++; etape(); };
-    b.querySelector('[data-t-passer]').onclick = () => { note('passe'); fermer(); backToList(); effacerRecherche(); };
+    b.querySelector('[data-t-passer]').onclick = () => { note('passe'); ranger(); fermer(); backToList(); effacerRecherche(); };
     b.querySelector('[data-t-suiv]').focus({ preventScroll: true });
   }
   function fin() {
-    note('fait');
+    note('fait'); ranger();
     ov.classList.remove('tour');
     ov.innerHTML = `<div class="tuto-carte fin"><p class="tuto-k">C’est tout, t’es prêt</p><h2>Cuisine-moi ça<br>comme un <span>Bawss.</span></h2>
       <div class="tuto-bts"><button type="button" class="tuto-go" data-t-fin>À table</button></div></div>`;
@@ -1918,7 +1926,7 @@ window.lancerIntro = (opts = {}) => {
   }
   function fermer() { if (!ov) return; ov.remove(); ov = null; document.documentElement.style.overflow = ''; }
   addEventListener('resize', () => { if (ov && ov.classList.contains('tour') && liste[i]) { const c = liste[i].cible(); if (c) placer(c, liste[i]); } });
-  addEventListener('keydown', e => { if (e.key === 'Escape' && ov) { note('passe'); fermer(); } });
+  addEventListener('keydown', e => { if (e.key === 'Escape' && ov) { note('passe'); ranger(); fermer(); } });
   window.lancerTuto = () => { fermer(); backToList(); invitation(); };
   window.revoirTuto = () => { fermer(); backToList(); effacerRecherche(); demarrer(); };
   $('#tuto-again').addEventListener('click', () => { backToList(); demarrer(); });
