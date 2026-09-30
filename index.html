@@ -467,6 +467,9 @@ a.xref { color: var(--ink); font-weight: 700; text-decoration: underline; text-d
 .cook-text strong { font-family: var(--f-display); font-weight: 900; text-transform: uppercase; color: var(--cire); letter-spacing: .01em; }
 .cook .btn { color: var(--on-slate); border-color: color-mix(in srgb, var(--on-slate) 55%, transparent); }
 .cook .btn.primary { color: var(--cire-ink); border-color: var(--cire); }
+.cook-sos { background: none; border: 0; padding: 6px 0; font: inherit; font-size: 15px; color: color-mix(in srgb, var(--on-slate) 72%, transparent); cursor: pointer; text-align: left; justify-self: start; }
+.cook-sos b { color: var(--cire); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; margin-left: 4px; }
+.cook-sos:hover b { text-decoration-thickness: 2px; }
 .cook-nav { display: flex; justify-content: space-between; gap: 12px; max-width: 900px; width: 100%; margin: 0 auto; }
 .cook-nav .btn { padding: 14px 24px; font-size: 16px; }
 .icon-btn { width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid color-mix(in srgb, var(--on-slate) 45%, transparent); background: transparent; color: var(--on-slate); display: grid; place-items: center; cursor: pointer; flex: none; }
@@ -767,6 +770,7 @@ body { background-image: radial-gradient(color-mix(in srgb, var(--ink) 7%, trans
     <div class="cook-n" id="cook-n"></div>
     <p class="cook-text" id="cook-text"></p>
     <div id="cook-timer"></div>
+    <div id="cook-sos"></div>
   </div>
   <div class="cook-nav">
     <button class="btn" id="cook-prev" type="button">← Précédent</button>
@@ -1417,12 +1421,14 @@ function renderCook() {
   const t = stepTimer(r.steps[i]);
   $('#cook-timer').innerHTML = t ? `<button class="btn" type="button" data-start="${t}">⏱ Lancer un minuteur de ${t >= 60 ? Math.floor(t / 60) + ' h' + (t % 60 ? ' ' + t % 60 : '') : t + ' min'}</button>`
     : COOKS.test(norm(r.steps[i])) ? `<button class="btn" type="button" data-open>⏱ Lancer un minuteur au goût</button>` : '';
+  $('#cook-sos').innerHTML = BOSS_PHONE ? `<button class="cook-sos" type="button" data-boss data-rec="${r.id}" data-etape="${i + 1}">Un souci à cette étape ? <b>💬 Écris au Bawss</b></button>` : '';
   $('#cook-prev').disabled = i === 0;
   $('#cook-next').textContent = i === n - 1 ? 'Terminer ✓' : 'Suivant →';
 }
 $('#cook-next').addEventListener('click', () => { if (cook.i < cook.r.steps.length - 1) { cook.i++; renderCook(); } else { const r = cook.r; closeCook(); celebrate(r); } });
 $('#cook-prev').addEventListener('click', () => { if (cook.i > 0) { cook.i--; renderCook(); } });
 $('#cook-close').addEventListener('click', closeCook);
+$('#cook-sos').addEventListener('click', e => { if (e.target.closest('[data-boss]')) callBoss(); });
 $('#cook-timer').addEventListener('click', e => {
   const label = `Étape ${cook.i + 1} · ${cook.r.title}`;
   const b = e.target.closest('[data-start]'); if (b) startTimer(Number(b.dataset.start), label);
@@ -2779,7 +2785,7 @@ window.lancerIntro = (opts = {}) => {
     CHAT.fil.scrollTop = CHAT.fil.scrollHeight;
   }
   /* la conversation : pour un membre, avec le Bawss ; pour Jakez, avec le membre choisi */
-  async function ecranChat(cible, pseudoCible, recette) {
+  async function ecranChat(cible, pseudoCible, recette, etape) {
     if (!sb) return;
     if (!moi) { ecranCompte('connexion'); return; }
     CHAT.cible = moi.admin ? cible : moi.id; CHAT.recette = recette || null;
@@ -2794,6 +2800,7 @@ window.lancerIntro = (opts = {}) => {
     el.querySelector('[data-chat-retour]').addEventListener('click', () => { CHAT.fil = null; if (moi.admin) boiteReception(); else fermer(); });
     const sans = el.querySelector('[data-chat-sans]'); if (sans) sans.addEventListener('click', () => { CHAT.recette = null; sans.parentElement.remove(); });
     const ta = el.querySelector('textarea'), form = el.querySelector('[data-chat-form]');
+    if (etape) { ta.value = 'Étape ' + etape + ' : '; setTimeout(() => { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 140) + 'px'; }, 0); }
     ta.addEventListener('input', () => { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 140) + 'px'; });
     ta.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey && matchMedia('(pointer: fine)').matches) { e.preventDefault(); form.requestSubmit(); } });
     form.addEventListener('submit', async e => {
@@ -2849,7 +2856,7 @@ window.lancerIntro = (opts = {}) => {
     e.preventDefault(); e.stopPropagation();
     if (moi && moi.admin) { boiteReception(); return; }
     const sec = b.closest('section.recipe');
-    ecranChat(null, null, sec ? sec.id.replace(/^r-/, '') : null);
+    ecranChat(null, null, b.dataset.rec || (sec ? sec.id.replace(/^r-/, '') : null), b.dataset.etape);
   }, true);
   boutonsBoss();
   function chatDemarrer() { compterNonLus(); ecouter(); }
