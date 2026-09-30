@@ -32,7 +32,7 @@
   };
   const marque = () => ls.set('bawss-maj', new Date().toISOString());
   const majLocale = () => ls.get('bawss-maj') || '1970-01-01T00:00:00Z';
-  const panierVide = c => !c || !c.recipes || !Object.keys(c.recipes).length;
+  const panierVide = c => !c || ((!c.recipes || !Object.keys(c.recipes).length) && !(Array.isArray(c.libres) && c.libres.length));
 
   /* toute modification des favoris ou de la liste part vers le compte */
   const setOrig = store.set.bind(store);

@@ -102,6 +102,46 @@
 .bw-choix:active { background: color-mix(in srgb, var(--on-slate) 18%, transparent); }
 </style></head><body>
 <style>
+/* liste : ajout libre, articles pris en bas, bouton magasin */
+.cart-add { display: flex; gap: 8px; margin: 14px 0 6px; }
+.cart-add input { flex: 1; min-width: 0; font: 500 16px var(--f-body); padding: 12px 14px; border-radius: 12px; border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); }
+.cart-add input:focus { outline: none; border-color: var(--ink); }
+.cart-add button { width: 48px; flex: none; border: 0; border-radius: 12px; background: var(--ink); color: var(--paper); font: 700 26px var(--f-body); cursor: pointer; }
+.cr-rayon li { position: relative; }
+.cr-x { position: absolute; right: 0; top: 8px; border: 0; background: none; color: var(--muted); font-size: 16px; padding: 6px 8px; cursor: pointer; }
+.cr-pris { opacity: .7; }
+.cr-pris h3 { color: var(--ink); }
+.mag-btn { justify-self: start; border: 0; border-radius: 999px; background: var(--cire); color: var(--cire-ink); font: 800 16px var(--f-body); padding: 10px 18px; cursor: pointer; box-shadow: 3px 3px 0 #000; }
+/* mode en magasin */
+.mag { position: fixed; inset: 0; z-index: 120; background: #0E1B26; color: #F2F3EF; display: flex; flex-direction: column; padding: calc(env(safe-area-inset-top, 0px) + 14px) 16px calc(env(safe-area-inset-bottom, 0px) + 12px); box-sizing: border-box; font-family: var(--f-body); }
+.mag-top { display: flex; justify-content: space-between; align-items: center; }
+.mag-k { margin: 0; font: 500 12px var(--f-mono); letter-spacing: .14em; text-transform: uppercase; color: #F4B400; }
+.mag-n { margin: 2px 0 0; font: 900 44px/1 var(--f-display); }
+.mag-n b { color: #F4B400; }
+.mag-x { width: 46px; height: 46px; border-radius: 50%; border: 0; background: rgba(242,243,239,.12); color: #fff; font-size: 18px; cursor: pointer; }
+.mag-bar { height: 6px; border-radius: 999px; background: rgba(242,243,239,.14); margin: 12px 0 14px; overflow: hidden; }
+.mag-bar i { display: block; height: 100%; background: #F4B400; transition: width .3s ease; }
+.mag-tabs { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 10px; flex: none; }
+.mag-tabs::-webkit-scrollbar { display: none; }
+.mag-tabs button { flex: none; border: 1.5px solid rgba(242,243,239,.3); background: transparent; color: #F2F3EF; border-radius: 999px; padding: 8px 14px; font: 700 15px var(--f-body); cursor: pointer; }
+.mag-tabs button span { display: inline-grid; place-items: center; min-width: 20px; height: 20px; margin-left: 4px; border-radius: 999px; background: #F4B400; color: #0E1B26; font-size: 12px; }
+.mag-tabs button[aria-pressed="true"] { background: #F2F3EF; color: #0E1B26; border-color: #F2F3EF; }
+.mag-list { list-style: none; margin: 4px 0 0; padding: 0; overflow-y: auto; flex: 1; display: grid; align-content: start; gap: 8px; overscroll-behavior: contain; }
+.mag-list button { width: 100%; min-height: 72px; display: flex; align-items: center; gap: 16px; text-align: left; border: 0; border-radius: 16px; background: rgba(242,243,239,.08); color: #F2F3EF; padding: 14px 16px; cursor: pointer; font: inherit; transition: background-color .15s ease, opacity .2s ease; }
+.mag-c { width: 34px; height: 34px; flex: none; border-radius: 10px; border: 2.5px solid rgba(242,243,239,.6); display: grid; place-items: center; font: 900 22px var(--f-body); color: #0E1B26; }
+.mag-t { display: grid; gap: 2px; font: 700 22px/1.2 var(--f-body); }
+.mag-t em { font: 500 16px var(--f-mono); font-style: normal; color: #F4B400; }
+.mag-list button[aria-pressed="true"] { opacity: .45; }
+.mag-list button[aria-pressed="true"] .mag-c { background: #F4B400; border-color: #F4B400; }
+.mag-list button[aria-pressed="true"] .mag-t { text-decoration: line-through; }
+.mag-aide { margin: 10px 0 0; text-align: center; font-size: 13px; opacity: .55; }
+.mag-fin { margin: auto 0; display: grid; gap: 22px; }
+.mag-fin h2 { margin: 0; font: 900 64px/.92 var(--f-display); text-transform: uppercase; }
+.mag-fin h2 span { color: #F4B400; }
+.mag-go { border: 0; border-radius: 14px; background: #F4B400; color: #0E1B26; font: 900 26px var(--f-display); text-transform: uppercase; padding: 16px; cursor: pointer; }
+.mag-ghost { border: 0; background: none; color: #F2F3EF; opacity: .75; text-decoration: underline; font: 500 15px var(--f-body); padding: 8px; cursor: pointer; }
+</style>
+<style>
 .cart-foot { justify-content: flex-end; }
 .cart-ic { width: 52px; height: 52px; border-radius: 50%; border: 1.5px solid var(--ink); background: transparent; color: var(--ink); display: grid; place-items: center; cursor: pointer; transition: transform .15s ease, background-color .15s ease; }
 .cart-ic svg { width: 23px; height: 23px; }
@@ -684,10 +724,12 @@ body { background-image: radial-gradient(color-mix(in srgb, var(--ink) 7%, trans
     <div class="cart-head">
       <div class="row"><h2 id="cart-title">Ma <span>liste</span></h2><button class="icon-btn" id="cart-close" type="button" aria-label="Fermer la liste"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
       <p id="cart-sub"></p>
+      <button type="button" class="mag-btn" id="cart-mag" hidden>🛒 Je suis au magasin</button>
       <div id="cart-recipes"></div>
     </div>
     <div class="cart-body">
-      <div class="cart-empty" id="cart-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2.2l2.1 10.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.5L20.5 8H6.1"/><circle cx="10" cy="19.5" r="1.3"/><circle cx="17" cy="19.5" r="1.3"/></svg><b>Liste vide</b><span>Ouvre une recette et touche le caddy + à côté de son nom : ses ingrédients arrivent ici, rangés par rayon.</span></div>
+      <form class="cart-add" id="cart-add" autocomplete="off"><input id="cart-add-in" type="text" maxlength="60" placeholder="Ajouter : PQ, bières, pain…" aria-label="Ajouter un article à la liste" enterkeyhint="done"><button type="submit" aria-label="Ajouter">+</button></form>
+      <div class="cart-empty" id="cart-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2.2l2.1 10.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.5L20.5 8H6.1"/><circle cx="10" cy="19.5" r="1.3"/><circle cx="17" cy="19.5" r="1.3"/></svg><b>Liste vide</b><span>Ouvre une recette et touche le caddy + à côté de son nom : ses ingrédients arrivent ici, rangés par rayon. Tu peux aussi ajouter ce que tu veux juste au-dessus.</span></div>
       <div id="cart-list"></div>
       <textarea id="cart-txt" hidden readonly aria-label="Liste à copier"></textarea>
     </div>
@@ -785,7 +827,29 @@ const RAYONS = [['fl', 'Fruits & légumes'], ['fr', 'Frais'], ['se', 'Sec & plac
 let cart = store.get('cart', { recipes: {}, checked: [] });
 if (!cart || typeof cart !== 'object' || !cart.recipes) cart = { recipes: {}, checked: [] };
 Object.keys(cart.recipes).forEach(id => { if (!BY_ID[id]) delete cart.recipes[id]; });
+const libres = () => (Array.isArray(cart.libres) ? cart.libres : (cart.libres = []));
 const saveCart = () => store.set('cart', cart);
+const aCourses = () => Object.keys(cart.recipes).length > 0 || libres().length > 0;
+/* articles ajoutés à la main : rangés dans le bon rayon quand on les reconnaît */
+const DICO_RAYON = (() => {
+  const d = new Map();
+  RECIPES.forEach(r => (r.courses || []).forEach(([a, rz]) => { if (rz !== 'dv') d.set(norm(a), rz); }));
+  [['papier toilette', 'au'], ['pq', 'au'], ['essuie tout', 'au'], ['lessive', 'au'], ['eponge', 'au'], ['liquide vaisselle', 'au'], ['sac poubelle', 'au'], ['dentifrice', 'au'], ['shampoing', 'au'], ['gel douche', 'au'],
+   ['biere', 'au'], ['vin', 'au'], ['cidre', 'au'], ['eau', 'au'], ['jus', 'au'], ['coca', 'au'], ['cafe', 'se'], ['the', 'se'], ['chocolat', 'se'], ['cereales', 'se'], ['biscuits', 'se'], ['chips', 'se'], ['pain', 'au'], ['baguette', 'au'],
+   ['lait', 'fr'], ['yaourt', 'fr'], ['beurre', 'fr'], ['creme', 'fr'], ['fromage', 'fr'], ['oeufs', 'fr'], ['oeuf', 'fr'], ['jambon', 'fr'], ['pomme', 'fl'], ['banane', 'fl'], ['salade', 'fl'], ['tomate', 'fl'], ['oignon', 'fl'], ['citron', 'fl']].forEach(([k, v]) => { if (!d.has(k)) d.set(k, v); });
+  return d;
+})();
+function rayonDe(txt) {
+  const sing = s => s.split(' ').map(w => (w.length > 3 ? w.replace(/(s|x)$/, '') : w)).join(' ');
+  const n = sing(norm(txt).replace(/\b(\d+|de|des|du|la|le|les|un|une|kg|g|l|x)\b/g, ' ').replace(/\s+/g, ' ').trim());
+  if (!n) return 'dv';
+  let best = null;
+  DICO_RAYON.forEach((rz, k0) => {
+    const k = sing(k0);
+    if ((' ' + n + ' ').includes(' ' + k + ' ') && (!best || k.length > best[0].length)) best = [k, rz];
+  });
+  return best ? best[1] : 'dv';
+}
 const inCart = id => id in cart.recipes;
 const flatLines = r => r.ingr.flatMap(g => g.items);
 function scaleText(line, f) {
@@ -838,11 +902,12 @@ function cartItems() {
       else it.uses.push({ r: r.title, q: '' });
     });
   });
+  libres().forEach(l => items.set('libre:' + l.id, { key: 'libre:' + l.id, a: l.txt, rz: l.rz || 'dv', uses: [], libre: l.id }));
   return [...items.values()];
 }
 function cartCount() { return cartItems().filter(i => !cart.checked.includes(i.key)).length; }
 function renderCartBadge() {
-  const n = Object.keys(cart.recipes).length ? cartCount() : 0;
+  const n = aCourses() ? cartCount() : 0;
   const b = $('#cart-n'); b.textContent = n; b.hidden = !n;
   $('#cart-btn').setAttribute('aria-label', n ? `Ma liste de courses, ${n} articles` : 'Ma liste de courses');
 }
@@ -850,22 +915,24 @@ function cartBtnHTML(r) {
   return inCart(r.id) ? ICON.cartOn : ICON.cartPlus;
 }
 function renderCart() {
-  const ids = Object.keys(cart.recipes), items = cartItems();
+  const ids = Object.keys(cart.recipes), items = cartItems(), plein = aCourses();
   $('#cart-recipes').innerHTML = ids.map(id => `<span class="cr-chip"><a href="#${id}" data-go>${esc(BY_ID[id].title)}</a> <span class="cr-n">${servesLabel(BY_ID[id], cart.recipes[id]).replace(/<[^>]+>/g, '')}</span><button type="button" data-rm="${id}" aria-label="Retirer ${esc(BY_ID[id].title)}">✕</button></span>`).join('');
-  $('#cart-empty').hidden = ids.length > 0;
-  $('#cart-foot').hidden = ids.length === 0;
+  $('#cart-empty').hidden = plein;
+  $('#cart-foot').hidden = !plein;
+  const ligne = i => {
+    const done = cart.checked.includes(i.key);
+    const qs = i.uses.filter(u => u.q);
+    const detail = i.libre ? 'Ajouté à la main' : i.uses.map(u => u.q ? `${esc(u.q)} · ${esc(u.r)}` : esc(u.r)).join('<br>');
+    return `<li class="${done ? 'done' : ''}"><label><input type="checkbox" data-key="${esc(i.key)}" ${done ? 'checked' : ''}><span><b>${esc(i.a)}</b>${qs.length ? ` <em>${esc(totalQ(qs.map(u => u.q)))}</em>` : ''}<small>${detail}</small></span></label>${i.libre ? `<button type="button" class="cr-x" data-libre-rm="${esc(i.libre)}" aria-label="Supprimer ${esc(i.a)}">✕</button>` : ''}</li>`;
+  };
+  const reste = items.filter(i => !cart.checked.includes(i.key)), pris = items.filter(i => cart.checked.includes(i.key));
   $('#cart-list').innerHTML = RAYONS.map(([code, label]) => {
-    const g = items.filter(i => i.rz === code).sort((x, y) => (cart.checked.includes(x.key) - cart.checked.includes(y.key)) || x.a.localeCompare(y.a, 'fr'));
-    if (!g.length) return '';
-    return `<section class="cr-rayon"><h3>${label}</h3><ul>${g.map(i => {
-      const done = cart.checked.includes(i.key);
-      const qs = i.uses.filter(u => u.q);
-      const detail = i.uses.map(u => u.q ? `${esc(u.q)} · ${esc(u.r)}` : esc(u.r)).join('<br>');
-      return `<li class="${done ? 'done' : ''}"><label><input type="checkbox" data-key="${esc(i.key)}" ${done ? 'checked' : ''}><span><b>${esc(i.a)}</b>${qs.length ? ` <em>${esc(totalQ(qs.map(u => u.q)))}</em>` : ''}<small>${detail}</small></span></label></li>`;
-    }).join('')}</ul></section>`;
-  }).join('');
-  const left = items.filter(i => !cart.checked.includes(i.key)).length;
-  $('#cart-sub').textContent = ids.length ? `${ids.length} recette${ids.length > 1 ? 's' : ''} · ${left} article${left > 1 ? 's' : ''} à prendre` : '';
+    const g = reste.filter(i => i.rz === code).sort((x, y) => x.a.localeCompare(y.a, 'fr'));
+    return g.length ? `<section class="cr-rayon"><h3>${label}</h3><ul>${g.map(ligne).join('')}</ul></section>` : '';
+  }).join('') + (pris.length ? `<section class="cr-rayon cr-pris"><h3>Dans le caddy ✓ ${pris.length}</h3><ul>${pris.sort((x, y) => x.a.localeCompare(y.a, 'fr')).map(ligne).join('')}</ul></section>` : '');
+  const left = reste.length;
+  $('#cart-sub').textContent = plein ? `${ids.length ? `${ids.length} recette${ids.length > 1 ? 's' : ''} · ` : ''}${left} article${left > 1 ? 's' : ''} à prendre` : '';
+  $('#cart-mag').hidden = !left;
   renderCartBadge();
 }
 function openCart() { renderCart(); $('#cart').hidden = false; document.body.style.overflow = 'hidden'; requestAnimationFrame(() => $('#cart').classList.add('open')); $('#cart-close').focus(); }
@@ -881,7 +948,7 @@ function toggleCart(r, sec) {
 function cartText() {
   const items = cartItems().filter(i => !cart.checked.includes(i.key));
   let t = '🛒 Liste de courses · Les recettes 2 Jakez\n';
-  t += 'Pour : ' + Object.entries(cart.recipes).map(([id, n]) => `${BY_ID[id].title} (${servesLabel(BY_ID[id], n).replace(/<[^>]+>/g, '')})`).join(', ') + '\n';
+  if (Object.keys(cart.recipes).length) t += 'Pour : ' + Object.entries(cart.recipes).map(([id, n]) => `${BY_ID[id].title} (${servesLabel(BY_ID[id], n).replace(/<[^>]+>/g, '')})`).join(', ') + '\n';
   RAYONS.forEach(([code, label]) => {
     const g = items.filter(i => i.rz === code); if (!g.length) return;
     t += `\n${label.toUpperCase()}\n` + g.map(i => { const q = i.uses.filter(u => u.q).map(u => u.q); return `- ${i.a}${q.length ? ' : ' + totalQ(q) : ''}`; }).join('\n') + '\n';
@@ -1134,6 +1201,20 @@ $('#cart-list').addEventListener('change', e => {
   cart.checked = c.checked ? [...new Set([...cart.checked, k])] : cart.checked.filter(x => x !== k);
   saveCart(); setTimeout(renderCart, 180);
 });
+$('#cart-add').addEventListener('submit', e => {
+  e.preventDefault();
+  const i = $('#cart-add-in'), txt = i.value.trim().replace(/\s+/g, ' ');
+  if (!txt) return;
+  libres().push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5), txt: txt.charAt(0).toUpperCase() + txt.slice(1), rz: rayonDe(txt) });
+  i.value = ''; saveCart(); renderCart(); i.focus();
+});
+$('#cart-list').addEventListener('click', e => {
+  const x = e.target.closest('[data-libre-rm]'); if (!x) return;
+  e.preventDefault();
+  cart.libres = libres().filter(l => l.id !== x.dataset.libreRm);
+  cart.checked = cart.checked.filter(k => k !== 'libre:' + x.dataset.libreRm);
+  saveCart(); renderCart();
+});
 $('#cart-copy').addEventListener('click', async () => {
   const txt = cartText();
   try { await navigator.clipboard.writeText(txt); toast('Liste copiée, colle-la où tu veux'); }
@@ -1144,11 +1225,73 @@ $('#cart-clear').addEventListener('click', e => {
   const b = e.currentTarget;
   if (!vider) { vider = setTimeout(() => { vider = 0; b.classList.remove('sur'); }, 3000); b.classList.add('sur'); toast('Touche encore la poubelle pour tout vider'); return; }
   clearTimeout(vider); vider = 0; b.classList.remove('sur');
-  const ids = Object.keys(cart.recipes); cart = { recipes: {}, checked: [] }; saveCart(); renderCart();
+  const ids = Object.keys(cart.recipes); cart = { recipes: {}, checked: [], libres: [] }; saveCart(); renderCart();
   ids.forEach(id => { const s = $('#r-' + id); if (s) { const bt = $('[data-cart]', s); bt.innerHTML = cartBtnHTML(BY_ID[id]); bt.setAttribute('aria-pressed', 'false'); } });
   toast('Liste vidée');
 });
-document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#cart').hidden) closeCart(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#cart').hidden && !document.querySelector('.mag')) closeCart(); });
+
+/* ---------- mode « En magasin » : plein écran, gros doigts, un rayon à la fois ---------- */
+let mag = null, magRayon = null, magVeille = null;
+function magRayons() {
+  const items = cartItems();
+  return RAYONS.map(([code, label]) => ({ code, label, items: items.filter(i => i.rz === code) })).filter(r => r.items.length);
+}
+async function ouvrirMagasin() {
+  mag = document.createElement('div');
+  mag.className = 'mag'; mag.setAttribute('role', 'dialog'); mag.setAttribute('aria-modal', 'true'); mag.setAttribute('aria-label', 'Mode en magasin');
+  document.body.appendChild(mag);
+  const rs = magRayons(), premier = rs.find(r => r.items.some(i => !cart.checked.includes(i.key)));
+  magRayon = (premier || rs[0] || {}).code;
+  renderMagasin();
+  try { if (navigator.wakeLock) magVeille = await navigator.wakeLock.request('screen'); } catch (e) {}
+  let x0 = null;
+  mag.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; }, { passive: true });
+  mag.addEventListener('touchend', e => {
+    if (x0 === null) return; const dx = e.changedTouches[0].clientX - x0; x0 = null;
+    if (Math.abs(dx) < 70) return;
+    const rs = magRayons(), i = rs.findIndex(r => r.code === magRayon), j = i + (dx < 0 ? 1 : -1);
+    if (rs[j]) { magRayon = rs[j].code; renderMagasin(); }
+  }, { passive: true });
+  mag.addEventListener('click', e => {
+    if (e.target.closest('[data-mag-x]')) { fermerMagasin(); return; }
+    const t = e.target.closest('[data-mag-r]'); if (t) { magRayon = t.dataset.magR; renderMagasin(); return; }
+    if (e.target.closest('[data-mag-vider]')) { cart = { recipes: {}, checked: [], libres: [] }; saveCart(); Object.keys(BY_ID).forEach(id => { const s = $('#r-' + id); const b = s && $('[data-cart]', s); if (b) { b.innerHTML = cartBtnHTML(BY_ID[id]); b.setAttribute('aria-pressed', 'false'); } }); fermerMagasin(); toast('Liste vidée'); return; }
+    const l = e.target.closest('[data-mag-k]'); if (!l) return;
+    const k = l.dataset.magK, on = !cart.checked.includes(k);
+    cart.checked = on ? [...new Set([...cart.checked, k])] : cart.checked.filter(x => x !== k);
+    saveCart();
+    if (on && navigator.vibrate) navigator.vibrate(15);
+    renderMagasin();
+    const r = magRayons().find(r => r.code === magRayon);
+    if (on && r && r.items.every(i => cart.checked.includes(i.key))) {
+      setTimeout(() => { const suiv = magRayons().find(r => r.items.some(i => !cart.checked.includes(i.key))); if (suiv && mag) { magRayon = suiv.code; renderMagasin(); } }, 550);
+    }
+  });
+}
+function renderMagasin() {
+  if (!mag) return;
+  const rs = magRayons(), tout = rs.flatMap(r => r.items), pris = tout.filter(i => cart.checked.includes(i.key)).length;
+  if (tout.length && pris === tout.length) {
+    mag.innerHTML = `<div class="mag-fin"><p class="mag-k">${tout.length} article${tout.length > 1 ? 's' : ''} dans le caddy</p><h2>Courses bouclées.<br><span>Comme un Bawss.</span></h2>
+      <button type="button" class="mag-go" data-mag-vider>Vider la liste</button><button type="button" class="mag-ghost" data-mag-x>Garder la liste et fermer</button></div>`;
+    return;
+  }
+  const r = rs.find(r => r.code === magRayon) || rs[0];
+  const tri = r ? [...r.items].sort((a, b) => (cart.checked.includes(a.key) - cart.checked.includes(b.key)) || a.a.localeCompare(b.a, 'fr')) : [];
+  mag.innerHTML = `<div class="mag-top"><div><p class="mag-k">En magasin</p><p class="mag-n"><b>${pris}</b> / ${tout.length}</p></div><button type="button" class="mag-x" data-mag-x aria-label="Quitter le mode magasin">✕</button></div>
+    <div class="mag-bar"><i style="width:${tout.length ? pris / tout.length * 100 : 0}%"></i></div>
+    <div class="mag-tabs">${rs.map(x => { const n = x.items.filter(i => !cart.checked.includes(i.key)).length; return `<button type="button" data-mag-r="${x.code}" aria-pressed="${x.code === (r && r.code)}">${x.label}${n ? ` <span>${n}</span>` : ' ✓'}</button>`; }).join('')}</div>
+    <ul class="mag-list">${tri.map(i => { const on = cart.checked.includes(i.key), qs = i.uses.filter(u => u.q).map(u => u.q); return `<li><button type="button" data-mag-k="${esc(i.key)}" aria-pressed="${on}"><span class="mag-c" aria-hidden="true">${on ? '✓' : ''}</span><span class="mag-t">${esc(i.a)}${qs.length ? `<em>${esc(totalQ(qs))}</em>` : ''}</span></button></li>`; }).join('')}</ul>
+    <p class="mag-aide">Touche un article pour le cocher · glisse pour changer de rayon</p>`;
+}
+function fermerMagasin() {
+  if (!mag) return;
+  mag.remove(); mag = null;
+  try { if (magVeille) magVeille.release(); } catch (e) {} magVeille = null;
+  renderCart();
+}
+$('#cart-mag').addEventListener('click', ouvrirMagasin);
 renderCartBadge();
 
 /* ---------- routing ---------- */
@@ -1690,7 +1833,7 @@ window.lancerIntro = (opts = {}) => {
   };
   const marque = () => ls.set('bawss-maj', new Date().toISOString());
   const majLocale = () => ls.get('bawss-maj') || '1970-01-01T00:00:00Z';
-  const panierVide = c => !c || !c.recipes || !Object.keys(c.recipes).length;
+  const panierVide = c => !c || ((!c.recipes || !Object.keys(c.recipes).length) && !(Array.isArray(c.libres) && c.libres.length));
 
   /* toute modification des favoris ou de la liste part vers le compte */
   const setOrig = store.set.bind(store);
