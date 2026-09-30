@@ -107,7 +107,7 @@
     const r = BY_ID[id]; if (!r) return;
     toast('Je prépare ta carte…');
     let image = null; if (r.photo) { try { image = await chargerImage(r.photo); } catch (e) {} }
-    const blob = await carteStory({ image, emoji: r.emoji, legende: 'La recette de Jakez', droite: (EFFORT[r.effort] || [''])[0] ? r.effort : '', titre: r.title + '.', sousTitre: 'Comme un Bawss.', accroche: auHasard(STORY.punch) });
+    const blob = await carteStory({ image, emoji: r.emoji, legende: 'La recette de ton Jakez', droite: (EFFORT[r.effort] || [''])[0] ? r.effort : '', titre: r.title + '.', sousTitre: 'Comme un Bawss.', accroche: auHasard(STORY.punch) });
     ecranStory(blob, r.title);
   }
   async function storyRealisation(id, blobPhoto, note) {
@@ -131,7 +131,7 @@
   }
   /* « Partager » propose deux choix : envoyer le lien, ou la carte story Insta */
   async function envoyerLien(r) {
-    const url = 'https://jakez-droid.github.io/bawss/r/' + r.id + '.html', texte = r.title + ', la recette de Jakez sur Bawss 🔥';
+    const url = 'https://jakez-droid.github.io/bawss/r/' + r.id + '.html', texte = r.title + ', la recette de ton Jakez sur Bawss 🔥';
     if (navigator.share) {
       try { await navigator.share({ title: r.title, text: texte, url }); return; } catch (e) { if (e && e.name === 'AbortError') return; }
     }

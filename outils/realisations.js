@@ -118,16 +118,11 @@
     const el = ouvrir('<h1>Bien <span>joué</span></h1><p>' + esc2(BY_ID[id].title) + '</p>'
       + '<img class="rz-apercu" src="' + img.apercu + '" alt="Ta photo">'
       + '<form data-pub style="display:grid;gap:12px" novalidate>'
-      + '<label for="rz-mot">Un petit mot (facultatif)</label><input id="rz-mot" type="text" maxlength="140" placeholder="Trop de piment, j\'ai pleuré">'
-      + '<label id="rz-note-l">Ta note (facultatif)</label><div class="rz-note" role="group" aria-labelledby="rz-note-l">'
-      + [1, 2, 3].map(n => '<button type="button" data-n="' + n + '" aria-pressed="false" aria-label="' + n + ' phare' + (n > 1 ? 's' : '') + '">' + phares(n) + '</button>').join('') + '</div>'
+      + '<label for="rz-mot">Ton commentaire (facultatif)</label><textarea id="rz-mot" class="rz-com" rows="3" maxlength="140" placeholder="Trop de piment, j\'ai pleuré. Je recommence demain."></textarea><span class="rz-compte" aria-live="polite">0 / 140</span>'
       + '<p class="bw-err" role="alert" hidden></p><button type="submit" class="bw-go">Publier</button></form>'
       + '<button type="button" class="bw-later" data-annuler>Annuler</button>');
-    let note = null;
-    el.querySelectorAll('.rz-note button').forEach(b => b.addEventListener('click', () => {
-      note = note === +b.dataset.n ? null : +b.dataset.n;
-      el.querySelectorAll('.rz-note button').forEach(x => x.setAttribute('aria-pressed', String(+x.dataset.n === note)));
-    }));
+    const com = el.querySelector('#rz-mot'), compte = el.querySelector('.rz-compte');
+    com.addEventListener('input', () => { compte.textContent = com.value.length + ' / 140'; });
     el.querySelector('[data-annuler]').addEventListener('click', fermer);
     const go = el.querySelector('.bw-go'), er = el.querySelector('.bw-err');
     const rate = t => { er.textContent = t; er.hidden = false; go.disabled = false; go.textContent = 'Publier'; };
@@ -139,11 +134,11 @@
       const up = await sb.storage.from(RZ.bucket).upload(chemin, img.blob, { contentType: 'image/jpeg', upsert: false }).then(x => x, x => ({ error: x }));
       if (up.error) return rate('La photo n\'est pas passée. Réessaie.');
       const mot = el.querySelector('#rz-mot').value.trim().slice(0, 140);
-      const ins = await sb.from('realisations').insert({ recette: id, photo: chemin, mot: mot || null, note }).then(x => x, x => ({ error: x }));
+      const ins = await sb.from('realisations').insert({ recette: id, photo: chemin, mot: mot || null }).then(x => x, x => ({ error: x }));
       if (ins.error) { sb.storage.from(RZ.bucket).remove([chemin]).then(() => {}, () => {}); return rate('Ça n\'a pas marché. Réessaie.'); }
       afficherRecette(id); bandeau();
       go.textContent = 'Je prépare ta carte…';
-      let carte = null; try { carte = await storyRealisation(id, img.blob, note); } catch (e) {}
+      let carte = null; try { carte = await storyRealisation(id, img.blob, null); } catch (e) {}
       if (carte) ecranStory(carte, BY_ID[id].title, '<h1>C\'est en <span>ligne</span></h1><p>Bien joué ' + esc2(moi.pseudo) + ' ! Tu la balances en story ?</p>');
       else { fermer(); toast('Bien joué ' + moi.pseudo + ' ! Ta photo est en ligne'); }
     });
@@ -155,7 +150,7 @@
     const peutSuppr = moi && (x.user_id === moi.id || moi.admin);
     let change = false;
     const el = ouvrir('<figure class="rz-grande"><img src="' + esc2(x.url) + '" alt="Photo de ' + esc2(x.pseudo) + '">'
-      + '<figcaption><b>' + esc2(x.pseudo) + '</b> · ' + esc2(BY_ID[x.recette].title) + ' · ' + quand(x.cree_le) + (x.note ? ' · ' + phares(x.note) : '')
+      + '<figcaption><b>' + esc2(x.pseudo) + '</b> · ' + esc2(BY_ID[x.recette].title) + ' · ' + quand(x.cree_le)
       + (x.mot ? '<q>' + esc2(x.mot) + '</q>' : '') + '</figcaption></figure>'
       + '<div class="rz-actions"><button type="button" class="rz-like" aria-pressed="' + x.jaime + '" aria-label="J\'aime">' + (x.jaime ? '❤️' : '🤍') + ' <span>' + x.nbLikes + '</span></button>'
       + (rows.length > 1 ? '<button type="button" data-prec aria-label="Photo précédente">‹</button><button type="button" data-suiv aria-label="Photo suivante">›</button>' : '') + '</div>'
@@ -193,7 +188,7 @@
     const sg = el.querySelector('[data-signal]');
     if (sg) sg.addEventListener('click', async () => {
       await sb.rpc('signaler', { r: x.id }).then(() => {}, () => {});
-      sg.disabled = true; sg.textContent = 'Signalée, Jakez va regarder';
+      sg.disabled = true; sg.textContent = 'Signalée, ton Jakez va regarder';
     });
   }
 

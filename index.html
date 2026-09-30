@@ -1,4 +1,4 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Bawss · Les recettes 2 Jakez</title><meta name="description" content="Les recettes testées et approuvées par Jakez."><meta property="og:type" content="website"><meta property="og:site_name" content="Bawss"><meta property="og:title" content="Bawss · Les recettes 2 Jakez"><meta property="og:description" content="Enlève ton choupen, mets ton tablier et va dans ta cuisine. Les recettes testées et approuvées par Jakez."><meta property="og:image" content="https://jakez-droid.github.io/bawss/icons/icon-512.png"><meta property="og:url" content="https://jakez-droid.github.io/bawss/"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#15283A"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Bawss"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><style>
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Bawss · Les recettes 2 Jakez</title><meta name="description" content="Les recettes testées et approuvées par ton Jakez."><meta property="og:type" content="website"><meta property="og:site_name" content="Bawss"><meta property="og:title" content="Bawss · Les recettes 2 Jakez"><meta property="og:description" content="Enlève ton choupen, mets ton tablier et va dans ta cuisine. Les recettes testées et approuvées par ton Jakez."><meta property="og:image" content="https://jakez-droid.github.io/bawss/icons/icon-512.png"><meta property="og:url" content="https://jakez-droid.github.io/bawss/"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#15283A"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Bawss"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><style>
 /* ---------- Bawss : installation et prénom ---------- */
 .bw { position: fixed; inset: 0; z-index: 200; background: var(--slate); color: var(--on-slate); overflow-y: auto; overscroll-behavior: contain; font-family: var(--f-body); }
 .bw-in { min-height: 100%; box-sizing: border-box; max-width: 460px; margin: 0 auto; padding: calc(env(safe-area-inset-top, 0px) + 40px) 22px calc(env(safe-area-inset-bottom, 0px) + 110px); display: flex; flex-direction: column; gap: 22px; }
@@ -158,6 +158,9 @@
 .actions .rz-go { box-shadow: none; background: transparent; border: 1.5px solid var(--ink); color: var(--ink); font: 700 14px var(--f-body); padding: 10px 18px; border-radius: 999px; }
 .actions .rz-go:active { box-shadow: none; }
 .rz-top:has(.rz-n:empty) { display: none; }
+.bw textarea.rz-com { width: 100%; box-sizing: border-box; font: 500 17px/1.4 var(--f-body); padding: 12px 14px; border-radius: 12px; border: 2px solid transparent; background: #fff; color: var(--ink); resize: none; outline: none; }
+.bw textarea.rz-com:focus { border-color: var(--cire); }
+.rz-compte { justify-self: end; margin-top: -6px; font: 500 12px var(--f-mono); opacity: .6; }
 </style></head><body>
 <style>
 /* tuto */
@@ -811,7 +814,7 @@ body { background-image: radial-gradient(color-mix(in srgb, var(--ink) 7%, trans
     <p class="tuto-again-p"><button type="button" class="invite-btn" id="invite-btn">👋 Inviter un pote</button><button type="button" class="tuto-again" id="tuto-again">↺ Revoir le tour du proprio</button><button type="button" class="tuto-again" id="faq-btn">❓ Questions fréquentes</button></p>
     <div class="fp" id="fp" hidden role="dialog" aria-modal="true" aria-label="Filtres"><div class="fp-box"></div></div>
     <div class="empty" id="empty" hidden>
-      <p><b>Rien. Nada.</b><br>Même le frigo de Jakez un dimanche soir a plus de choix.</p>
+      <p><b>Rien. Nada.</b><br>Même le frigo de ton Jakez un dimanche soir a plus de choix.</p>
       <button class="btn" id="reset" type="button">Effacer les filtres</button>
     </div>
   </div>
@@ -844,7 +847,7 @@ body { background-image: radial-gradient(color-mix(in srgb, var(--ink) 7%, trans
   <span class="lbl" id="timer-lbl"></span>
   <span id="timer-t">0:00</span>
   <button type="button" id="timer-stop">Arrêter</button>
-  <p class="hint" id="timer-hint" hidden><b>Minuteur sans filet.</b> Reste dans le secteur, laisse pas cramer, goûte de temps en temps. Et quand c’est bon, c’est que c’est bon, mon champion.</p>
+  <p class="hint" id="timer-hint" hidden><b>Le minuteur des cons.</b> Reste dans le secteur, laisse pas cramer, goûte de temps en temps. Et quand c’est bon, c’est que c’est bon, mon champion.</p>
 </div>
 <div class="cart" id="cart" hidden>
   <div class="cart-panel" role="dialog" aria-modal="true" aria-labelledby="cart-title">
@@ -1265,7 +1268,7 @@ function shopHTML(s) {
     <a class="btn" href="https://maps.apple.com/?daddr=${dest}" target="_blank" rel="noopener">Ouvrir dans Plans</a></div></div>`;
 }
 function detailHTML(r) {
-  const src = r.source === 'Jacques' ? 'Recette maison de Jakez.' : r.source ? `Inspirée de ${esc(r.source)}.` : '';
+  const src = r.source === 'Jacques' ? 'Recette maison de ton Jakez.' : r.source ? `Inspirée de ${esc(r.source)}.` : '';
   const pills = [
     `<span class="pill">${esc(r.type)}</span>`,
     `<span class="pill">${effortHTML(r.effort)}</span>`,
@@ -1532,7 +1535,7 @@ function renderCook() {
   $('#cook-bar').style.width = ((i + 1) / n * 100) + '%';
   const t = stepTimer(r.steps[i]);
   $('#cook-timer').innerHTML = t ? `<button class="btn" type="button" data-start="${t}">⏱ Lancer un minuteur de ${t >= 60 ? Math.floor(t / 60) + ' h' + (t % 60 ? ' ' + t % 60 : '') : t + ' min'}</button>`
-    : COOKS.test(norm(r.steps[i])) ? `<button class="btn" type="button" data-open>⏱ Minuteur sans filet</button>` : '';
+    : COOKS.test(norm(r.steps[i])) ? `<button class="btn" type="button" data-open>⏱ Le minuteur des cons</button>` : '';
   $('#cook-sos').innerHTML = BOSS_PHONE ? `<button class="cook-sos" type="button" data-boss data-rec="${r.id}" data-etape="${i + 1}">Un souci à cette étape ? <b>💬 Écris au Bawss</b></button>` : '';
   $('#cook-prev').disabled = i === 0;
   $('#cook-next').textContent = i === n - 1 ? 'Terminer ✓' : 'Suivant →';
@@ -1555,7 +1558,7 @@ document.addEventListener('keydown', e => {
 
 /* ---------- timer ---------- */
 let tEnd = 0, tStart = 0, tUp = false, tInt = null, audio = null;
-/* Étapes de cuisson sans durée : on propose un « minuteur sans filet » qui compte le temps écoulé. */
+/* Étapes de cuisson sans durée : on propose « le minuteur des cons » qui compte le temps écoulé. */
 const COOKS = /\b(cui[rst]|cuisson|revenir|mijot|frir|frit|fremi|rotir|griller|dore|dorer|color|redui|saisi|marquer|bouill|ebullition|four|enfourn|chauff|fondre|sauter|caramel|confi|brais|mariner|repos|pousse|lever|epaissi|torrefi|blanchi|gratin|compot|suer)/;
 function beep() {
   try {
@@ -1674,7 +1677,7 @@ function celebrate(r) {
   const wait = finale(FINALES[finIdx++ % FINALES.length], r);
   setTimeout(() => {
     const x = pickExpr();
-    const o = sheet(`<div class="kicker">Apprends le breton avec Jakez</div>
+    const o = sheet(`<div class="kicker">Apprends le breton avec ton Jakez</div>
       <p class="br">${esc(x.br)}</p>
       <p class="fr">${esc(x.fr)}</p>
       <div class="row"><button class="btn" type="button" data-again>Une autre</button><button class="btn primary" type="button" data-close>Kenavo !</button></div>`);
@@ -1969,7 +1972,7 @@ window.lancerIntro = (opts = {}) => {
     o.addEventListener('click', e => { if (e.target === o || e.target.closest('button')) o.remove(); });
   }
   async function partager(r) {
-    const url = lienRecette(r.id), texte = r.title + ', la recette de Jakez sur Bawss 🔥';
+    const url = lienRecette(r.id), texte = r.title + ', la recette de ton Jakez sur Bawss 🔥';
     if (navigator.share) {
       try { await navigator.share({ title: r.title, text: texte, url }); return; }
       catch (e) { if (e && e.name === 'AbortError') return; }
@@ -1994,7 +1997,7 @@ window.lancerIntro = (opts = {}) => {
   const ETAPES = [
     { cible: () => $('.search'), titre: 'On trouve quoi manger', texte: 'Ce soir, on cuisine. Tape un plat ou un ingrédient ici : les recettes se filtrent au fur et à mesure.', avant: async () => { backToList(); await dormir(250); await taper('curry'); } },
     { cible: () => $('#extras'), titre: 'Pas d’idée ? Filtre', texte: 'Type de plat, temps, ingrédient principal… et tes favoris, tous au même endroit.' },
-    { cible: () => $(`#grid a[href="#${PLAT}"]`), titre: 'Allez, un curry japonais', texte: 'Chaque recette est testée et approuvée par Jakez. On l’ouvre.' },
+    { cible: () => $(`#grid a[href="#${PLAT}"]`), titre: 'Allez, un curry japonais', texte: 'Chaque recette est testée et approuvée par ton Jakez. On l’ouvre.' },
     { cible: () => $(`#r-${PLAT} .heart-btn`), titre: 'Un coup de cœur ?', texte: 'Le ❤️ la range dans tes favoris : tu les retrouves dans les filtres.', avant: async () => { location.hash = PLAT; await dormir(450); } },
     { cible: () => $(`#r-${PLAT} .r-share`), titre: 'Envoie-la à un pote', texte: () => 'WhatsApp, Messenger, Insta en message… Ton pote reçoit la photo du plat et le lien qui ouvre direct la recette.' + (window.bawss ? ' Et sur Bawss, tu peux aussi en faire une story Insta, avec une punchline.' : '') },
     { cible: () => $(`#r-${PLAT} [data-serves]`), titre: 'Vous êtes combien ?', texte: 'Change le nombre de personnes : toutes les quantités suivent, jusque dans ta liste de courses.' },
@@ -2005,8 +2008,8 @@ window.lancerIntro = (opts = {}) => {
     { cible: () => $('.mag-tabs'), titre: 'Un rayon par écran', texte: 'Glisse à gauche ou à droite pour changer de rayon, ou touche un onglet. Le chiffre, c’est ce qu’il te reste à prendre ; « Tout » affiche la liste entière.', avant: async () => { if (!mag) { await ouvrirMagasin(); } await dormir(400); } },
     { cible: () => mag && mag.querySelector('.mag-page[data-code="' + magRayon + '"] [data-mag-k]'), titre: 'Coche d’une main', texte: 'Un article dans le caddy ? Touche-le : il est coché. Rayon fini, l’appli passe toute seule au suivant. L’écran reste allumé jusqu’à la caisse.' },
     { cible: () => $(`#r-${PLAT} [data-cook]`), titre: 'Aux fourneaux', texte: 'Le mode cuisine : une étape à la fois, en gros, l’écran reste allumé et les minuteurs sont intégrés.', avant: async () => { if (mag) fermerMagasin(); if (!$('#cart').hidden) { closeCart(); await dormir(320); } } },
-    { bawss: true, cible: () => $('#cook-sos [data-boss]'), titre: 'Ça coince en pleine cuisson ?', texte: 'Touche « Écris au Bawss » : le chat s’ouvre par-dessus ta recette, avec l’étape déjà jointe. Jakez te répond en direct, un bandeau s’affiche dès qu’il a écrit.', avant: async () => { if (!cook) { openCook(R()); cook.i = 1; renderCook(); } await dormir(400); } },
-    { bawss: true, cible: () => $(`#r-${PLAT} .boss [data-boss]`), titre: 'Une question sur la recette ?', texte: 'Même hors cuisine : « Écris au Bawss », en bas de chaque recette, ouvre une conversation privée avec Jakez, la recette jointe. Une pastille rouge te prévient quand il t’a répondu.', avant: async () => { if (cook) closeCook(); await dormir(250); } },
+    { bawss: true, cible: () => $('#cook-sos [data-boss]'), titre: 'Ça coince en pleine cuisson ?', texte: 'Touche « Écris au Bawss » : le chat s’ouvre par-dessus ta recette, avec l’étape déjà jointe. Ton Jakez te répond en direct, un bandeau s’affiche dès qu’il a écrit.', avant: async () => { if (!cook) { openCook(R()); cook.i = 1; renderCook(); } await dormir(400); } },
+    { bawss: true, cible: () => $(`#r-${PLAT} .boss [data-boss]`), titre: 'Une question sur la recette ?', texte: 'Même hors cuisine : « Écris au Bawss », en bas de chaque recette, ouvre une conversation privée avec ton Jakez, la recette jointe. Une pastille rouge te prévient quand il t’a répondu.', avant: async () => { if (cook) closeCook(); await dormir(250); } },
     { bawss: true, cible: () => $(`#r-${PLAT} [data-rz-go]`), titre: 'C’est réussi ? Montre-le', texte: 'Poste la photo de ton plat : la bande la verra, et tu peux la balancer en story.', avant: async () => { if (cook) closeCook(); } },
     { bawss: true, cible: () => $('#me-btn'), titre: 'Ton compte', texte: 'Tes favoris et ta liste de courses te suivent sur tous tes appareils. C’est aussi là que tu retrouves tes messages avec le Bawss.' },
     { cible: () => $('#faq-btn'), titre: 'Une question ?', texte: 'Tout est expliqué dans les Questions fréquentes, en bas de la liste. Et tu peux relancer ce tour quand tu veux, juste à côté.', avant: async () => { if (cook) closeCook(); if (mag) fermerMagasin(); backToList(); await dormir(350); } }
@@ -2113,7 +2116,7 @@ window.lancerIntro = (opts = {}) => {
   window.inviterPote = async () => {
     const pseudo = typeof window.bawssPseudo === 'function' ? window.bawssPseudo() : '';
     const url = 'https://jakez-droid.github.io/bawss/' + (pseudo ? '?de=' + encodeURIComponent(pseudo) : '');
-    const texte = (pseudo ? pseudo + ' t’invite' : 'Je t’invite') + ' sur Bawss 🔥 Les recettes de Jakez, en appli. Installe-la ici :';
+    const texte = (pseudo ? pseudo + ' t’invite' : 'Je t’invite') + ' sur Bawss 🔥 Les recettes de ton Jakez, en appli. Installe-la ici :';
     if (navigator.share) {
       try { await navigator.share({ title: 'Bawss', text: texte, url }); return; } catch (e) { if (e && e.name === 'AbortError') return; }
     }
@@ -2132,20 +2135,20 @@ window.lancerIntro = (opts = {}) => {
       + Q('Comment je trouve une recette ?', '<p>Tape un plat ou un ingrédient dans la recherche : les recettes se filtrent au fur et à mesure. Pas d’idée ? Ouvre <b>Filtres</b> : type de plat, temps, ingrédient principal et tes favoris.</p>')
       + Q('J’ai déjà certains ingrédients, je fais comment ?', '<p>Sur la recette, <b>coche les ingrédients que tu as déjà</b> : ils sont barrés, ça veut dire que tu les as chez toi.</p><p>Quand tu touches <b>« Ajouter au caddy »</b>, juste au-dessus des ingrédients, <b>seuls les éléments manquants partent dans ta liste de courses</b>. Tu peux cocher avant ou après avoir ajouté la recette : la liste se met à jour toute seule. Tu décoches, ça revient dans le caddy.</p>')
       + Q('Je cuisine pour combien ?', '<p>Change le nombre de personnes avec − et + au-dessus des ingrédients : toutes les quantités suivent, jusque dans ta liste de courses.</p>')
-      + Q('C’est quoi le mode cuisine ?', '<p>Une étape à la fois, en gros, et l’écran reste allumé. Quand une étape a une durée, un bouton lance le minuteur. Pas de durée précise ? Le <b>minuteur sans filet</b> compte le temps qui passe : reste dans le secteur, goûte, et quand c’est bon, c’est que c’est bon.</p>' + (B ? '<p>Ça coince ? Touche <b>« Un souci à cette étape ? »</b> : tu écris au Bawss sans quitter ta recette, l’étape est déjà jointe au message.</p>' : ''))
+      + Q('C’est quoi le mode cuisine ?', '<p>Une étape à la fois, en gros, et l’écran reste allumé. Quand une étape a une durée, un bouton lance le minuteur. Pas de durée précise ? <b>Le minuteur des cons</b> compte le temps qui passe : reste dans le secteur, goûte, et quand c’est bon, c’est que c’est bon.</p>' + (B ? '<p>Ça coince ? Touche <b>« Un souci à cette étape ? »</b> : tu écris au Bawss sans quitter ta recette, l’étape est déjà jointe au message.</p>' : ''))
       + `<p class="faq-cat">Liste de courses</p>`
       + Q('Comment marche la liste de courses ?', '<ul><li>Sur une recette, le bouton <b>« Ajouter au caddy »</b> (au-dessus des ingrédients) envoie ses ingrédients dans ta liste, sauf ceux que tu as cochés.</li><li>Tout est rangé par rayon, avec les quantités additionnées si plusieurs recettes utilisent la même chose.</li><li>Ajoute le reste (PQ, bières, pain…) dans le champ en bas : l’appli devine le rayon.</li><li>Ce que tu coches descend dans <b>« Dans le caddy ✓ »</b>.</li><li>L’icône copier colle ta liste dans un message ; la poubelle vide tout (touche deux fois).</li></ul>')
       + Q('C’est quoi le mode magasin ?', '<p>Ta liste en plein écran, un rayon à la fois, avec de grosses cases à cocher d’une main. L’onglet <b>Tout</b> affiche toute la liste d’un coup. L’écran reste allumé jusqu’à la caisse.</p>')
       + (B ? Q('Ma liste est la même sur mon téléphone et mon ordi ?', '<p>Oui, si tu es connecté au même compte : favoris et liste de courses te suivent partout.</p>') : '')
       + `<p class="faq-cat">${B ? 'Messagerie' : 'Un problème ?'}</p>`
       + (B
-        ? Q('Comment je pose une question au Bawss ?', '<p>Touche <b>« 💬 Écris au Bawss »</b> en bas d’une recette, ou dans <b>Mon compte</b>. C’est une conversation privée : seul Jakez la lit.</p><p>La recette que tu regardais est jointe automatiquement (touche ✕ pour l’enlever).</p>')
-          + Q('Je suis en pleine recette et ça tourne mal', '<p>Dans le mode cuisine, touche <b>« Un souci à cette étape ? »</b>. Le chat s’ouvre par-dessus ta recette, avec l’étape où tu en es déjà jointe. Tu gardes l’œil sur ta casserole, et Jakez voit que tu es en cuisine.</p>')
-          + Q('Comment je sais que Jakez m’a répondu ?', '<p>Si l’appli est ouverte, un bandeau jaune apparaît tout de suite, même en plein mode cuisine. Sinon, une <b>pastille rouge</b> t’attend sur le bouton de ton compte à ta prochaine visite.</p><p>Tu ne reçois jamais de mail.</p>')
-        : Q('Je bloque sur une recette', '<p>En bas de chaque recette et dans le mode cuisine, <b>« Appelle le bawss »</b> te donne le numéro de Jakez.</p>'))
+        ? Q('Comment je pose une question au Bawss ?', '<p>Touche <b>« 💬 Écris au Bawss »</b> en bas d’une recette, ou dans <b>Mon compte</b>. C’est une conversation privée : seul ton Jakez la lit.</p><p>La recette que tu regardais est jointe automatiquement (touche ✕ pour l’enlever).</p>')
+          + Q('Je suis en pleine recette et ça tourne mal', '<p>Dans le mode cuisine, touche <b>« Un souci à cette étape ? »</b>. Le chat s’ouvre par-dessus ta recette, avec l’étape où tu en es déjà jointe. Tu gardes l’œil sur ta casserole, et ton Jakez voit que tu es en cuisine.</p>')
+          + Q('Comment je sais que ton Jakez m’a répondu ?', '<p>Si l’appli est ouverte, un bandeau jaune apparaît tout de suite, même en plein mode cuisine. Sinon, une <b>pastille rouge</b> t’attend sur le bouton de ton compte à ta prochaine visite.</p><p>Tu ne reçois jamais de mail.</p>')
+        : Q('Je bloque sur une recette', '<p>En bas de chaque recette et dans le mode cuisine, <b>« Appelle le bawss »</b> te donne le numéro de ton Jakez.</p>'))
       + `<p class="faq-cat">Partager</p>`
       + Q('Comment j’envoie une recette à un pote ?', '<p>Touche l’icône partage à côté du titre. Ton pote reçoit la photo du plat et un lien qui ouvre direct la recette.' + (B ? ' Tu peux aussi en faire une <b>story Insta</b>, avec une punchline.' : '') + '</p>')
-      + (B ? Q('C’est quoi « Je l’ai bawssée » ?', '<p>Tu as réussi une recette ? Poste la photo de ton plat : elle apparaît sur la recette et dans « Ils l’ont fait comme des Bawss ». Les autres peuvent liker. Tu peux supprimer ta photo quand tu veux.</p>')
+      + (B ? Q('C’est quoi « Je l’ai bawssée » ?', '<p>Tu as réussi une recette ? Touche <b>« Je l’ai bawssée »</b> à côté du mode cuisine et poste la photo de ton plat, avec un commentaire si tu veux : elle apparaît sur la recette et dans « Ils l’ont fait comme des Bawss ». Les autres peuvent liker. Tu peux supprimer ta photo quand tu veux.</p>')
         + Q('Comment j’invite un pote ?', '<p>Touche <b>« 👋 Inviter un pote »</b> en bas de la liste ou dans Mon compte. Il reçoit un lien avec ton nom dessus.</p>')
         + `<p class="faq-cat">Ton compte</p>`
         + Q('J’ai oublié mon mot de passe', '<p>Sur l’écran de connexion, touche <b>« Mot de passe oublié ? »</b> : tu reçois un lien pour en choisir un nouveau.</p>')
@@ -2311,7 +2314,7 @@ window.lancerIntro = (opts = {}) => {
 
   function ecranInstall() {
     const intro = bandeauInvite2() + logo + '<h1>Installe <span>Bawss</span></h1>'
-      + '<p>Les recettes de Jakez direct sur ton téléphone, comme une vraie appli.</p>'
+      + '<p>Les recettes de ton Jakez direct sur ton téléphone, comme une vraie appli.</p>'
       + '<ul class="bw-pts"><li>Icône sur l\'écran d\'accueil</li><li>Plein écran</li><li>Marche sans réseau</li></ul>';
     let corps = '';
     if (ios && inApp) {
@@ -2354,7 +2357,7 @@ window.lancerIntro = (opts = {}) => {
     if (/password.*(6|characters|short|weak)/i.test(m)) return 'Mot de passe trop court : 6 caractères minimum.';
     if (/same.*password|different from the old/i.test(m)) return 'Choisis un mot de passe différent de l\'ancien.';
     if (/invalid.*email|email.*invalid|valid email/i.test(m)) return 'Ce mail n\'a pas l\'air valide.';
-    if (/confirm/i.test(m)) return 'Le compte attend une confirmation par mail : préviens Jakez.';
+    if (/confirm/i.test(m)) return 'Le compte attend une confirmation par mail : préviens ton Jakez.';
     if (/rate|too many|security purposes/i.test(m)) return 'Trop d\'essais d\'un coup. Attends une minute et réessaie.';
     if (/50[234]|timeout|timed out|gateway|smtp|sending.*email|error sending/i.test(m)) return 'Le service de mails ne répond pas. Réessaie dans une minute.';
     if (/fetch|network|failed|load/i.test(m) || !navigator.onLine) return 'Pas de réseau. Il en faut pour créer ton compte ou te connecter.';
@@ -2386,7 +2389,7 @@ window.lancerIntro = (opts = {}) => {
       + '<button type="submit" class="bw-go">' + (creer ? 'C\'est parti' : 'Me connecter') + '</button></form>'
       + (creer ? '' : '<button type="button" class="bw-later" data-oubli>Mot de passe oublié ?</button>')
       + '<button type="button" class="bw-later" data-bascule>' + (creer ? 'J\'ai déjà un compte' : 'Pas de compte ? J\'en crée un') + '</button>'
-      + (creer ? '<p class="bw-note">Ton mail sert à te connecter et à retrouver ton mot de passe si tu l\'oublies. Personne ne voit ton mot de passe, même pas Jakez.</p>' : '')
+      + (creer ? '<p class="bw-note">Ton mail sert à te connecter et à retrouver ton mot de passe si tu l\'oublies. Personne ne voit ton mot de passe, même pas ton Jakez.</p>' : '')
       + '<button type="button" class="bw-later bw-sans" data-sans>Continuer sans compte</button>');
     const f = el.querySelector('[data-compte]'), ml = el.querySelector('#bw-mail'), ps = el.querySelector('#bw-pseudo'), md = el.querySelector('#bw-mdp'), go = el.querySelector('.bw-go'), er = el.querySelector('.bw-err');
     const dernier = ls.get('bawss-mail'); if (!creer && dernier) ml.value = dernier;
@@ -2480,7 +2483,7 @@ window.lancerIntro = (opts = {}) => {
     const el = ouvrir(logo + '<h1>Salut <span>' + esc2(moi.pseudo) + '</span></h1>'
       + '<button type="button" class="bw-go bw-inv" data-inviter>👋 Inviter un pote</button>'
       + (moi.admin ? '<button type="button" class="bw-choix" data-boite><b>📥 Boîte de réception' + (CHAT.non_lus ? ' · ' + CHAT.non_lus : '') + '</b><span>Les messages de la bande</span></button>'
-                   : '<button type="button" class="bw-choix" data-messages><b>💬 Écris au Bawss' + (CHAT.non_lus ? ' · ' + CHAT.non_lus + ' nouveau' + (CHAT.non_lus > 1 ? 'x' : '') : '') + '</b><span>Une question, un plat raté, une idée : Jakez te répond</span></button>')
+                   : '<button type="button" class="bw-choix" data-messages><b>💬 Écris au Bawss' + (CHAT.non_lus ? ' · ' + CHAT.non_lus + ' nouveau' + (CHAT.non_lus > 1 ? 'x' : '') : '') + '</b><span>Une question, un plat raté, une idée : ton Jakez te répond</span></button>')
       + '<p>Tes favoris et ta liste de courses sont gardés sur ton compte : tu les retrouves en te connectant sur un autre appareil.</p>'
       + (sansMail ? '<form data-ajout-mail style="display:grid;gap:12px" novalidate><div class="bw-alert">Ajoute ton mail : c\'est lui qui te permettra de retrouver ton mot de passe si tu l\'oublies.</div>'
                    + '<label for="bw-mail-a">Mail</label><input id="bw-mail-a" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false">'
@@ -2653,16 +2656,11 @@ window.lancerIntro = (opts = {}) => {
     const el = ouvrir('<h1>Bien <span>joué</span></h1><p>' + esc2(BY_ID[id].title) + '</p>'
       + '<img class="rz-apercu" src="' + img.apercu + '" alt="Ta photo">'
       + '<form data-pub style="display:grid;gap:12px" novalidate>'
-      + '<label for="rz-mot">Un petit mot (facultatif)</label><input id="rz-mot" type="text" maxlength="140" placeholder="Trop de piment, j\'ai pleuré">'
-      + '<label id="rz-note-l">Ta note (facultatif)</label><div class="rz-note" role="group" aria-labelledby="rz-note-l">'
-      + [1, 2, 3].map(n => '<button type="button" data-n="' + n + '" aria-pressed="false" aria-label="' + n + ' phare' + (n > 1 ? 's' : '') + '">' + phares(n) + '</button>').join('') + '</div>'
+      + '<label for="rz-mot">Ton commentaire (facultatif)</label><textarea id="rz-mot" class="rz-com" rows="3" maxlength="140" placeholder="Trop de piment, j\'ai pleuré. Je recommence demain."></textarea><span class="rz-compte" aria-live="polite">0 / 140</span>'
       + '<p class="bw-err" role="alert" hidden></p><button type="submit" class="bw-go">Publier</button></form>'
       + '<button type="button" class="bw-later" data-annuler>Annuler</button>');
-    let note = null;
-    el.querySelectorAll('.rz-note button').forEach(b => b.addEventListener('click', () => {
-      note = note === +b.dataset.n ? null : +b.dataset.n;
-      el.querySelectorAll('.rz-note button').forEach(x => x.setAttribute('aria-pressed', String(+x.dataset.n === note)));
-    }));
+    const com = el.querySelector('#rz-mot'), compte = el.querySelector('.rz-compte');
+    com.addEventListener('input', () => { compte.textContent = com.value.length + ' / 140'; });
     el.querySelector('[data-annuler]').addEventListener('click', fermer);
     const go = el.querySelector('.bw-go'), er = el.querySelector('.bw-err');
     const rate = t => { er.textContent = t; er.hidden = false; go.disabled = false; go.textContent = 'Publier'; };
@@ -2674,11 +2672,11 @@ window.lancerIntro = (opts = {}) => {
       const up = await sb.storage.from(RZ.bucket).upload(chemin, img.blob, { contentType: 'image/jpeg', upsert: false }).then(x => x, x => ({ error: x }));
       if (up.error) return rate('La photo n\'est pas passée. Réessaie.');
       const mot = el.querySelector('#rz-mot').value.trim().slice(0, 140);
-      const ins = await sb.from('realisations').insert({ recette: id, photo: chemin, mot: mot || null, note }).then(x => x, x => ({ error: x }));
+      const ins = await sb.from('realisations').insert({ recette: id, photo: chemin, mot: mot || null }).then(x => x, x => ({ error: x }));
       if (ins.error) { sb.storage.from(RZ.bucket).remove([chemin]).then(() => {}, () => {}); return rate('Ça n\'a pas marché. Réessaie.'); }
       afficherRecette(id); bandeau();
       go.textContent = 'Je prépare ta carte…';
-      let carte = null; try { carte = await storyRealisation(id, img.blob, note); } catch (e) {}
+      let carte = null; try { carte = await storyRealisation(id, img.blob, null); } catch (e) {}
       if (carte) ecranStory(carte, BY_ID[id].title, '<h1>C\'est en <span>ligne</span></h1><p>Bien joué ' + esc2(moi.pseudo) + ' ! Tu la balances en story ?</p>');
       else { fermer(); toast('Bien joué ' + moi.pseudo + ' ! Ta photo est en ligne'); }
     });
@@ -2690,7 +2688,7 @@ window.lancerIntro = (opts = {}) => {
     const peutSuppr = moi && (x.user_id === moi.id || moi.admin);
     let change = false;
     const el = ouvrir('<figure class="rz-grande"><img src="' + esc2(x.url) + '" alt="Photo de ' + esc2(x.pseudo) + '">'
-      + '<figcaption><b>' + esc2(x.pseudo) + '</b> · ' + esc2(BY_ID[x.recette].title) + ' · ' + quand(x.cree_le) + (x.note ? ' · ' + phares(x.note) : '')
+      + '<figcaption><b>' + esc2(x.pseudo) + '</b> · ' + esc2(BY_ID[x.recette].title) + ' · ' + quand(x.cree_le)
       + (x.mot ? '<q>' + esc2(x.mot) + '</q>' : '') + '</figcaption></figure>'
       + '<div class="rz-actions"><button type="button" class="rz-like" aria-pressed="' + x.jaime + '" aria-label="J\'aime">' + (x.jaime ? '❤️' : '🤍') + ' <span>' + x.nbLikes + '</span></button>'
       + (rows.length > 1 ? '<button type="button" data-prec aria-label="Photo précédente">‹</button><button type="button" data-suiv aria-label="Photo suivante">›</button>' : '') + '</div>'
@@ -2728,7 +2726,7 @@ window.lancerIntro = (opts = {}) => {
     const sg = el.querySelector('[data-signal]');
     if (sg) sg.addEventListener('click', async () => {
       await sb.rpc('signaler', { r: x.id }).then(() => {}, () => {});
-      sg.disabled = true; sg.textContent = 'Signalée, Jakez va regarder';
+      sg.disabled = true; sg.textContent = 'Signalée, ton Jakez va regarder';
     });
   }
 
@@ -2868,7 +2866,7 @@ window.lancerIntro = (opts = {}) => {
     const r = BY_ID[id]; if (!r) return;
     toast('Je prépare ta carte…');
     let image = null; if (r.photo) { try { image = await chargerImage(r.photo); } catch (e) {} }
-    const blob = await carteStory({ image, emoji: r.emoji, legende: 'La recette de Jakez', droite: (EFFORT[r.effort] || [''])[0] ? r.effort : '', titre: r.title + '.', sousTitre: 'Comme un Bawss.', accroche: auHasard(STORY.punch) });
+    const blob = await carteStory({ image, emoji: r.emoji, legende: 'La recette de ton Jakez', droite: (EFFORT[r.effort] || [''])[0] ? r.effort : '', titre: r.title + '.', sousTitre: 'Comme un Bawss.', accroche: auHasard(STORY.punch) });
     ecranStory(blob, r.title);
   }
   async function storyRealisation(id, blobPhoto, note) {
@@ -2892,7 +2890,7 @@ window.lancerIntro = (opts = {}) => {
   }
   /* « Partager » propose deux choix : envoyer le lien, ou la carte story Insta */
   async function envoyerLien(r) {
-    const url = 'https://jakez-droid.github.io/bawss/r/' + r.id + '.html', texte = r.title + ', la recette de Jakez sur Bawss 🔥';
+    const url = 'https://jakez-droid.github.io/bawss/r/' + r.id + '.html', texte = r.title + ', la recette de ton Jakez sur Bawss 🔥';
     if (navigator.share) {
       try { await navigator.share({ title: r.title, text: texte, url }); return; } catch (e) { if (e && e.name === 'AbortError') return; }
     }
@@ -2992,7 +2990,7 @@ window.lancerIntro = (opts = {}) => {
     const ct = document.getElementById('cook-text'), cn = document.getElementById('cook-n');
     const rappel = volet && ct ? '<p class="chat-etape"><b>' + esc2(cn ? cn.textContent : '') + '</b>' + esc2(ct.textContent.slice(0, 160)) + (ct.textContent.length > 160 ? '…' : '') + '</p>' : '';
     const el = ouvrir('<div class="chat-tete"><button type="button" class="chat-retour" data-chat-retour aria-label="' + (volet ? 'Retour aux fourneaux' : 'Retour') + '">' + (volet ? '⌄' : '‹') + '</button><h1>' + titre + '</h1>' + (volet ? '<span class="chat-live">en direct</span>' : '') + '</div>' + rappel
-      + (moi.admin || volet ? '' : '<p class="chat-intro">Une question sur une recette, un plat qui tourne mal, une idée ? Écris ici : Jakez te répond dès qu’il peut.</p>')
+      + (moi.admin || volet ? '' : '<p class="chat-intro">Une question sur une recette, un plat qui tourne mal, une idée ? Écris ici : ton Jakez te répond dès qu’il peut.</p>')
       + '<ul class="chat-fil" aria-live="polite"><li class="msg-vide">Chargement…</li></ul>'
       + (CHAT.recette && BY_ID[CHAT.recette] ? '<p class="chat-ctx">À propos de : <b>' + esc2(BY_ID[CHAT.recette].title) + '</b> <button type="button" data-chat-sans aria-label="Ne pas joindre la recette">✕</button></p>' : '')
       + '<form class="chat-saisie" data-chat-form><textarea rows="1" maxlength="2000" placeholder="Ton message…" aria-label="Ton message"></textarea><button type="submit" aria-label="Envoyer">➤</button></form>');
@@ -3088,7 +3086,7 @@ window.lancerIntro = (opts = {}) => {
     const b = document.createElement('div');
     b.className = 'bw-invite'; b.setAttribute('role', 'region'); b.setAttribute('aria-label', 'Découvrir Bawss');
     b.innerHTML = '<svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#15283A"/><polygon points="40,36 60,36 64,84 36,84" fill="#F2F3EF"/><polygon points="39.2,46 60.8,46 61.5,54 38.5,54" fill="#E4322B"/><polygon points="37.7,64 62.3,64 63,72 37,72" fill="#E4322B"/><rect x="42" y="24" width="16" height="12" fill="#F4B400"/><polygon points="39,24 61,24 50,15" fill="#E4322B"/></svg>'
-      + '<p><b>Bawss</b><span>Toutes les recettes de Jakez, en appli</span></p>'
+      + '<p><b>Bawss</b><span>Toutes les recettes de ton Jakez, en appli</span></p>'
       + '<button type="button" class="bw-inv-go">' + (telephone && !standalone ? 'Installer' : 'Mon compte') + '</button>'
       + '<button type="button" class="bw-inv-x" aria-label="Fermer">✕</button>';
     document.body.appendChild(b);

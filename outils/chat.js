@@ -73,7 +73,7 @@
     const ct = document.getElementById('cook-text'), cn = document.getElementById('cook-n');
     const rappel = volet && ct ? '<p class="chat-etape"><b>' + esc2(cn ? cn.textContent : '') + '</b>' + esc2(ct.textContent.slice(0, 160)) + (ct.textContent.length > 160 ? '…' : '') + '</p>' : '';
     const el = ouvrir('<div class="chat-tete"><button type="button" class="chat-retour" data-chat-retour aria-label="' + (volet ? 'Retour aux fourneaux' : 'Retour') + '">' + (volet ? '⌄' : '‹') + '</button><h1>' + titre + '</h1>' + (volet ? '<span class="chat-live">en direct</span>' : '') + '</div>' + rappel
-      + (moi.admin || volet ? '' : '<p class="chat-intro">Une question sur une recette, un plat qui tourne mal, une idée ? Écris ici : Jakez te répond dès qu’il peut.</p>')
+      + (moi.admin || volet ? '' : '<p class="chat-intro">Une question sur une recette, un plat qui tourne mal, une idée ? Écris ici : ton Jakez te répond dès qu’il peut.</p>')
       + '<ul class="chat-fil" aria-live="polite"><li class="msg-vide">Chargement…</li></ul>'
       + (CHAT.recette && BY_ID[CHAT.recette] ? '<p class="chat-ctx">À propos de : <b>' + esc2(BY_ID[CHAT.recette].title) + '</b> <button type="button" data-chat-sans aria-label="Ne pas joindre la recette">✕</button></p>' : '')
       + '<form class="chat-saisie" data-chat-form><textarea rows="1" maxlength="2000" placeholder="Ton message…" aria-label="Ton message"></textarea><button type="submit" aria-label="Envoyer">➤</button></form>');

@@ -15,7 +15,7 @@ if os.path.exists(rz):
 meta = ('<html lang="fr"><head><meta charset="utf-8">'
   '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">'
   '<title>Bawss · Les recettes 2 Jakez</title>'
-  '<meta name="description" content="Les recettes testées et approuvées par Jakez.">'
+  '<meta name="description" content="Les recettes testées et approuvées par ton Jakez.">'
   '<link rel="manifest" href="manifest.webmanifest">'
   '<meta name="theme-color" content="#15283A">'
   '<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">'
@@ -94,7 +94,7 @@ def texte(s):
     return re.sub(r'\*\*', '', s).strip()
 for r in R:
     t = H.escape(r['title'])
-    d = H.escape(texte(r.get('intro')) or texte(r.get('tip'))[:180] or 'La recette testée et approuvée par Jakez.')
+    d = H.escape(texte(r.get('intro')) or texte(r.get('tip'))[:180] or 'La recette testée et approuvée par ton Jakez.')
     img = SITE + (r['photo'] if r.get('photo') else 'icons/icon-512.png')
     open(os.path.join(out, 'r', r['id'] + '.html'), 'w', encoding='utf-8').write(
         '<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
@@ -108,7 +108,7 @@ for r in R:
         f'<body style="background:#15283A;color:#fff;font-family:sans-serif;padding:24px"><a style="color:#F4B400" href="../#{r["id"]}">{t} : ouvrir la recette sur Bawss</a></body></html>')
 
 # aperçu de l'accueil
-h = h.replace('<link rel="manifest"', '<meta property="og:type" content="website"><meta property="og:site_name" content="Bawss"><meta property="og:title" content="Bawss · Les recettes 2 Jakez"><meta property="og:description" content="Enlève ton choupen, mets ton tablier et va dans ta cuisine. Les recettes testées et approuvées par Jakez."><meta property="og:image" content="' + SITE + 'icons/icon-512.png"><meta property="og:url" content="' + SITE + '"><link rel="manifest"', 1)
+h = h.replace('<link rel="manifest"', '<meta property="og:type" content="website"><meta property="og:site_name" content="Bawss"><meta property="og:title" content="Bawss · Les recettes 2 Jakez"><meta property="og:description" content="Enlève ton choupen, mets ton tablier et va dans ta cuisine. Les recettes testées et approuvées par ton Jakez."><meta property="og:image" content="' + SITE + 'icons/icon-512.png"><meta property="og:url" content="' + SITE + '"><link rel="manifest"', 1)
 
 # service worker : garde l'appli et toutes les photos pour le hors-ligne ; nouveau nom de cache à chaque version
 base = ['./', 'supabase.js', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'] + imgs

@@ -141,7 +141,7 @@
 
   function ecranInstall() {
     const intro = bandeauInvite2() + logo + '<h1>Installe <span>Bawss</span></h1>'
-      + '<p>Les recettes de Jakez direct sur ton téléphone, comme une vraie appli.</p>'
+      + '<p>Les recettes de ton Jakez direct sur ton téléphone, comme une vraie appli.</p>'
       + '<ul class="bw-pts"><li>Icône sur l\'écran d\'accueil</li><li>Plein écran</li><li>Marche sans réseau</li></ul>';
     let corps = '';
     if (ios && inApp) {
@@ -184,7 +184,7 @@
     if (/password.*(6|characters|short|weak)/i.test(m)) return 'Mot de passe trop court : 6 caractères minimum.';
     if (/same.*password|different from the old/i.test(m)) return 'Choisis un mot de passe différent de l\'ancien.';
     if (/invalid.*email|email.*invalid|valid email/i.test(m)) return 'Ce mail n\'a pas l\'air valide.';
-    if (/confirm/i.test(m)) return 'Le compte attend une confirmation par mail : préviens Jakez.';
+    if (/confirm/i.test(m)) return 'Le compte attend une confirmation par mail : préviens ton Jakez.';
     if (/rate|too many|security purposes/i.test(m)) return 'Trop d\'essais d\'un coup. Attends une minute et réessaie.';
     if (/50[234]|timeout|timed out|gateway|smtp|sending.*email|error sending/i.test(m)) return 'Le service de mails ne répond pas. Réessaie dans une minute.';
     if (/fetch|network|failed|load/i.test(m) || !navigator.onLine) return 'Pas de réseau. Il en faut pour créer ton compte ou te connecter.';
@@ -216,7 +216,7 @@
       + '<button type="submit" class="bw-go">' + (creer ? 'C\'est parti' : 'Me connecter') + '</button></form>'
       + (creer ? '' : '<button type="button" class="bw-later" data-oubli>Mot de passe oublié ?</button>')
       + '<button type="button" class="bw-later" data-bascule>' + (creer ? 'J\'ai déjà un compte' : 'Pas de compte ? J\'en crée un') + '</button>'
-      + (creer ? '<p class="bw-note">Ton mail sert à te connecter et à retrouver ton mot de passe si tu l\'oublies. Personne ne voit ton mot de passe, même pas Jakez.</p>' : '')
+      + (creer ? '<p class="bw-note">Ton mail sert à te connecter et à retrouver ton mot de passe si tu l\'oublies. Personne ne voit ton mot de passe, même pas ton Jakez.</p>' : '')
       + '<button type="button" class="bw-later bw-sans" data-sans>Continuer sans compte</button>');
     const f = el.querySelector('[data-compte]'), ml = el.querySelector('#bw-mail'), ps = el.querySelector('#bw-pseudo'), md = el.querySelector('#bw-mdp'), go = el.querySelector('.bw-go'), er = el.querySelector('.bw-err');
     const dernier = ls.get('bawss-mail'); if (!creer && dernier) ml.value = dernier;
@@ -310,7 +310,7 @@
     const el = ouvrir(logo + '<h1>Salut <span>' + esc2(moi.pseudo) + '</span></h1>'
       + '<button type="button" class="bw-go bw-inv" data-inviter>👋 Inviter un pote</button>'
       + (moi.admin ? '<button type="button" class="bw-choix" data-boite><b>📥 Boîte de réception' + (CHAT.non_lus ? ' · ' + CHAT.non_lus : '') + '</b><span>Les messages de la bande</span></button>'
-                   : '<button type="button" class="bw-choix" data-messages><b>💬 Écris au Bawss' + (CHAT.non_lus ? ' · ' + CHAT.non_lus + ' nouveau' + (CHAT.non_lus > 1 ? 'x' : '') : '') + '</b><span>Une question, un plat raté, une idée : Jakez te répond</span></button>')
+                   : '<button type="button" class="bw-choix" data-messages><b>💬 Écris au Bawss' + (CHAT.non_lus ? ' · ' + CHAT.non_lus + ' nouveau' + (CHAT.non_lus > 1 ? 'x' : '') : '') + '</b><span>Une question, un plat raté, une idée : ton Jakez te répond</span></button>')
       + '<p>Tes favoris et ta liste de courses sont gardés sur ton compte : tu les retrouves en te connectant sur un autre appareil.</p>'
       + (sansMail ? '<form data-ajout-mail style="display:grid;gap:12px" novalidate><div class="bw-alert">Ajoute ton mail : c\'est lui qui te permettra de retrouver ton mot de passe si tu l\'oublies.</div>'
                    + '<label for="bw-mail-a">Mail</label><input id="bw-mail-a" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false">'
@@ -376,7 +376,7 @@
     const b = document.createElement('div');
     b.className = 'bw-invite'; b.setAttribute('role', 'region'); b.setAttribute('aria-label', 'Découvrir Bawss');
     b.innerHTML = '<svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#15283A"/><polygon points="40,36 60,36 64,84 36,84" fill="#F2F3EF"/><polygon points="39.2,46 60.8,46 61.5,54 38.5,54" fill="#E4322B"/><polygon points="37.7,64 62.3,64 63,72 37,72" fill="#E4322B"/><rect x="42" y="24" width="16" height="12" fill="#F4B400"/><polygon points="39,24 61,24 50,15" fill="#E4322B"/></svg>'
-      + '<p><b>Bawss</b><span>Toutes les recettes de Jakez, en appli</span></p>'
+      + '<p><b>Bawss</b><span>Toutes les recettes de ton Jakez, en appli</span></p>'
       + '<button type="button" class="bw-inv-go">' + (telephone && !standalone ? 'Installer' : 'Mon compte') + '</button>'
       + '<button type="button" class="bw-inv-x" aria-label="Fermer">✕</button>';
     document.body.appendChild(b);
