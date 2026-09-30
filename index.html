@@ -1575,6 +1575,7 @@ window.lancerIntro = (opts = {}) => {
     if (/invalid.*email|email.*invalid|valid email/i.test(m)) return 'Ce mail n\'a pas l\'air valide.';
     if (/confirm/i.test(m)) return 'Le compte attend une confirmation par mail : préviens Jakez.';
     if (/rate|too many|security purposes/i.test(m)) return 'Trop d\'essais d\'un coup. Attends une minute et réessaie.';
+    if (/50[234]|timeout|timed out|gateway|smtp|sending.*email|error sending/i.test(m)) return 'Le service de mails ne répond pas. Réessaie dans une minute.';
     if (/fetch|network|failed|load/i.test(m) || !navigator.onLine) return 'Pas de réseau. Il en faut pour créer ton compte ou te connecter.';
     return 'Ça n\'a pas marché (' + m.slice(0, 80) + '). Réessaie.';
   }
