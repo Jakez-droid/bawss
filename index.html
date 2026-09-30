@@ -2145,7 +2145,7 @@ window.lancerIntro = (opts = {}) => {
         : Q('Je bloque sur une recette', '<p>En bas de chaque recette et dans le mode cuisine, <b>« Appelle le bawss »</b> te donne le numéro de Jakez.</p>'))
       + `<p class="faq-cat">Partager</p>`
       + Q('Comment j’envoie une recette à un pote ?', '<p>Touche l’icône partage à côté du titre. Ton pote reçoit la photo du plat et un lien qui ouvre direct la recette.' + (B ? ' Tu peux aussi en faire une <b>story Insta</b>, avec une punchline.' : '') + '</p>')
-      + (B ? Q('C’est quoi « Je l’ai faite ! » ?', '<p>Tu as réussi une recette ? Poste la photo de ton plat : elle apparaît sur la recette et dans « Ils l’ont fait comme des Bawss ». Les autres peuvent liker. Tu peux supprimer ta photo quand tu veux.</p>')
+      + (B ? Q('C’est quoi « Je l’ai bawssée » ?', '<p>Tu as réussi une recette ? Poste la photo de ton plat : elle apparaît sur la recette et dans « Ils l’ont fait comme des Bawss ». Les autres peuvent liker. Tu peux supprimer ta photo quand tu veux.</p>')
         + Q('Comment j’invite un pote ?', '<p>Touche <b>« 👋 Inviter un pote »</b> en bas de la liste ou dans Mon compte. Il reçoit un lien avec ton nom dessus.</p>')
         + `<p class="faq-cat">Ton compte</p>`
         + Q('J’ai oublié mon mot de passe', '<p>Sur l’écran de connexion, touche <b>« Mot de passe oublié ? »</b> : tu reçois un lien pour en choisir un nouveau.</p>')
@@ -2595,7 +2595,7 @@ window.lancerIntro = (opts = {}) => {
     const go = () => {
       const act = document.querySelector('#r-' + id + ' .actions'); if (!act) return;
       let g = act.querySelector('[data-rz-go]');
-      if (!g) { act.insertAdjacentHTML('beforeend', '<button type="button" class="btn rz-go" data-rz-go>📸 Je l’ai faite !</button>'); g = act.querySelector('[data-rz-go]'); }
+      if (!g) { act.insertAdjacentHTML('beforeend', '<button type="button" class="btn rz-go" data-rz-go>📸 Je l’ai bawssée</button>'); g = act.querySelector('[data-rz-go]'); }
       if (!g.dataset.branche) { g.dataset.branche = '1'; g.addEventListener('click', () => (moi ? choisirPhoto(id) : ecranCompte('connexion'))); }
     };
     if (!moi) { b.innerHTML = haut('Connecte-toi pour voir les photos de la bande'); go(); return; }
