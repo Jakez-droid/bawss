@@ -153,6 +153,11 @@
 .chat-notif span:not(.x) { opacity: .85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .chat-notif .x { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); padding: 8px; font-size: 15px; opacity: .7; }
 @keyframes bw-notif { from { transform: translateY(-150%); } }
+
+/* « Je l'ai faite ! » à côté du mode cuisine */
+.actions .rz-go { box-shadow: none; background: transparent; border: 1.5px solid var(--ink); color: var(--ink); font: 700 14px var(--f-body); padding: 10px 18px; border-radius: 999px; }
+.actions .rz-go:active { box-shadow: none; }
+.rz-top:has(.rz-n:empty) { display: none; }
 </style></head><body>
 <style>
 /* tuto */
@@ -2002,7 +2007,7 @@ window.lancerIntro = (opts = {}) => {
     { cible: () => $(`#r-${PLAT} [data-cook]`), titre: 'Aux fourneaux', texte: 'Le mode cuisine : une étape à la fois, en gros, l’écran reste allumé et les minuteurs sont intégrés.', avant: async () => { if (mag) fermerMagasin(); if (!$('#cart').hidden) { closeCart(); await dormir(320); } } },
     { bawss: true, cible: () => $('#cook-sos [data-boss]'), titre: 'Ça coince en pleine cuisson ?', texte: 'Touche « Écris au Bawss » : le chat s’ouvre par-dessus ta recette, avec l’étape déjà jointe. Jakez te répond en direct, un bandeau s’affiche dès qu’il a écrit.', avant: async () => { if (!cook) { openCook(R()); cook.i = 1; renderCook(); } await dormir(400); } },
     { bawss: true, cible: () => $(`#r-${PLAT} .boss [data-boss]`), titre: 'Une question sur la recette ?', texte: 'Même hors cuisine : « Écris au Bawss », en bas de chaque recette, ouvre une conversation privée avec Jakez, la recette jointe. Une pastille rouge te prévient quand il t’a répondu.', avant: async () => { if (cook) closeCook(); await dormir(250); } },
-    { bawss: true, cible: () => $(`#r-${PLAT} .rz-go`), titre: 'C’est réussi ? Montre-le', texte: 'Poste la photo de ton plat : la bande la verra, et tu peux la balancer en story.', avant: async () => { if (cook) closeCook(); } },
+    { bawss: true, cible: () => $(`#r-${PLAT} [data-rz-go]`), titre: 'C’est réussi ? Montre-le', texte: 'Poste la photo de ton plat : la bande la verra, et tu peux la balancer en story.', avant: async () => { if (cook) closeCook(); } },
     { bawss: true, cible: () => $('#me-btn'), titre: 'Ton compte', texte: 'Tes favoris et ta liste de courses te suivent sur tous tes appareils. C’est aussi là que tu retrouves tes messages avec le Bawss.' },
     { cible: () => $('#faq-btn'), titre: 'Une question ?', texte: 'Tout est expliqué dans les Questions fréquentes, en bas de la liste. Et tu peux relancer ce tour quand tu veux, juste à côté.', avant: async () => { if (cook) closeCook(); if (mag) fermerMagasin(); backToList(); await dormir(350); } }
   ];
@@ -2089,8 +2094,8 @@ window.lancerIntro = (opts = {}) => {
   addEventListener('resize', () => { if (ov && ov.classList.contains('tour') && liste[i]) { const c = liste[i].cible(); if (c) placer(c, liste[i]); } });
   addEventListener('keydown', e => { if (e.key === 'Escape' && ov) { note('passe'); ranger(); fermer(); } });
   window.lancerTuto = () => { fermer(); backToList(); invitation(); };
-  window.revoirTuto = () => { fermer(); backToList(); effacerRecherche(); demarrer(); };
-  $('#tuto-again').addEventListener('click', () => { backToList(); demarrer(); });
+  window.revoirTuto = () => { fermer(); backToList(); effacerRecherche(); invitation(); };
+  $('#tuto-again').addEventListener('click', () => window.revoirTuto());
   /* première visite : après l'intro, quand plus aucun écran d'accueil n'est ouvert, et pas si on arrive par un lien de recette */
   if (lu() || location.hash) return;
   let lance = false;
@@ -2585,8 +2590,14 @@ window.lancerIntro = (opts = {}) => {
   async function afficherRecette(id) {
     const b = blocRecette(id); if (!b) return;
     if (!sb) { b.hidden = true; return; }
-    const haut = t => '<div class="rz-top"><button type="button" class="rz-go" data-rz-go>📸 Je l\'ai faite !</button><span class="rz-n">' + t + '</span></div>';
-    const go = () => { const g = b.querySelector('[data-rz-go]'); if (g) g.addEventListener('click', () => (moi ? choisirPhoto(id) : ecranCompte('connexion'))); };
+    const haut = t => '<div class="rz-top"><span class="rz-n">' + t + '</span></div>';
+    /* le bouton vit à droite de « Mode cuisine » */
+    const go = () => {
+      const act = document.querySelector('#r-' + id + ' .actions'); if (!act) return;
+      let g = act.querySelector('[data-rz-go]');
+      if (!g) { act.insertAdjacentHTML('beforeend', '<button type="button" class="btn rz-go" data-rz-go>📸 Je l’ai faite !</button>'); g = act.querySelector('[data-rz-go]'); }
+      if (!g.dataset.branche) { g.dataset.branche = '1'; g.addEventListener('click', () => (moi ? choisirPhoto(id) : ecranCompte('connexion'))); }
+    };
     if (!moi) { b.innerHTML = haut('Connecte-toi pour voir les photos de la bande'); go(); return; }
     if (!b.innerHTML) { b.innerHTML = haut(''); go(); }
     const rows = await charger(q => q.eq('recette', id).limit(40));

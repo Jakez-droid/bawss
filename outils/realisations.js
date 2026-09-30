@@ -55,8 +55,14 @@
   async function afficherRecette(id) {
     const b = blocRecette(id); if (!b) return;
     if (!sb) { b.hidden = true; return; }
-    const haut = t => '<div class="rz-top"><button type="button" class="rz-go" data-rz-go>📸 Je l\'ai faite !</button><span class="rz-n">' + t + '</span></div>';
-    const go = () => { const g = b.querySelector('[data-rz-go]'); if (g) g.addEventListener('click', () => (moi ? choisirPhoto(id) : ecranCompte('connexion'))); };
+    const haut = t => '<div class="rz-top"><span class="rz-n">' + t + '</span></div>';
+    /* le bouton vit à droite de « Mode cuisine » */
+    const go = () => {
+      const act = document.querySelector('#r-' + id + ' .actions'); if (!act) return;
+      let g = act.querySelector('[data-rz-go]');
+      if (!g) { act.insertAdjacentHTML('beforeend', '<button type="button" class="btn rz-go" data-rz-go>📸 Je l’ai faite !</button>'); g = act.querySelector('[data-rz-go]'); }
+      if (!g.dataset.branche) { g.dataset.branche = '1'; g.addEventListener('click', () => (moi ? choisirPhoto(id) : ecranCompte('connexion'))); }
+    };
     if (!moi) { b.innerHTML = haut('Connecte-toi pour voir les photos de la bande'); go(); return; }
     if (!b.innerHTML) { b.innerHTML = haut(''); go(); }
     const rows = await charger(q => q.eq('recette', id).limit(40));
