@@ -100,6 +100,10 @@
 .bw-choix b { font-family: var(--f-display); font-weight: 900; text-transform: uppercase; font-size: 28px; line-height: 1; }
 .bw-choix span { font-size: 14.5px; opacity: .8; }
 .bw-choix:active { background: color-mix(in srgb, var(--on-slate) 18%, transparent); }
+
+/* invitation */
+.bw-invite-par { justify-self: start; background: var(--cire); color: var(--cire-ink); border-radius: 999px; padding: 8px 16px; font: 600 16px var(--f-body); animation: bw-monte .4s cubic-bezier(.3, 1.4, .5, 1); }
+.bw-inv { font-size: 22px; padding: 12px 18px; }
 </style></head><body>
 <style>
 /* tuto */
@@ -124,7 +128,8 @@
 .tuto-n { font: 500 12px var(--f-mono) !important; letter-spacing: .1em; color: var(--muted); }
 .tuto-bulle .tuto-non { color: var(--muted); }
 @keyframes tuto-pop { from { transform: scale(.92); opacity: 0; } }
-.tuto-again-p { text-align: center; margin: 28px 0 8px; }
+.tuto-again-p { text-align: center; margin: 28px 0 8px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.invite-btn { border: 0; border-radius: 999px; background: var(--ink); color: var(--paper); font: 800 16px var(--f-body); padding: 12px 20px; cursor: pointer; box-shadow: 3px 3px 0 var(--cire); }
 .tuto-again { border: 0; background: none; color: var(--muted); font: 600 14px var(--f-body); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; padding: 8px; }
 @media (prefers-reduced-motion: reduce) { .tuto-spot, .tuto-bulle, .tuto-carte { transition: none; animation: none; } }
 </style>
@@ -711,7 +716,7 @@ body { background-image: radial-gradient(color-mix(in srgb, var(--ink) 7%, trans
     </div>
     <div class="count" id="count" aria-live="polite"></div>
     <div class="grid" id="grid"></div>
-    <p class="tuto-again-p"><button type="button" class="tuto-again" id="tuto-again">↺ Revoir le tour du proprio</button></p>
+    <p class="tuto-again-p"><button type="button" class="invite-btn" id="invite-btn">👋 Inviter un pote</button><button type="button" class="tuto-again" id="tuto-again">↺ Revoir le tour du proprio</button></p>
     <div class="fp" id="fp" hidden role="dialog" aria-modal="true" aria-label="Filtres"><div class="fp-box"></div></div>
     <div class="empty" id="empty" hidden>
       <p><b>Rien. Nada.</b><br>Même le frigo de Jakez un dimanche soir a plus de choix.</p>
@@ -1921,8 +1926,9 @@ window.lancerIntro = (opts = {}) => {
     note('fait'); ranger();
     ov.classList.remove('tour');
     ov.innerHTML = `<div class="tuto-carte fin"><p class="tuto-k">C’est tout, t’es prêt</p><h2>Cuisine-moi ça<br>comme un <span>Bawss.</span></h2>
-      <div class="tuto-bts"><button type="button" class="tuto-go" data-t-fin>À table</button></div></div>`;
+      <div class="tuto-bts"><button type="button" class="tuto-non" data-t-inv>👋 Inviter un pote</button><button type="button" class="tuto-go" data-t-fin>À table</button></div></div>`;
     ov.querySelector('[data-t-fin]').addEventListener('click', () => { fermer(); backToList(); effacerRecherche(); });
+    ov.querySelector('[data-t-inv]').addEventListener('click', () => { if (window.inviterPote) window.inviterPote(); });
   }
   function fermer() { if (!ov) return; ov.remove(); ov = null; document.documentElement.style.overflow = ''; }
   addEventListener('resize', () => { if (ov && ov.classList.contains('tour') && liste[i]) { const c = liste[i].cible(); if (c) placer(c, liste[i]); } });
@@ -1940,6 +1946,21 @@ window.lancerIntro = (opts = {}) => {
   };
   addEventListener('bawss-intro-fin', () => setTimeout(tenter, 500));
   setTimeout(tenter, 2500);
+})();
+
+/* ---------- inviter un pote : lien vers Bawss, avec le prénom de celui qui invite ---------- */
+(() => {
+  window.inviterPote = async () => {
+    const pseudo = typeof window.bawssPseudo === 'function' ? window.bawssPseudo() : '';
+    const url = 'https://jakez-droid.github.io/bawss/' + (pseudo ? '?de=' + encodeURIComponent(pseudo) : '');
+    const texte = (pseudo ? pseudo + ' t’invite' : 'Je t’invite') + ' sur Bawss 🔥 Les recettes de Jakez, en appli. Installe-la ici :';
+    if (navigator.share) {
+      try { await navigator.share({ title: 'Bawss', text: texte, url }); return; } catch (e) { if (e && e.name === 'AbortError') return; }
+    }
+    try { await navigator.clipboard.writeText(texte + ' ' + url); toast('Lien copié, colle-le à ton pote'); }
+    catch (e) { const o = document.createElement('div'); o.className = 'share-box'; o.innerHTML = '<div><p>Copie ce message et envoie-le à ton pote :</p><input type="text" readonly value="' + esc(texte + ' ' + url) + '"><button type="button" class="btn primary">OK</button></div>'; document.body.appendChild(o); const i = o.querySelector('input'); i.focus(); i.select(); o.addEventListener('click', ev => { if (ev.target === o || ev.target.closest('button')) o.remove(); }); }
+  };
+  $('#invite-btn').addEventListener('click', () => window.inviterPote());
 })();
 
 /* ---------- Bawss : appli installable, comptes, favoris et liste de courses synchronisés ---------- */
@@ -1966,6 +1987,17 @@ window.lancerIntro = (opts = {}) => {
 
   /* ---------- connexion à la base ---------- */
   const H = location.hash;
+  /* lien d'invitation : ?de=Léo */
+  try {
+    const de = new URLSearchParams(location.search).get('de');
+    if (de) {
+      const nom = de.replace(/[<>"]/g, '').trim().slice(0, 24);
+      if (nom && !localStorage.getItem('bawss-invite-par')) localStorage.setItem('bawss-invite-par', nom);
+      history.replaceState(null, '', location.pathname + location.hash);
+    }
+  } catch (e) {}
+  const invitePar = () => { try { return localStorage.getItem('bawss-invite-par') || ''; } catch (e) { return ''; } };
+  const bandeauInvite2 = () => invitePar() ? '<div class="bw-invite-par">👋 <b>' + String(invitePar()).replace(/[&<>]/g, '') + '</b> t’invite sur Bawss</div>' : '';
   const lienMail = /type=recovery/.test(H) ? 'recovery' : /error_code=|error=access_denied/.test(H) ? 'erreur' : /type=(email_change|signup|magiclink|invite)/.test(H) ? 'mail' : '';
   let sb = null;
   try { if (window.supabase && SB_URL && SB_KEY) sb = window.supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: true, autoRefreshToken: true, storageKey: 'bawss-session' } }); } catch (e) { sb = null; }
@@ -2022,7 +2054,9 @@ window.lancerIntro = (opts = {}) => {
     let p;
     try { const r = await sb.from('profils').select('favs,panier,maj_le,admin,pseudo').eq('id', moi.id).maybeSingle(); if (r.error) return; p = r.data; } catch (e) { return; }
     if (!p) {
-      await sb.from('profils').insert({ id: moi.id, pseudo: moi.pseudo, favs: [...favs], panier: cart, plateforme, installee: standalone }).then(() => {}, () => {});
+      const ligne = { id: moi.id, pseudo: moi.pseudo, favs: [...favs], panier: cart, plateforme, installee: standalone };
+      const r = await sb.from('profils').insert(invitePar() ? Object.assign({ invite_par: invitePar() }, ligne) : ligne).then(x => x, e => ({ error: e }));
+      if (r && r.error && invitePar()) await sb.from('profils').insert(ligne).then(() => {}, () => {});   // colonne pas encore créée
       return;
     }
     moi.admin = !!p.admin; moi.pseudo = p.pseudo || moi.pseudo; majBouton();
@@ -2071,7 +2105,7 @@ window.lancerIntro = (opts = {}) => {
   });
 
   function ecranInstall() {
-    const intro = logo + '<h1>Installe <span>Bawss</span></h1>'
+    const intro = bandeauInvite2() + logo + '<h1>Installe <span>Bawss</span></h1>'
       + '<p>Les recettes de Jakez direct sur ton téléphone, comme une vraie appli.</p>'
       + '<ul class="bw-pts"><li>Icône sur l\'écran d\'accueil</li><li>Plein écran</li><li>Marche sans réseau</li></ul>';
     let corps = '';
@@ -2135,7 +2169,7 @@ window.lancerIntro = (opts = {}) => {
   }
   function ecranCompte(mode) {
     const creer = mode !== 'connexion';
-    const el = ouvrir(logo
+    const el = ouvrir((creer ? bandeauInvite2() : '') + logo
       + (creer ? '<h1>Crée ton <span>compte</span></h1><p>Ton mail, un pseudo, un mot de passe, et tu retrouves tes favoris et ta liste de courses sur tous tes appareils.</p>'
                : '<h1>Re-<span>salut</span></h1><p>Ton mail et ton mot de passe, et tu retrouves tout.</p>')
       + '<form data-compte style="display:grid;gap:12px" novalidate>'
@@ -2239,6 +2273,7 @@ window.lancerIntro = (opts = {}) => {
     if (!moi) { ecranCompte(sb ? 'connexion' : 'creer'); return; }
     const sansMail = !moi.email || /@bawss\.app$/.test(moi.email);
     const el = ouvrir(logo + '<h1>Salut <span>' + esc2(moi.pseudo) + '</span></h1>'
+      + '<button type="button" class="bw-go bw-inv" data-inviter>👋 Inviter un pote</button>'
       + '<p>Tes favoris et ta liste de courses sont gardés sur ton compte : tu les retrouves en te connectant sur un autre appareil.</p>'
       + (sansMail ? '<form data-ajout-mail style="display:grid;gap:12px" novalidate><div class="bw-alert">Ajoute ton mail : c\'est lui qui te permettra de retrouver ton mot de passe si tu l\'oublies.</div>'
                    + '<label for="bw-mail-a">Mail</label><input id="bw-mail-a" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false">'
@@ -2250,6 +2285,7 @@ window.lancerIntro = (opts = {}) => {
       + (standalone ? '' : '<button type="button" class="bw-later" data-installer-app>Installer l\'appli sur ce téléphone</button>')
       + '<button type="button" class="bw-later" data-tuto>Revoir le tour du proprio</button>'
       + '<button type="button" class="bw-later" data-deco>Me déconnecter</button>');
+    el.querySelector('[data-inviter]').addEventListener('click', () => { if (window.inviterPote) window.inviterPote(); });
     el.querySelector('[data-tuto]').addEventListener('click', () => { fermer(); if (window.revoirTuto) window.revoirTuto(); });
     el.querySelector('[data-retour]').addEventListener('click', fermer);
     const ia = el.querySelector('[data-installer-app]'); if (ia) ia.addEventListener('click', ecranInstall);
@@ -2281,7 +2317,7 @@ window.lancerIntro = (opts = {}) => {
     const L = r.data || [], j = d => new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
     const semaine = L.filter(m => Date.now() - new Date(m.vu_le) < 7 * 864e5).length;
     box.innerHTML = '<div class="bw-stats"><div><b>' + L.length + '</b><span>membres</span></div><div><b>' + L.filter(m => m.installee).length + '</b><span>appli installée</span></div><div><b>' + semaine + '</b><span>venus cette semaine</span></div></div>'
-      + '<ul class="bw-membres">' + L.map(m => '<li><b>' + esc2(m.pseudo) + '</b><span>' + (m.email && !/@bawss\.app$/.test(m.email) ? esc2(m.email) + ' · ' : '') + esc2(m.plateforme || '') + (m.installee ? ' · installée' : '') + ' · inscrit le ' + j(m.cree_le) + ' · vu le ' + j(m.vu_le) + '</span></li>').join('') + '</ul>';
+      + '<ul class="bw-membres">' + L.map(m => '<li><b>' + esc2(m.pseudo) + '</b><span>' + (m.email && !/@bawss\.app$/.test(m.email) ? esc2(m.email) + ' · ' : '') + esc2(m.plateforme || '') + (m.installee ? ' · installée' : '') + (m.invite_par ? ' · invité par ' + esc2(m.invite_par) : '') + ' · inscrit le ' + j(m.cree_le) + ' · vu le ' + j(m.vu_le) + '</span></li>').join('') + '</ul>';
   }
   if (bouton) bouton.addEventListener('click', ecranMonCompte);
 
@@ -2709,6 +2745,7 @@ window.lancerIntro = (opts = {}) => {
       rzRafraichir();
     }, go);
   }
+  window.bawssPseudo = () => (moi ? moi.pseudo : '');
   window.bawss = { plateforme, standalone, installer: ecranInstall, compte: ecranMonCompte };
 })();
 </script>

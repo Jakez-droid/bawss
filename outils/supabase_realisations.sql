@@ -77,3 +77,17 @@ create policy "bawss envoyer sa photo" on storage.objects for insert to authenti
 drop policy if exists "bawss supprimer sa photo" on storage.objects;
 create policy "bawss supprimer sa photo" on storage.objects for delete to authenticated
   using (bucket_id = 'realisations' and ((storage.foldername(name))[1] = auth.uid()::text or public.est_admin()));
+
+-- Invitations : qui a invité qui
+alter table public.profils add column if not exists invite_par text;
+grant insert (invite_par) on public.profils to authenticated;
+drop function if exists public.membres();
+create function public.membres()
+returns table (pseudo text, email text, plateforme text, installee boolean, cree_le timestamptz, vu_le timestamptz, invite_par text)
+language sql stable security definer set search_path = public as $$
+  select p.pseudo, u.email::text, p.plateforme, p.installee, p.cree_le, p.vu_le, p.invite_par
+  from public.profils p join auth.users u on u.id = p.id
+  where public.est_admin() order by p.cree_le desc;
+$$;
+revoke execute on function public.membres() from anon;
+grant execute on function public.membres() to authenticated;

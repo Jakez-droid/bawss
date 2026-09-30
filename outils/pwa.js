@@ -22,6 +22,17 @@
 
   /* ---------- connexion à la base ---------- */
   const H = location.hash;
+  /* lien d'invitation : ?de=Léo */
+  try {
+    const de = new URLSearchParams(location.search).get('de');
+    if (de) {
+      const nom = de.replace(/[<>"]/g, '').trim().slice(0, 24);
+      if (nom && !localStorage.getItem('bawss-invite-par')) localStorage.setItem('bawss-invite-par', nom);
+      history.replaceState(null, '', location.pathname + location.hash);
+    }
+  } catch (e) {}
+  const invitePar = () => { try { return localStorage.getItem('bawss-invite-par') || ''; } catch (e) { return ''; } };
+  const bandeauInvite2 = () => invitePar() ? '<div class="bw-invite-par">👋 <b>' + String(invitePar()).replace(/[&<>]/g, '') + '</b> t’invite sur Bawss</div>' : '';
   const lienMail = /type=recovery/.test(H) ? 'recovery' : /error_code=|error=access_denied/.test(H) ? 'erreur' : /type=(email_change|signup|magiclink|invite)/.test(H) ? 'mail' : '';
   let sb = null;
   try { if (window.supabase && SB_URL && SB_KEY) sb = window.supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: true, autoRefreshToken: true, storageKey: 'bawss-session' } }); } catch (e) { sb = null; }
@@ -78,7 +89,9 @@
     let p;
     try { const r = await sb.from('profils').select('favs,panier,maj_le,admin,pseudo').eq('id', moi.id).maybeSingle(); if (r.error) return; p = r.data; } catch (e) { return; }
     if (!p) {
-      await sb.from('profils').insert({ id: moi.id, pseudo: moi.pseudo, favs: [...favs], panier: cart, plateforme, installee: standalone }).then(() => {}, () => {});
+      const ligne = { id: moi.id, pseudo: moi.pseudo, favs: [...favs], panier: cart, plateforme, installee: standalone };
+      const r = await sb.from('profils').insert(invitePar() ? Object.assign({ invite_par: invitePar() }, ligne) : ligne).then(x => x, e => ({ error: e }));
+      if (r && r.error && invitePar()) await sb.from('profils').insert(ligne).then(() => {}, () => {});   // colonne pas encore créée
       return;
     }
     moi.admin = !!p.admin; moi.pseudo = p.pseudo || moi.pseudo; majBouton();
@@ -127,7 +140,7 @@
   });
 
   function ecranInstall() {
-    const intro = logo + '<h1>Installe <span>Bawss</span></h1>'
+    const intro = bandeauInvite2() + logo + '<h1>Installe <span>Bawss</span></h1>'
       + '<p>Les recettes de Jakez direct sur ton téléphone, comme une vraie appli.</p>'
       + '<ul class="bw-pts"><li>Icône sur l\'écran d\'accueil</li><li>Plein écran</li><li>Marche sans réseau</li></ul>';
     let corps = '';
@@ -191,7 +204,7 @@
   }
   function ecranCompte(mode) {
     const creer = mode !== 'connexion';
-    const el = ouvrir(logo
+    const el = ouvrir((creer ? bandeauInvite2() : '') + logo
       + (creer ? '<h1>Crée ton <span>compte</span></h1><p>Ton mail, un pseudo, un mot de passe, et tu retrouves tes favoris et ta liste de courses sur tous tes appareils.</p>'
                : '<h1>Re-<span>salut</span></h1><p>Ton mail et ton mot de passe, et tu retrouves tout.</p>')
       + '<form data-compte style="display:grid;gap:12px" novalidate>'
@@ -295,6 +308,7 @@
     if (!moi) { ecranCompte(sb ? 'connexion' : 'creer'); return; }
     const sansMail = !moi.email || /@bawss\.app$/.test(moi.email);
     const el = ouvrir(logo + '<h1>Salut <span>' + esc2(moi.pseudo) + '</span></h1>'
+      + '<button type="button" class="bw-go bw-inv" data-inviter>👋 Inviter un pote</button>'
       + '<p>Tes favoris et ta liste de courses sont gardés sur ton compte : tu les retrouves en te connectant sur un autre appareil.</p>'
       + (sansMail ? '<form data-ajout-mail style="display:grid;gap:12px" novalidate><div class="bw-alert">Ajoute ton mail : c\'est lui qui te permettra de retrouver ton mot de passe si tu l\'oublies.</div>'
                    + '<label for="bw-mail-a">Mail</label><input id="bw-mail-a" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false">'
@@ -306,6 +320,7 @@
       + (standalone ? '' : '<button type="button" class="bw-later" data-installer-app>Installer l\'appli sur ce téléphone</button>')
       + '<button type="button" class="bw-later" data-tuto>Revoir le tour du proprio</button>'
       + '<button type="button" class="bw-later" data-deco>Me déconnecter</button>');
+    el.querySelector('[data-inviter]').addEventListener('click', () => { if (window.inviterPote) window.inviterPote(); });
     el.querySelector('[data-tuto]').addEventListener('click', () => { fermer(); if (window.revoirTuto) window.revoirTuto(); });
     el.querySelector('[data-retour]').addEventListener('click', fermer);
     const ia = el.querySelector('[data-installer-app]'); if (ia) ia.addEventListener('click', ecranInstall);
@@ -337,7 +352,7 @@
     const L = r.data || [], j = d => new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
     const semaine = L.filter(m => Date.now() - new Date(m.vu_le) < 7 * 864e5).length;
     box.innerHTML = '<div class="bw-stats"><div><b>' + L.length + '</b><span>membres</span></div><div><b>' + L.filter(m => m.installee).length + '</b><span>appli installée</span></div><div><b>' + semaine + '</b><span>venus cette semaine</span></div></div>'
-      + '<ul class="bw-membres">' + L.map(m => '<li><b>' + esc2(m.pseudo) + '</b><span>' + (m.email && !/@bawss\.app$/.test(m.email) ? esc2(m.email) + ' · ' : '') + esc2(m.plateforme || '') + (m.installee ? ' · installée' : '') + ' · inscrit le ' + j(m.cree_le) + ' · vu le ' + j(m.vu_le) + '</span></li>').join('') + '</ul>';
+      + '<ul class="bw-membres">' + L.map(m => '<li><b>' + esc2(m.pseudo) + '</b><span>' + (m.email && !/@bawss\.app$/.test(m.email) ? esc2(m.email) + ' · ' : '') + esc2(m.plateforme || '') + (m.installee ? ' · installée' : '') + (m.invite_par ? ' · invité par ' + esc2(m.invite_par) : '') + ' · inscrit le ' + j(m.cree_le) + ' · vu le ' + j(m.vu_le) + '</span></li>').join('') + '</ul>';
   }
   if (bouton) bouton.addEventListener('click', ecranMonCompte);
 
@@ -388,5 +403,6 @@
       rzRafraichir();
     }, go);
   }
+  window.bawssPseudo = () => (moi ? moi.pseudo : '');
   window.bawss = { plateforme, standalone, installer: ecranInstall, compte: ecranMonCompte };
 })();
