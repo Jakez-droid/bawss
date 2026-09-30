@@ -61,7 +61,7 @@
 .rz-v { flex: none; width: 112px; border: 0; padding: 0; background: none; color: inherit; cursor: pointer; scroll-snap-align: start; display: grid; gap: 5px; text-align: left; font: inherit; }
 .rz-v img { width: 112px; height: 112px; object-fit: cover; border-radius: 12px; display: block; background: var(--line); }
 .rz-v span { font-size: 12.5px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.rz-home { margin: 6px 0 22px; }
+.rz-home { margin: 40px 0 8px; clear: both; }
 .rz-home h2 { margin: 0 0 10px; font-family: var(--f-display); font-weight: 900; text-transform: uppercase; font-size: 28px; line-height: 1; }
 .rz-home h2 span { background: var(--cire); color: var(--cire-ink); padding: 0 6px; }
 .bw .rz-v span { color: var(--on-slate); }
@@ -102,8 +102,7 @@
 #extras .dd-btn[aria-pressed="true"] { background: transparent; color: var(--ink); border-color: var(--ink); }
 #extras .on-pill { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 #extras .efface { border: 0; text-decoration: underline; text-underline-offset: 3px; color: var(--muted); }
-@media (max-width: 680px) { #extras .dd-btn { display: none; } }
-@media (min-width: 681px) { #extras .filtres-btn { display: none; } }
+#types { display: none; }
 .fp { position: fixed; inset: 0; z-index: 80; background: rgba(6, 12, 18, 0); transition: background-color .2s ease; }
 .fp.open { background: rgba(6, 12, 18, .5); }
 .fp-box { position: absolute; left: 0; right: 0; bottom: 0; max-height: 84vh; overflow-y: auto; overscroll-behavior: contain; background: var(--paper); color: var(--ink); border-radius: 20px 20px 0 0; padding: 18px 18px calc(env(safe-area-inset-bottom, 0px) + 14px); display: grid; gap: 18px; transform: translateY(100%); transition: transform .24s cubic-bezier(.3, .9, .3, 1); box-shadow: 0 -10px 40px rgba(0, 0, 0, .25); }
@@ -871,9 +870,8 @@ function renderChips() {
   $('#types').innerHTML = [`<button class="chip" type="button" data-type="" aria-pressed="${!state.types.size}">Tout</button>`]
     .concat(types.map(t => `<button class="chip" type="button" data-type="${t}" aria-pressed="${state.types.has(t)}">${TYPE_LABEL[t]}</button>`)).join('');
   const n = nbFiltres();
-  const actifs = ['efforts', 'bases'].flatMap(k => [...state[k]].map(v => `<button class="chip on-pill" type="button" data-retire="${k}" data-v="${esc(v)}" aria-label="Retirer ${esc(FILTRES[k].label(v))}">${esc(FILTRES[k].label(v))} ✕</button>`));
+  const actifs = ['types', 'efforts', 'bases'].flatMap(k => [...state[k]].map(v => `<button class="chip on-pill" type="button" data-retire="${k}" data-v="${esc(v)}" aria-label="Retirer ${esc(FILTRES[k].label(v))}">${esc(FILTRES[k].label(v))} ✕</button>`));
   $('#extras').innerHTML =
-    `<button class="chip filtres-btn" type="button" data-open="all" aria-haspopup="dialog">${ICON.filtres}Filtres${n ? ` <b>${n}</b>` : ''}</button>` +
     ['types', 'efforts', 'bases'].map(k => `<button class="chip dd-btn" type="button" data-open="${k}" aria-haspopup="dialog" aria-pressed="${state[k].size > 0}">${FILTRES[k].titre}${state[k].size ? ` <b>${state[k].size}</b>` : ''} ▾</button>`).join('') +
     `<button class="chip fav" type="button" data-x="favs" aria-pressed="${state.favs}">♥ Mes favoris</button>` +
     actifs.join('') +
