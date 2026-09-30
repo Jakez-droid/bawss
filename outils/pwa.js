@@ -357,24 +357,5 @@
       if (moi) synchroniser(false);
     }, go);
   }
-  /* ---------- recettes piège (champ prank) ---------- */
-  let piege = null;
-  function prank() {
-    const r = BY_ID[location.hash.slice(1)];
-    if (!r || !r.prank) { if (piege) { piege.remove(); piege = null; document.documentElement.style.overflow = ''; } return; }
-    if (piege) return;
-    piege = document.createElement('div');
-    piege.className = 'bw-prank'; piege.setAttribute('role', 'dialog'); piege.setAttribute('aria-label', r.title);
-    piege.innerHTML = '<video src="' + esc2(r.prank.video) + '"' + (r.prank.poster ? ' poster="' + esc2(r.prank.poster) + '"' : '') + ' autoplay muted loop playsinline preload="auto"></video>'
-      + '<p>' + esc2(r.prank.texte) + '</p>'
-      + '<button type="button" class="bw-go">Bon, ok…</button>';
-    document.body.appendChild(piege);
-    document.documentElement.style.overflow = 'hidden';
-    const v = piege.querySelector('video'); try { const p = v.play(); if (p) p.catch(() => {}); } catch (e) {}
-    piege.querySelector('button').addEventListener('click', () => { try { backToList(); } catch (e) { location.hash = ''; } });
-  }
-  addEventListener('hashchange', prank);
-  prank();
-
   window.bawss = { plateforme, standalone, installer: ecranInstall, compte: ecranMonCompte };
 })();
