@@ -130,3 +130,7 @@
 .chat-boite span { font-size: 14px; opacity: .8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .chat-boite time { font: 500 11px var(--f-mono); opacity: .55; }
 .chat-n { background: var(--red, #E4322B); color: #fff; border-radius: 999px; padding: 1px 7px; font-size: 12px; opacity: 1 !important; }
+
+.bw-chat .chat-err { margin: 0 0 8px; padding: 10px 12px; border-radius: 12px; background: color-mix(in srgb, #e5484d 22%, transparent); color: var(--on-slate); font-size: 14px; }
+.bw-chat .chat-err small { display: block; margin-top: 4px; font-family: var(--f-mono); font-size: 11px; opacity: .75; overflow-wrap: anywhere; }
+#toast { z-index: 260; }

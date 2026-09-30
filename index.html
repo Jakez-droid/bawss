@@ -131,6 +131,10 @@
 .chat-boite span { font-size: 14px; opacity: .8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .chat-boite time { font: 500 11px var(--f-mono); opacity: .55; }
 .chat-n { background: var(--red, #E4322B); color: #fff; border-radius: 999px; padding: 1px 7px; font-size: 12px; opacity: 1 !important; }
+
+.bw-chat .chat-err { margin: 0 0 8px; padding: 10px 12px; border-radius: 12px; background: color-mix(in srgb, #e5484d 22%, transparent); color: var(--on-slate); font-size: 14px; }
+.bw-chat .chat-err small { display: block; margin-top: 4px; font-family: var(--f-mono); font-size: 11px; opacity: .75; overflow-wrap: anywhere; }
+#toast { z-index: 260; }
 </style></head><body>
 <style>
 /* tuto */
@@ -2810,7 +2814,16 @@ window.lancerIntro = (opts = {}) => {
       const row = { texte: t, recette: CHAT.recette, user_id: CHAT.cible };
       const r = await sb.from('messages').insert(row).select().single().then(x => x, x => ({ error: x }));
       btn.disabled = false;
-      if (r.error) { toast('Pas envoyé, vérifie ton réseau'); return; }
+      const errEl = el.querySelector('.chat-err'); if (errEl) errEl.remove();
+      if (r.error) {
+        const e2 = r.error || {}, code = e2.code || '', msg = String(e2.message || e2);
+        const pasPret = code === '42P01' || code === 'PGRST205' || code === '42501' || /does not exist|schema cache|permission denied/i.test(msg);
+        form.insertAdjacentHTML('beforebegin', '<p class="chat-err" role="alert">' + (pasPret
+          ? 'Le chat n’est pas encore ouvert côté serveur. Réessaie un peu plus tard.'
+          : (navigator.onLine === false ? 'Pas de réseau : ton message n’est pas parti.' : 'Ton message n’est pas parti, réessaie.'))
+          + (moi.admin ? '<small>' + esc2(code + ' ' + msg) + '</small>' : '') + '</p>');
+        return;
+      }
       ta.value = ''; ta.style.height = 'auto';
       if (CHAT.recette) { CHAT.recette = null; const c = el.querySelector('.chat-ctx'); if (c) c.remove(); }
       ajouterBulle(r.data);

@@ -71,7 +71,16 @@
       const row = { texte: t, recette: CHAT.recette, user_id: CHAT.cible };
       const r = await sb.from('messages').insert(row).select().single().then(x => x, x => ({ error: x }));
       btn.disabled = false;
-      if (r.error) { toast('Pas envoyé, vérifie ton réseau'); return; }
+      const errEl = el.querySelector('.chat-err'); if (errEl) errEl.remove();
+      if (r.error) {
+        const e2 = r.error || {}, code = e2.code || '', msg = String(e2.message || e2);
+        const pasPret = code === '42P01' || code === 'PGRST205' || code === '42501' || /does not exist|schema cache|permission denied/i.test(msg);
+        form.insertAdjacentHTML('beforebegin', '<p class="chat-err" role="alert">' + (pasPret
+          ? 'Le chat n’est pas encore ouvert côté serveur. Réessaie un peu plus tard.'
+          : (navigator.onLine === false ? 'Pas de réseau : ton message n’est pas parti.' : 'Ton message n’est pas parti, réessaie.'))
+          + (moi.admin ? '<small>' + esc2(code + ' ' + msg) + '</small>' : '') + '</p>');
+        return;
+      }
       ta.value = ''; ta.style.height = 'auto';
       if (CHAT.recette) { CHAT.recette = null; const c = el.querySelector('.chat-ctx'); if (c) c.remove(); }
       ajouterBulle(r.data);
