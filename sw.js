@@ -25,7 +25,7 @@ self.addEventListener('fetch', e => {
   e.respondWith((async () => {
     const c = await caches.open(CACHE);
     const hit = await c.match(r);
-    const net = fetch(r).then(res => { if (res.ok || res.type === 'opaque') c.put(r, res.clone()); return res; }).catch(() => hit);
+    const net = fetch(r).then(res => { if (res.status === 200 || res.type === 'opaque') c.put(r, res.clone()).catch(() => {}); return res; }).catch(() => hit);
     return hit || net;
   })());
 });

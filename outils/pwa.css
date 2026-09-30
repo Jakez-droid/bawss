@@ -48,3 +48,11 @@
 .me-btn.on svg { display: none; }
 .me-btn:not(.on) .me-i { display: none; }
 @media (max-width: 680px) { .me-btn { margin-left: auto; } .me-btn + .cart-btn { margin-left: 8px; } }
+
+/* recette piège */
+.bw-prank { position: fixed; inset: 0; z-index: 210; background: #000; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; padding: calc(env(safe-area-inset-top, 0px) + 20px) 22px calc(env(safe-area-inset-bottom, 0px) + 24px); box-sizing: border-box; animation: bw-in .25s ease-out; }
+.bw-prank video { height: min(60vh, 560px); aspect-ratio: 9 / 20; object-fit: cover; max-width: 100%; border-radius: 16px; background: #111; box-shadow: 0 10px 40px rgba(0, 0, 0, .6); }
+.bw-prank p { margin: 0; max-width: 460px; text-align: center; font-family: var(--f-display); font-weight: 900; text-transform: uppercase; font-size: clamp(28px, 8vw, 44px); line-height: .98; opacity: 0; animation: bw-texte .35s cubic-bezier(.3, 1.6, .5, 1) .9s forwards; }
+.bw-prank .bw-go { max-width: 320px; opacity: 0; animation: bw-texte .3s ease-out 1.8s forwards; }
+@keyframes bw-in { from { opacity: 0; } }
+@keyframes bw-texte { from { opacity: 0; transform: scale(1.4) rotate(-3deg); } to { opacity: 1; transform: none; } }

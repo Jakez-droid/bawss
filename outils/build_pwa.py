@@ -39,6 +39,17 @@ h = h.replace(k, '<button class="cart-btn me-btn" id="me-btn" type="button" aria
 g = '<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>'
 assert g in h
 h = h.replace(g, g + '<script src="supabase.js"></script>', 1)
+# recettes propres à Bawss (outils/extras.json) : ajoutées ou remplacées dans les données de la page
+import json
+ex = os.path.join(here, 'extras.json')
+if os.path.exists(ex):
+    m = re.search(r'const RECIPES = (\[.*?\]);\nconst EXPRESSIONS', h, re.S)
+    assert m, 'RECIPES'
+    R = json.loads(m.group(1).replace('<\\/', '</'))
+    extras = json.load(open(ex, encoding='utf-8'))
+    ids = {r['id'] for r in extras}
+    R = [r for r in R if r['id'] not in ids] + extras
+    h = h[:m.start(1)] + json.dumps(R, ensure_ascii=False).replace('</', '<\\/') + h[m.end(1):]
 # script de l'appli installable, en dernier
 i = h.rindex('</script>')
 h = h[:i] + '\n' + js + h[i:]
