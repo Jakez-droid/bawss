@@ -179,7 +179,7 @@
   function connecte(u, pseudo, message) {
     moi = { id: u.id, pseudo: (u.user_metadata && u.user_metadata.pseudo) || pseudo || ls.get('bawss-pseudo') || 'toi', email: u.email, admin: false };
     ls.set('bawss-pseudo', moi.pseudo);
-    return synchroniser(true).then(() => { majBouton(); fermer(); if (message) toast(message.replace('%', moi.pseudo)); });
+    return synchroniser(true).then(() => { majBouton(); fermer(); if (message) toast(message.replace('%', moi.pseudo)); rzRafraichir(); });
   }
   function ecranCompte(mode) {
     const creer = mode !== 'connexion';
@@ -292,6 +292,7 @@
                    + '<label for="bw-mail-a">Mail</label><input id="bw-mail-a" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false">'
                    + '<p class="bw-err" role="alert" hidden></p><button type="submit" class="bw-go">Ajouter mon mail</button></form>'
                   : '<p class="bw-note">Connecté avec ' + esc2(moi.email) + '</p>')
+      + '<div data-rz-compte></div>'
       + '<div data-membres></div>'
       + '<button type="button" class="bw-go" data-retour>Retour aux recettes</button>'
       + (standalone ? '' : '<button type="button" class="bw-later" data-installer-app>Installer l\'appli sur ce téléphone</button>')
@@ -311,10 +312,11 @@
     });
     el.querySelector('[data-deco]').addEventListener('click', async () => {
       try { await sb.auth.signOut(); } catch (e) {}
-      moi = null; majBouton(); ls.del('bawss-maj');
+      moi = null; majBouton(); ls.del('bawss-maj'); rzRafraichir();
       appliquer([], { recipes: {}, checked: [] });
       toast('Déconnecté'); ecranCompte('connexion');
     });
+    rzCompte(el.querySelector('[data-rz-compte]'));
     if (moi.admin) membres(el.querySelector('[data-membres]'));
   }
   async function membres(box) {
@@ -328,6 +330,8 @@
       + '<ul class="bw-membres">' + L.map(m => '<li><b>' + esc2(m.pseudo) + '</b><span>' + (m.email && !/@bawss\.app$/.test(m.email) ? esc2(m.email) + ' · ' : '') + esc2(m.plateforme || '') + (m.installee ? ' · installée' : '') + ' · inscrit le ' + j(m.cree_le) + ' · vu le ' + j(m.vu_le) + '</span></li>').join('') + '</ul>';
   }
   if (bouton) bouton.addEventListener('click', ecranMonCompte);
+
+/*@REALISATIONS@*/
 
   /* ---------- au démarrage ---------- */
   const telephone = ios || android;
@@ -355,6 +359,7 @@
       if (u) moi = { id: u.id, pseudo: (u.user_metadata && u.user_metadata.pseudo) || ls.get('bawss-pseudo') || 'toi', email: u.email, admin: false };
       go();
       if (moi) synchroniser(false);
+      rzRafraichir();
     }, go);
   }
   window.bawss = { plateforme, standalone, installer: ecranInstall, compte: ecranMonCompte };

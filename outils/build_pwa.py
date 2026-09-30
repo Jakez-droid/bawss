@@ -6,6 +6,9 @@ here = os.path.dirname(os.path.abspath(__file__))
 h = open(src, encoding='utf-8').read()
 css = open(os.path.join(here, 'pwa.css'), encoding='utf-8').read()
 js = open(os.path.join(here, 'pwa.js'), encoding='utf-8').read()
+rz = os.path.join(here, 'realisations.js')
+if os.path.exists(rz):
+    js = js.replace('/*@REALISATIONS@*/', open(rz, encoding='utf-8').read())
 meta = ('<html lang="fr"><head><meta charset="utf-8">'
   '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">'
   '<title>Bawss · Les recettes 2 Jakez</title>'
