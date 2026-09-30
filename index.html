@@ -208,6 +208,12 @@
 .mag-tabs button span { display: inline-grid; place-items: center; min-width: 20px; height: 20px; margin-left: 4px; border-radius: 999px; background: #F4B400; color: #0E1B26; font-size: 12px; }
 .mag-tabs button[aria-pressed="true"] { background: #F2F3EF; color: #0E1B26; border-color: #F2F3EF; }
 .mag-list { list-style: none; margin: 4px 0 0; padding: 0; overflow-y: auto; flex: 1; display: grid; align-content: start; gap: 8px; overscroll-behavior: contain; }
+.mag-pages { flex: 1; min-height: 0; display: flex; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; margin: 0 -16px; }
+.mag-pages::-webkit-scrollbar { display: none; }
+.mag-page { flex: 0 0 100%; box-sizing: border-box; padding: 0 16px; overflow-y: auto; overscroll-behavior: contain; scroll-snap-align: start; scroll-snap-stop: always; }
+.mag-page .mag-list { overflow: visible; flex: none; padding-bottom: 12px; }
+.mag-tabs { margin: 0 -16px; padding-left: 16px; padding-right: 16px; }
+.mag-tabs button { transition: background-color .2s ease, color .2s ease, border-color .2s ease; }
 .mag-list button { width: 100%; min-height: 72px; display: flex; align-items: center; gap: 16px; text-align: left; border: 0; border-radius: 16px; background: rgba(242,243,239,.08); color: #F2F3EF; padding: 14px 16px; cursor: pointer; font: inherit; transition: background-color .15s ease, opacity .2s ease; }
 .mag-c { width: 34px; height: 34px; flex: none; border-radius: 10px; border: 2.5px solid rgba(242,243,239,.6); display: grid; place-items: center; font: 900 22px var(--f-body); color: #0E1B26; }
 .mag-t { display: grid; gap: 2px; font: 700 22px/1.2 var(--f-body); }
@@ -1383,29 +1389,49 @@ async function ouvrirMagasin() {
   magRayon = (premier || rs[0] || {}).code;
   renderMagasin();
   try { if (navigator.wakeLock) magVeille = await navigator.wakeLock.request('screen'); } catch (e) {}
-  let x0 = null;
-  mag.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; }, { passive: true });
-  mag.addEventListener('touchend', e => {
-    if (x0 === null) return; const dx = e.changedTouches[0].clientX - x0; x0 = null;
-    if (Math.abs(dx) < 70) return;
-    const rs = magRayons(), i = rs.findIndex(r => r.code === magRayon), j = i + (dx < 0 ? 1 : -1);
-    if (rs[j]) { magRayon = rs[j].code; renderMagasin(); }
-    else if (j === -1 && magRayon !== 'tout') { magRayon = 'tout'; renderMagasin(); }
-  }, { passive: true });
   mag.addEventListener('click', e => {
     if (e.target.closest('[data-mag-x]')) { fermerMagasin(); return; }
-    const t = e.target.closest('[data-mag-r]'); if (t) { magRayon = t.dataset.magR; renderMagasin(); return; }
+    const t = e.target.closest('[data-mag-r]'); if (t) { allerRayon(t.dataset.magR, true); return; }
     if (e.target.closest('[data-mag-vider]')) { cart = { recipes: {}, checked: [], libres: [] }; saveCart(); Object.keys(BY_ID).forEach(id => { const s = $('#r-' + id); const b = s && $('[data-cart]', s); if (b) { b.innerHTML = cartBtnHTML(BY_ID[id]); b.setAttribute('aria-pressed', 'false'); } }); fermerMagasin(); toast('Liste vidée'); return; }
     const l = e.target.closest('[data-mag-k]'); if (!l) return;
     const k = l.dataset.magK, on = !cart.checked.includes(k);
     cart.checked = on ? [...new Set([...cart.checked, k])] : cart.checked.filter(x => x !== k);
     saveCart();
     if (on && navigator.vibrate) navigator.vibrate(15);
-    renderMagasin();
+    const tout = magRayons().flatMap(r => r.items);
+    if (tout.length && tout.every(i => cart.checked.includes(i.key))) { setTimeout(renderMagasin, 350); majMag(); return; }
+    majMag();
     const r = magRayons().find(r => r.code === magRayon);
     if (on && magRayon !== 'tout' && r && r.items.every(i => cart.checked.includes(i.key))) {
-      setTimeout(() => { const suiv = magRayons().find(r => r.items.some(i => !cart.checked.includes(i.key))); if (suiv && mag) { magRayon = suiv.code; renderMagasin(); } }, 550);
+      setTimeout(() => { const suiv = magRayons().find(r => r.items.some(i => !cart.checked.includes(i.key))); if (suiv && mag) allerRayon(suiv.code, true); }, 550);
     }
+  });
+}
+/* change de rayon : les rayons sont des pages côte à côte, on glisse de l'une à l'autre */
+function allerRayon(code, doux) {
+  if (!mag) return;
+  const pages = $('.mag-pages', mag), page = pages && $(`.mag-page[data-code="${code}"]`, pages);
+  if (!page) return;
+  magRayon = code; majOnglets(doux);
+  pages.scrollTo({ left: page.offsetLeft - pages.offsetLeft, behavior: doux ? 'smooth' : 'auto' });
+}
+function majOnglets(doux) {
+  const tabs = $('.mag-tabs', mag); if (!tabs) return;
+  tabs.querySelectorAll('[data-mag-r]').forEach(b => b.setAttribute('aria-pressed', b.dataset.magR === magRayon));
+  const b = $(`[data-mag-r="${magRayon}"]`, tabs);
+  if (b) tabs.scrollTo({ left: b.offsetLeft - tabs.offsetLeft - (tabs.clientWidth - b.offsetWidth) / 2, behavior: doux ? 'smooth' : 'auto' });
+}
+/* après une coche : on met à jour sans tout redessiner (pas de saut, le défilement reste en place) */
+function majMag() {
+  if (!mag) return;
+  const rs = magRayons(), tout = rs.flatMap(r => r.items), pris = tout.filter(i => cart.checked.includes(i.key)).length;
+  mag.querySelectorAll('[data-mag-k]').forEach(b => { const on = cart.checked.includes(b.dataset.magK); b.setAttribute('aria-pressed', on); $('.mag-c', b).textContent = on ? '✓' : ''; });
+  const n = $('.mag-n b', mag); if (n) n.textContent = pris;
+  const bar = $('.mag-bar i', mag); if (bar) bar.style.width = (tout.length ? pris / tout.length * 100 : 0) + '%';
+  const badge = (b, reste) => { b.querySelector('span')?.remove(); b.lastChild && b.lastChild.nodeType === 3 && /✓/.test(b.lastChild.textContent) && b.lastChild.remove(); b.insertAdjacentHTML('beforeend', reste ? ` <span>${reste}</span>` : ' ✓'); };
+  mag.querySelectorAll('[data-mag-r]').forEach(b => {
+    const items = b.dataset.magR === 'tout' ? tout : (rs.find(r => r.code === b.dataset.magR) || { items: [] }).items;
+    badge(b, items.filter(i => !cart.checked.includes(i.key)).length);
   });
 }
 function renderMagasin() {
@@ -1416,19 +1442,25 @@ function renderMagasin() {
       <button type="button" class="mag-go" data-mag-vider>Vider la liste</button><button type="button" class="mag-ghost" data-mag-x>Garder la liste et fermer</button></div>`;
     return;
   }
-  const total = magRayon === 'tout';
-  const r = total ? null : (rs.find(r => r.code === magRayon) || rs[0]);
+  if (magRayon !== 'tout' && !rs.some(r => r.code === magRayon)) magRayon = (rs[0] || {}).code || 'tout';
   const trier = l => [...l].sort((a, b) => (cart.checked.includes(a.key) - cart.checked.includes(b.key)) || a.a.localeCompare(b.a, 'fr'));
   const ligneMag = i => { const on = cart.checked.includes(i.key), qs = i.uses.filter(u => u.q).map(u => u.q); return `<li><button type="button" data-mag-k="${esc(i.key)}" aria-pressed="${on}"><span class="mag-c" aria-hidden="true">${on ? '✓' : ''}</span><span class="mag-t">${esc(i.a)}${qs.length ? `<em>${esc(totalQ(qs))}</em>` : ''}</span></button></li>`; };
-  const corps = total
-    ? rs.map(x => `<li class="mag-h">${x.label}</li>` + trier(x.items).map(ligneMag).join('')).join('')
-    : (r ? trier(r.items).map(ligneMag).join('') : '');
-  const resteTout = tout.length - pris;
+  const reste = l => l.filter(i => !cart.checked.includes(i.key)).length;
+  const onglet = (code, label, l) => `<button type="button" data-mag-r="${code}" aria-pressed="${code === magRayon}">${label}${reste(l) ? ` <span>${reste(l)}</span>` : ' ✓'}</button>`;
+  const page = (code, corps) => `<section class="mag-page" data-code="${code}"><ul class="mag-list">${corps}</ul></section>`;
   mag.innerHTML = `<div class="mag-top"><div><p class="mag-k">En magasin</p><p class="mag-n"><b>${pris}</b> / ${tout.length}</p></div><button type="button" class="mag-x" data-mag-x aria-label="Quitter le mode magasin">✕</button></div>
     <div class="mag-bar"><i style="width:${tout.length ? pris / tout.length * 100 : 0}%"></i></div>
-    <div class="mag-tabs"><button type="button" data-mag-r="tout" aria-pressed="${total}">Tout${resteTout ? ` <span>${resteTout}</span>` : ' ✓'}</button>${rs.map(x => { const n = x.items.filter(i => !cart.checked.includes(i.key)).length; return `<button type="button" data-mag-r="${x.code}" aria-pressed="${!total && x.code === (r && r.code)}">${x.label}${n ? ` <span>${n}</span>` : ' ✓'}</button>`; }).join('')}</div>
-    <ul class="mag-list">${corps}</ul>
+    <div class="mag-tabs">${onglet('tout', 'Tout', tout)}${rs.map(x => onglet(x.code, x.label, x.items)).join('')}</div>
+    <div class="mag-pages">${page('tout', rs.map(x => `<li class="mag-h">${x.label}</li>` + trier(x.items).map(ligneMag).join('')).join(''))}${rs.map(x => page(x.code, trier(x.items).map(ligneMag).join(''))).join('')}</div>
     <p class="mag-aide">Touche un article pour le cocher · glisse pour changer de rayon</p>`;
+  const pages = $('.mag-pages', mag);
+  requestAnimationFrame(() => allerRayon(magRayon, false));
+  let t = null;
+  const fin = () => {
+    const i = Math.round(pages.scrollLeft / pages.clientWidth), p = pages.children[i];
+    if (p && p.dataset.code !== magRayon) { magRayon = p.dataset.code; majOnglets(true); }
+  };
+  pages.addEventListener('scroll', () => { clearTimeout(t); t = setTimeout(fin, 90); }, { passive: true });
 }
 function fermerMagasin() {
   if (!mag) return;
@@ -1963,10 +1995,11 @@ window.lancerIntro = (opts = {}) => {
     { cible: () => $(`#r-${PLAT} [data-cart]`), titre: 'Tes courses en un geste', texte: 'Coche d’abord ce que tu as déjà : c’est barré. Puis touche « Ajouter au caddy » : seuls les ingrédients qui manquent partent dans ta liste.' },
     { cible: () => $('#cart-list .cr-rayon'), titre: 'Ta liste de courses', texte: 'Les ingrédients du curry sont arrivés ici, rangés par rayon, avec les bonnes quantités. Elle t’attend toujours derrière le caddy, en haut à droite.', avant: async () => { if (!inCart(PLAT)) { cart.recipes[PLAT] = serves[PLAT]; ajoutTuto = true; saveCart(); majFiche(); } openCart(); await dormir(350); } },
     { cible: () => $('#cart-add'), titre: 'Et le reste ?', texte: 'PQ, bières, pain… Ajoute ce que tu veux ici : l’appli le range dans le bon rayon.' },
-    { cible: () => $('#cart-mag'), titre: 'Au magasin', texte: 'Lance le mode magasin : un rayon à la fois, de grosses cases à cocher d’une main, et l’écran reste allumé.' },
+    { cible: () => $('#cart-mag'), titre: 'Au magasin', texte: 'Lance le mode magasin : un rayon par écran, tu glisses de l’un à l’autre, de grosses cases à cocher d’une main, et l’écran reste allumé.' },
     { cible: () => $(`#r-${PLAT} [data-cook]`), titre: 'Aux fourneaux', texte: () => 'Le mode cuisine : une étape à la fois, en gros, l’écran reste allumé et les minuteurs sont intégrés.' + (window.bawss ? ' Et si ça coince, tu écris au Bawss sans quitter ta recette.' : ''), avant: async () => { if (!$('#cart').hidden) { closeCart(); await dormir(320); } } },
     { bawss: true, cible: () => $(`#r-${PLAT} .rz-go`), titre: 'C’est réussi ? Montre-le', texte: 'Poste la photo de ton plat : la bande la verra, et tu peux la balancer en story.' },
-    { bawss: true, cible: () => $('#me-btn'), titre: 'Ton compte', texte: 'Tes favoris et ta liste de courses te suivent sur tous tes appareils.' }
+    { bawss: true, cible: () => $('#me-btn'), titre: 'Ton compte', texte: 'Tes favoris et ta liste de courses te suivent sur tous tes appareils. C’est aussi là que tu retrouves tes messages avec le Bawss.' },
+    { cible: () => $('#faq-btn'), titre: 'Une question ?', texte: 'Tout est expliqué dans les Questions fréquentes, en bas de la liste. Et tu peux relancer ce tour quand tu veux, juste à côté.', avant: async () => { backToList(); await dormir(350); } }
   ];
   let ov = null, i = 0, liste = [], ajoutTuto = false;
   function majFiche() { const s = $('#r-' + PLAT), b = s && $('[data-cart]', s); if (b) { b.innerHTML = cartBtnHTML(R()); b.setAttribute('aria-pressed', inCart(PLAT)); } renderCartBadge(); }
