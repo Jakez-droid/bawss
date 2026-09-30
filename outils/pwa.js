@@ -337,10 +337,25 @@
   const telephone = ios || android;
   const recent = Date.now() - parseInt(ls.get('bawss-plus-tard') || '0', 10) < 3 * 864e5;
   const nettoyer = () => { try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {} try { route(); } catch (e) {} };
+  /* arrivée par un lien partagé : on montre d'abord la recette, avec une invitation discrète */
+  const arrivee = BY_ID[location.hash.slice(1)];
+  function bandeauInvite() {
+    if (document.querySelector('.bw-invite')) return;
+    const b = document.createElement('div');
+    b.className = 'bw-invite'; b.setAttribute('role', 'region'); b.setAttribute('aria-label', 'Découvrir Bawss');
+    b.innerHTML = '<svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#15283A"/><polygon points="40,36 60,36 64,84 36,84" fill="#F2F3EF"/><polygon points="39.2,46 60.8,46 61.5,54 38.5,54" fill="#E4322B"/><polygon points="37.7,64 62.3,64 63,72 37,72" fill="#E4322B"/><rect x="42" y="24" width="16" height="12" fill="#F4B400"/><polygon points="39,24 61,24 50,15" fill="#E4322B"/></svg>'
+      + '<p><b>Bawss</b><span>Toutes les recettes de Jakez, en appli</span></p>'
+      + '<button type="button" class="bw-inv-go">' + (telephone && !standalone ? 'Installer' : 'Mon compte') + '</button>'
+      + '<button type="button" class="bw-inv-x" aria-label="Fermer">✕</button>';
+    document.body.appendChild(b);
+    b.querySelector('.bw-inv-go').addEventListener('click', () => { b.remove(); if (telephone && !standalone) ecranInstall(); else ecranCompte('creer'); });
+    b.querySelector('.bw-inv-x').addEventListener('click', () => b.remove());
+  }
   function demarrer() {
     if (lienMail === 'recovery') return;          // l'écran « nouveau mot de passe » s'en occupe
     if (lienMail === 'erreur') { nettoyer(); ouvrir(logo + '<h1>Lien <span>expiré</span></h1><p>Ce lien ne marche plus : il a déjà servi ou il est trop vieux. Redemande-en un.</p><button type="button" class="bw-go" data-ok>OK</button>'); ecran.querySelector('[data-ok]').addEventListener('click', () => ecranOubli(ls.get('bawss-mail') || '')); return; }
     if (lienMail === 'mail') { nettoyer(); toast('Ton mail est confirmé'); }
+    if (arrivee && !moi && !lienMail) { bandeauInvite(); return; }
     if (telephone && !standalone && !recent && !lienMail) { ecranInstall(); return; }
     if (!moi && sb) { ecranCompte('creer'); return; }
     if (!lienMail) lancer();

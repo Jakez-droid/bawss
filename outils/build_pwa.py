@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """build_pwa.py APP.html OUT_DIR : transforme la page de l'app en appli installable (index.html)."""
-import sys, re, os
+import sys, re, os, json
 src, out = sys.argv[1], sys.argv[2]
 here = os.path.dirname(os.path.abspath(__file__))
 h = open(src, encoding='utf-8').read()
@@ -57,5 +57,56 @@ if os.path.exists(ex):
 i = h.rindex('</script>')
 h = h[:i] + '\n' + js + h[i:]
 os.makedirs(out, exist_ok=True)
+
+# photos : sorties de la page en fichiers (page plus légère, aperçus WhatsApp possibles)
+import base64, hashlib, html as H
+SITE = 'https://jakez-droid.github.io/bawss/'
+m = re.search(r'const RECIPES = (\[.*?\]);\nconst EXPRESSIONS', h, re.S)
+R = json.loads(m.group(1).replace('<\\/', '</'))
+os.makedirs(os.path.join(out, 'img'), exist_ok=True)
+for f in os.listdir(os.path.join(out, 'img')):
+    os.remove(os.path.join(out, 'img', f))
+imgs = []
+for r in R:
+    ph = r.get('photo') or ''
+    if ph.startswith('data:image/'):
+        ext = 'jpg' if 'jpeg' in ph[:30] else ph[11:ph.index(';')]
+        data = base64.b64decode(ph.split(',', 1)[1])
+        nom = 'img/' + r['id'] + '-' + hashlib.md5(data).hexdigest()[:6] + '.' + ext
+        open(os.path.join(out, nom), 'wb').write(data)
+        r['photo'] = nom
+        imgs.append(nom)
+h = h[:m.start(1)] + json.dumps(R, ensure_ascii=False).replace('</', '<\\/') + h[m.end(1):]
+
+# une petite page par recette : l'aperçu (photo + titre) que montrent WhatsApp, Messenger…, puis l'appli
+os.makedirs(os.path.join(out, 'r'), exist_ok=True)
+for f in os.listdir(os.path.join(out, 'r')):
+    os.remove(os.path.join(out, 'r', f))
+def texte(s):
+    s = re.sub(r'\[\[(.+?)\]\]', r'\1', s or ''); s = re.sub(r'\[([^\]]+)\]\([^)]*\)', r'\1', s)
+    return re.sub(r'\*\*', '', s).strip()
+for r in R:
+    t = H.escape(r['title'])
+    d = H.escape(texte(r.get('intro')) or texte(r.get('tip'))[:180] or 'La recette testée et approuvée par Jakez.')
+    img = SITE + (r['photo'] if r.get('photo') else 'icons/icon-512.png')
+    open(os.path.join(out, 'r', r['id'] + '.html'), 'w', encoding='utf-8').write(
+        '<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+        f'<title>{t} · Bawss</title><meta name="description" content="{d}">'
+        f'<meta property="og:type" content="article"><meta property="og:site_name" content="Bawss · Les recettes 2 Jakez">'
+        f'<meta property="og:title" content="{t}"><meta property="og:description" content="{d}">'
+        f'<meta property="og:image" content="{img}"><meta property="og:url" content="{SITE}r/{r["id"]}.html">'
+        f'<meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#15283A">'
+        f'<link rel="icon" href="../icons/favicon-32.png"><meta http-equiv="refresh" content="0;url=../#{r["id"]}">'
+        f'<script>location.replace("../#{r["id"]}")</script></head>'
+        f'<body style="background:#15283A;color:#fff;font-family:sans-serif;padding:24px"><a style="color:#F4B400" href="../#{r["id"]}">{t} : ouvrir la recette sur Bawss</a></body></html>')
+
+# aperçu de l'accueil
+h = h.replace('<link rel="manifest"', '<meta property="og:type" content="website"><meta property="og:site_name" content="Bawss"><meta property="og:title" content="Bawss · Les recettes 2 Jakez"><meta property="og:description" content="Enlève ton choupen, mets ton tablier et va dans ta cuisine. Les recettes testées et approuvées par Jakez."><meta property="og:image" content="' + SITE + 'icons/icon-512.png"><meta property="og:url" content="' + SITE + '"><link rel="manifest"', 1)
+
+# service worker : garde l'appli et toutes les photos pour le hors-ligne ; nouveau nom de cache à chaque version
+base = ['./', 'supabase.js', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'] + imgs
+empreinte = hashlib.md5(h.encode('utf-8')).hexdigest()[:8]
+sw = open(os.path.join(here, 'sw.template.js'), encoding='utf-8').read().replace('__CACHE__', 'bawss-' + empreinte).replace('__BASE__', json.dumps(base))
+open(os.path.join(out, 'sw.js'), 'w', encoding='utf-8').write(sw)
 open(os.path.join(out, 'index.html'), 'w', encoding='utf-8').write(h)
 print('ok', len(h))
