@@ -181,7 +181,10 @@
   function brancherVoir(el) {
     el.querySelectorAll('.bw-voir').forEach(b => b.addEventListener('click', e => { const md = e.currentTarget.previousElementSibling, v = md.type === 'password'; md.type = v ? 'text' : 'password'; e.currentTarget.textContent = v ? 'Cacher' : 'Voir'; }));
   }
+  const tutoDuCompte = u => { if (u && u.user_metadata && u.user_metadata.tuto) ls.set('bawss-tuto', 'fait'); };
+  addEventListener('bawss-tuto-fini', () => { if (sb && moi) sb.auth.updateUser({ data: { tuto: true } }).then(() => {}, () => {}); });
   function connecte(u, pseudo, message) {
+    tutoDuCompte(u);
     moi = { id: u.id, pseudo: (u.user_metadata && u.user_metadata.pseudo) || pseudo || ls.get('bawss-pseudo') || 'toi', email: u.email, admin: false };
     ls.set('bawss-pseudo', moi.pseudo);
     return synchroniser(true).then(() => { majBouton(); fermer(); if (message) toast(message.replace('%', moi.pseudo)); rzRafraichir(); });
@@ -301,7 +304,9 @@
       + '<div data-membres></div>'
       + '<button type="button" class="bw-go" data-retour>Retour aux recettes</button>'
       + (standalone ? '' : '<button type="button" class="bw-later" data-installer-app>Installer l\'appli sur ce téléphone</button>')
+      + '<button type="button" class="bw-later" data-tuto>Revoir le tour du proprio</button>'
       + '<button type="button" class="bw-later" data-deco>Me déconnecter</button>');
+    el.querySelector('[data-tuto]').addEventListener('click', () => { fermer(); if (window.revoirTuto) window.revoirTuto(); });
     el.querySelector('[data-retour]').addEventListener('click', fermer);
     const ia = el.querySelector('[data-installer-app]'); if (ia) ia.addEventListener('click', ecranInstall);
     const am = el.querySelector('[data-ajout-mail]');
@@ -376,6 +381,7 @@
     setTimeout(go, 2500);  // si la session tarde (réseau), on ne bloque pas l'appli
     sb.auth.getSession().then(({ data }) => {
       const u = data && data.session && data.session.user;
+      tutoDuCompte(u);
       if (u) moi = { id: u.id, pseudo: (u.user_metadata && u.user_metadata.pseudo) || ls.get('bawss-pseudo') || 'toi', email: u.email, admin: false };
       go();
       if (moi) synchroniser(false);

@@ -102,6 +102,33 @@
 .bw-choix:active { background: color-mix(in srgb, var(--on-slate) 18%, transparent); }
 </style></head><body>
 <style>
+/* tuto */
+.tuto { position: fixed; inset: 0; z-index: 300; background: rgba(6, 12, 18, 0); transition: background-color .3s ease; display: grid; place-items: center; padding: 20px; }
+.tuto.on:not(.tour) { background: rgba(6, 12, 18, .72); }
+.tuto.tour { background: transparent; display: block; padding: 0; }
+.tuto-carte { background: var(--slate); color: var(--on-slate); border-radius: 20px; padding: 26px 22px 22px; width: min(420px, 100%); display: grid; gap: 14px; box-shadow: 8px 8px 0 var(--cire); transform: translateY(20px) scale(.96); opacity: 0; transition: transform .35s cubic-bezier(.3, 1.4, .5, 1), opacity .25s ease; }
+.tuto.on .tuto-carte { transform: none; opacity: 1; }
+.tuto-carte.fin { transform: none; opacity: 1; animation: tuto-pop .45s cubic-bezier(.3, 1.6, .5, 1); }
+.tuto-k { margin: 0; font: 500 12px var(--f-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--cire); }
+.tuto-carte h2 { margin: 0; font: 900 40px/.95 var(--f-display); text-transform: uppercase; }
+.tuto-carte h2 span, .tuto-grand span { background: var(--cire); color: var(--cire-ink); padding: 0 6px; }
+.tuto-grand { margin: 0; font: 700 21px/1.35 var(--f-body); }
+.tuto-bts { display: flex; gap: 10px; align-items: center; justify-content: flex-end; flex-wrap: wrap; margin-top: 4px; }
+.tuto-go { border: 0; border-radius: 999px; background: var(--cire); color: var(--cire-ink); font: 800 16px var(--f-body); padding: 12px 20px; cursor: pointer; box-shadow: 3px 3px 0 #000; }
+.tuto-non { border: 0; background: none; color: inherit; opacity: .75; font: 600 15px var(--f-body); text-decoration: underline; text-underline-offset: 3px; padding: 10px 6px; cursor: pointer; }
+.tuto-spot { position: fixed; border-radius: 14px; box-shadow: 0 0 0 9999px rgba(6, 12, 18, .72), 0 0 0 3px var(--cire) inset; transition: top .35s ease, left .35s ease, width .35s ease, height .35s ease; pointer-events: none; }
+.tuto-bulle { position: fixed; background: var(--paper); color: var(--ink); border-radius: 16px; padding: 16px 16px 12px; box-shadow: 0 16px 40px rgba(0, 0, 0, .35); transition: top .35s ease, left .35s ease; }
+.tuto-bulle.pop { animation: tuto-pop .35s cubic-bezier(.3, 1.5, .5, 1); }
+.tuto-bulle h3 { margin: 2px 0 6px; font: 900 26px/1 var(--f-display); text-transform: uppercase; }
+.tuto-bulle p { margin: 0; font-size: 15.5px; line-height: 1.45; }
+.tuto-n { font: 500 12px var(--f-mono) !important; letter-spacing: .1em; color: var(--muted); }
+.tuto-bulle .tuto-non { color: var(--muted); }
+@keyframes tuto-pop { from { transform: scale(.92); opacity: 0; } }
+.tuto-again-p { text-align: center; margin: 28px 0 8px; }
+.tuto-again { border: 0; background: none; color: var(--muted); font: 600 14px var(--f-body); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; padding: 8px; }
+@media (prefers-reduced-motion: reduce) { .tuto-spot, .tuto-bulle, .tuto-carte { transition: none; animation: none; } }
+</style>
+<style>
 /* liste : ajout libre, articles pris en bas, bouton magasin */
 .cart-add { display: flex; gap: 8px; margin: 14px 0 6px; }
 .cart-add input { flex: 1; min-width: 0; font: 500 16px var(--f-body); padding: 12px 14px; border-radius: 12px; border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); }
@@ -684,6 +711,7 @@ body { background-image: radial-gradient(color-mix(in srgb, var(--ink) 7%, trans
     </div>
     <div class="count" id="count" aria-live="polite"></div>
     <div class="grid" id="grid"></div>
+    <p class="tuto-again-p"><button type="button" class="tuto-again" id="tuto-again">↺ Revoir le tour du proprio</button></p>
     <div class="fp" id="fp" hidden role="dialog" aria-modal="true" aria-label="Filtres"><div class="fp-box"></div></div>
     <div class="empty" id="empty" hidden>
       <p><b>Rien. Nada.</b><br>Même le frigo de Jakez un dimanche soir a plus de choix.</p>
@@ -1598,7 +1626,7 @@ window.lancerIntro = (opts = {}) => {
   let tl, fini = false; const extra = [];
   const finir = () => {
     if (fini) return; fini = true; if (tl) tl.kill(); extra.forEach(t => t.kill());
-    gsap.to(el, { opacity: 0, duration: .45, onComplete: () => { el.remove(); document.documentElement.style.overflow = ''; } });
+    gsap.to(el, { opacity: 0, duration: .45, onComplete: () => { el.remove(); document.documentElement.style.overflow = ''; dispatchEvent(new Event('bawss-intro-fin')); } });
   };
   q('.passer').addEventListener('click', finir);
   if (son) { q('.son').classList.add('on'); q('.son').textContent = '🔊 Son'; }
@@ -1806,6 +1834,106 @@ window.lancerIntro = (opts = {}) => {
   });
 })();
 
+/* ---------- tuto de la première visite : « ce soir, on cuisine un curry japonais » ---------- */
+(() => {
+  const CLE = 'bawss-tuto', PLAT = 'curry-japonais';
+  const lu = () => { try { return localStorage.getItem(CLE); } catch (e) { return null; } };
+  const note = v => { try { localStorage.setItem(CLE, v); } catch (e) {} dispatchEvent(new Event('bawss-tuto-fini')); };
+  const dormir = ms => new Promise(ok => setTimeout(ok, ms));
+  const R = () => BY_ID[PLAT];
+  const ETAPES = [
+    { cible: () => $('.search'), titre: 'On trouve quoi manger', texte: 'Ce soir, on cuisine. Tape un plat ou un ingrédient ici : les recettes se filtrent au fur et à mesure.', avant: async () => { backToList(); await dormir(250); await taper('curry'); } },
+    { cible: () => $('#extras'), titre: 'Pas d’idée ? Filtre', texte: 'Type de plat, temps, ingrédient principal… et tes favoris, tous au même endroit.' },
+    { cible: () => $(`#grid a[href="#${PLAT}"]`), titre: 'Allez, un curry japonais', texte: 'Chaque recette est testée et approuvée par Jakez. On l’ouvre.' },
+    { cible: () => $(`#r-${PLAT} .r-icons`), titre: 'Trois icônes à connaître', texte: '❤️ pour la garder en favori, le partage pour l’envoyer à la bande, et le caddy + pour mettre ses ingrédients dans ta liste de courses.', avant: async () => { location.hash = PLAT; await dormir(450); } },
+    { cible: () => $(`#r-${PLAT} [data-serves]`), titre: 'Vous êtes combien ?', texte: 'Change le nombre de personnes : toutes les quantités suivent, jusque dans ta liste de courses.' },
+    { cible: () => $('#cart-btn'), titre: 'Ta liste de courses', texte: 'Tout arrive ici, rangé par rayon. Tu peux ajouter ce que tu veux en plus. Au magasin, lance le mode magasin : gros boutons, une main, le caddy dans l’autre.' },
+    { cible: () => $(`#r-${PLAT} [data-cook]`), titre: 'Aux fourneaux', texte: 'Le mode cuisine : une étape à la fois, en gros, l’écran reste allumé et les minuteurs sont intégrés.' },
+    { bawss: true, cible: () => $(`#r-${PLAT} .rz-go`), titre: 'C’est réussi ? Montre-le', texte: 'Poste la photo de ton plat : la bande la verra, et tu peux la balancer en story.' },
+    { bawss: true, cible: () => $('#me-btn'), titre: 'Ton compte', texte: 'Tes favoris et ta liste de courses te suivent sur tous tes appareils.' }
+  ];
+  let ov = null, i = 0, liste = [];
+  async function taper(mot) {
+    const q = $('#q'); if (!q) return;
+    q.value = '';
+    for (const c of mot) { q.value += c; q.dispatchEvent(new Event('input', { bubbles: true })); await dormir(110); }
+  }
+  function effacerRecherche() { const q = $('#q'); if (q && q.value) { q.value = ''; q.dispatchEvent(new Event('input', { bubbles: true })); } }
+  function invitation() {
+    ov = document.createElement('div'); ov.className = 'tuto'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-label', 'Découvrir l’appli');
+    ov.innerHTML = `<div class="tuto-carte"><p class="tuto-k">Premier passage</p><h2>Tu comprends ce que je te dis, mon gars ?</h2><p class="tuto-grand">Mets-toi <span>cul-bawss</span>, je te montre.</p>
+      <div class="tuto-bts"><button type="button" class="tuto-go" data-t-go>Vas-y, montre</button><button type="button" class="tuto-non" data-t-non>Je me débrouille</button></div></div>`;
+    document.body.appendChild(ov);
+    document.documentElement.style.overflow = 'hidden';
+    requestAnimationFrame(() => ov.classList.add('on'));
+    ov.querySelector('[data-t-go]').addEventListener('click', demarrer);
+    ov.querySelector('[data-t-non]').addEventListener('click', () => { note('non'); fermer(); });
+    ov.querySelector('[data-t-go]').focus();
+  }
+  function demarrer() {
+    liste = ETAPES.filter(e => !e.bawss || window.bawss); i = 0;
+    if (!ov) { ov = document.createElement('div'); ov.className = 'tuto on'; document.body.appendChild(ov); }
+    ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-label', 'Visite guidée');
+    ov.innerHTML = '<div class="tuto-spot"></div><div class="tuto-bulle" role="status" aria-live="polite"></div>';
+    ov.classList.add('tour');
+    document.documentElement.style.overflow = '';
+    etape();
+  }
+  async function etape() {
+    while (i < liste.length) {
+      const e = liste[i];
+      if (e.avant) await e.avant();
+      const c = e.cible();
+      if (c && c.offsetParent !== null && c.getClientRects().length) { montrer(c, e); return; }
+      liste.splice(i, 1);                // l'élément n'existe pas ici (ex. pas de compte) : on saute
+    }
+    fin();
+  }
+  function montrer(c, e) {
+    c.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    setTimeout(() => placer(c, e), 380);
+  }
+  function placer(c, e) {
+    if (!ov) return;
+    const r = c.getBoundingClientRect(), m = 8, spot = ov.querySelector('.tuto-spot'), b = ov.querySelector('.tuto-bulle');
+    Object.assign(spot.style, { top: (r.top - m) + 'px', left: (r.left - m) + 'px', width: (r.width + 2 * m) + 'px', height: (r.height + 2 * m) + 'px' });
+    b.innerHTML = `<p class="tuto-n">${i + 1} / ${liste.length}</p><h3>${e.titre}</h3><p>${e.texte}</p>
+      <div class="tuto-bts"><button type="button" class="tuto-non" data-t-passer>Passer</button><button type="button" class="tuto-go" data-t-suiv>${i === liste.length - 1 ? 'Terminer' : 'Suivant →'}</button></div>`;
+    const W = innerWidth, H = innerHeight, bw = Math.min(360, W - 32);
+    b.style.width = bw + 'px';
+    b.style.left = Math.max(16, Math.min(r.left + r.width / 2 - bw / 2, W - bw - 16)) + 'px';
+    const bh = b.offsetHeight, dessous = r.bottom + m + 14;
+    b.style.top = (dessous + bh < H - 12 ? dessous : Math.max(12, r.top - m - 14 - bh)) + 'px';
+    b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop');
+    b.querySelector('[data-t-suiv]').onclick = () => { i++; etape(); };
+    b.querySelector('[data-t-passer]').onclick = () => { note('passe'); fermer(); backToList(); effacerRecherche(); };
+    b.querySelector('[data-t-suiv]').focus({ preventScroll: true });
+  }
+  function fin() {
+    note('fait');
+    ov.classList.remove('tour');
+    ov.innerHTML = `<div class="tuto-carte fin"><p class="tuto-k">C’est tout, t’es prêt</p><h2>Cuisine-moi ça<br>comme un <span>Bawss.</span></h2>
+      <div class="tuto-bts"><button type="button" class="tuto-go" data-t-fin>À table</button></div></div>`;
+    ov.querySelector('[data-t-fin]').addEventListener('click', () => { fermer(); backToList(); effacerRecherche(); });
+  }
+  function fermer() { if (!ov) return; ov.remove(); ov = null; document.documentElement.style.overflow = ''; }
+  addEventListener('resize', () => { if (ov && ov.classList.contains('tour') && liste[i]) { const c = liste[i].cible(); if (c) placer(c, liste[i]); } });
+  addEventListener('keydown', e => { if (e.key === 'Escape' && ov) { note('passe'); fermer(); } });
+  window.lancerTuto = () => { fermer(); backToList(); invitation(); };
+  window.revoirTuto = () => { fermer(); backToList(); effacerRecherche(); demarrer(); };
+  $('#tuto-again').addEventListener('click', () => { backToList(); demarrer(); });
+  /* première visite : après l'intro, quand plus aucun écran d'accueil n'est ouvert, et pas si on arrive par un lien de recette */
+  if (lu() || location.hash) return;
+  let lance = false;
+  const tenter = () => {
+    if (lance || lu()) return;
+    if (document.querySelector('.bt, .bw, .pk, .mag') || location.hash) { setTimeout(tenter, 900); return; }
+    lance = true; invitation();
+  };
+  addEventListener('bawss-intro-fin', () => setTimeout(tenter, 500));
+  setTimeout(tenter, 2500);
+})();
+
 /* ---------- Bawss : appli installable, comptes, favoris et liste de courses synchronisés ---------- */
 (() => {
   const SB_URL = 'https://ppbyclkztomepipemhdy.supabase.co';
@@ -1989,7 +2117,10 @@ window.lancerIntro = (opts = {}) => {
   function brancherVoir(el) {
     el.querySelectorAll('.bw-voir').forEach(b => b.addEventListener('click', e => { const md = e.currentTarget.previousElementSibling, v = md.type === 'password'; md.type = v ? 'text' : 'password'; e.currentTarget.textContent = v ? 'Cacher' : 'Voir'; }));
   }
+  const tutoDuCompte = u => { if (u && u.user_metadata && u.user_metadata.tuto) ls.set('bawss-tuto', 'fait'); };
+  addEventListener('bawss-tuto-fini', () => { if (sb && moi) sb.auth.updateUser({ data: { tuto: true } }).then(() => {}, () => {}); });
   function connecte(u, pseudo, message) {
+    tutoDuCompte(u);
     moi = { id: u.id, pseudo: (u.user_metadata && u.user_metadata.pseudo) || pseudo || ls.get('bawss-pseudo') || 'toi', email: u.email, admin: false };
     ls.set('bawss-pseudo', moi.pseudo);
     return synchroniser(true).then(() => { majBouton(); fermer(); if (message) toast(message.replace('%', moi.pseudo)); rzRafraichir(); });
@@ -2109,7 +2240,9 @@ window.lancerIntro = (opts = {}) => {
       + '<div data-membres></div>'
       + '<button type="button" class="bw-go" data-retour>Retour aux recettes</button>'
       + (standalone ? '' : '<button type="button" class="bw-later" data-installer-app>Installer l\'appli sur ce téléphone</button>')
+      + '<button type="button" class="bw-later" data-tuto>Revoir le tour du proprio</button>'
       + '<button type="button" class="bw-later" data-deco>Me déconnecter</button>');
+    el.querySelector('[data-tuto]').addEventListener('click', () => { fermer(); if (window.revoirTuto) window.revoirTuto(); });
     el.querySelector('[data-retour]').addEventListener('click', fermer);
     const ia = el.querySelector('[data-installer-app]'); if (ia) ia.addEventListener('click', ecranInstall);
     const am = el.querySelector('[data-ajout-mail]');
@@ -2561,6 +2694,7 @@ window.lancerIntro = (opts = {}) => {
     setTimeout(go, 2500);  // si la session tarde (réseau), on ne bloque pas l'appli
     sb.auth.getSession().then(({ data }) => {
       const u = data && data.session && data.session.user;
+      tutoDuCompte(u);
       if (u) moi = { id: u.id, pseudo: (u.user_metadata && u.user_metadata.pseudo) || ls.get('bawss-pseudo') || 'toi', email: u.email, admin: false };
       go();
       if (moi) synchroniser(false);
