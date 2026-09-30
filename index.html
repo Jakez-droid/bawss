@@ -102,16 +102,25 @@
 .bw-choix:active { background: color-mix(in srgb, var(--on-slate) 18%, transparent); }
 </style></head><body>
 <style>
-/* cœur favori sur la photo de la fiche */
-.r-photo, .r-emoji { position: relative; }
-.heart-btn { position: absolute; top: 12px; right: 12px; width: 50px; height: 50px; border-radius: 50%; border: 0; display: grid; place-items: center; cursor: pointer; background: rgba(8, 16, 24, .55); color: #fff; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); transition: transform .15s ease, background-color .15s ease; }
-.heart-btn svg { width: 26px; height: 26px; }
-.heart-btn[aria-pressed="true"] { background: #fff; color: var(--red); }
-.heart-btn:active { transform: scale(.9); }
-.heart-btn.pop { animation: coeur-pop .45s cubic-bezier(.3, 1.8, .5, 1); }
+/* favori et liste de courses : deux icônes à droite du titre */
+section.recipe .r-head { grid-template-columns: auto minmax(0, 1fr) auto; }
+section.recipe .r-head.solo { grid-template-columns: minmax(0, 1fr) auto; }
+.r-icons { display: flex; gap: 10px; align-self: start; padding-top: 6px; }
+.heart-btn, .r-cart { width: 50px; height: 50px; border-radius: 50%; border: 1.5px solid var(--ink); display: grid; place-items: center; cursor: pointer; background: transparent; color: var(--ink); transition: transform .15s ease, background-color .15s ease; }
+.heart-btn svg, .r-cart svg { width: 24px; height: 24px; }
+.heart-btn[aria-pressed="true"] { background: var(--red); border-color: var(--red); color: #fff; }
+.r-cart[aria-pressed="true"] { background: var(--cire); border-color: var(--cire); color: var(--cire-ink); }
+.heart-btn:active, .r-cart:active { transform: scale(.9); }
+.heart-btn.pop, .r-cart.bump { animation: coeur-pop .45s cubic-bezier(.3, 1.8, .5, 1); }
 @keyframes coeur-pop { 0% { transform: scale(.6); } 60% { transform: scale(1.25); } 100% { transform: scale(1); } }
-.r-emoji .heart-btn { top: -10px; right: -10px; width: 40px; height: 40px; }
-.r-emoji .heart-btn svg { width: 21px; height: 21px; }
+@media (max-width: 680px) {
+  section.recipe .r-head, section.recipe .r-head.solo { grid-template-columns: minmax(0, 1fr) auto; }
+  section.recipe .r-head .r-emoji { grid-column: 1; grid-row: 1; }
+  section.recipe .r-head .r-icons { grid-column: 2; grid-row: 1; }
+  section.recipe .r-head:not(.solo) .r-titre { grid-column: 1 / -1; grid-row: 2; }
+  .heart-btn, .r-cart { width: 44px; height: 44px; }
+  .heart-btn svg, .r-cart svg { width: 21px; height: 21px; }
+}
 </style>
 <style>
 /* filtres : panneau (téléphone) et menus déroulants (ordi) */
@@ -830,7 +839,7 @@ function renderCartBadge() {
   $('#cart-btn').setAttribute('aria-label', n ? `Ma liste de courses, ${n} articles` : 'Ma liste de courses');
 }
 function cartBtnHTML(r) {
-  return inCart(r.id) ? `${ICON.cart}Dans ma liste · retirer` : `${ICON.cart}Ajouter à ma liste`;
+  return inCart(r.id) ? ICON.cartOn : ICON.cartPlus;
 }
 function renderCart() {
   const ids = Object.keys(cart.recipes), items = cartItems();
@@ -998,6 +1007,8 @@ $('#reset').addEventListener('click', () => { toutEffacer(); state.q = ''; $('#q
 /* ---------- detail pages (kept in the DOM so comments stay anchored) ---------- */
 const serves = {};
 const ICON = {
+  cartPlus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 4h2.2l2.1 10.2a2 2 0 0 0 2 1.6h7.1a2 2 0 0 0 2-1.5L19.3 9"/><circle cx="9.5" cy="19.6" r="1.3"/><circle cx="16.5" cy="19.6" r="1.3"/><path d="M17.5 2.5v6M14.5 5.5h6"/></svg>',
+  cartOn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 4h2.2l2.1 10.2a2 2 0 0 0 2 1.6h7.1a2 2 0 0 0 2-1.5L19.3 9"/><circle cx="9.5" cy="19.6" r="1.3"/><circle cx="16.5" cy="19.6" r="1.3"/><path d="M14.3 5.4l2.1 2.1 4-4.3"/></svg>',
   filtres: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>',
   share: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8l7.4-4.3M8.3 13.2l7.4 4.3"/></svg>',
   heart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>',
@@ -1040,14 +1051,14 @@ function detailHTML(r) {
   <section class="recipe wrap" id="r-${r.id}" data-comment-target hidden>
     <button class="back" type="button" data-back>${ICON.back}Toutes les recettes</button>
     <div class="r-head${r.photo ? ' solo' : ''}">
-      ${r.photo ? '' : `<div class="r-emoji"><span aria-hidden="true">${r.emoji}</span><button class="heart-btn" type="button" data-fav aria-pressed="${favs.has(r.id)}" aria-label="${favs.has(r.id) ? 'Retirer des favoris' : 'Ajouter aux favoris'}">${favs.has(r.id) ? ICON.heartFull : ICON.heart}</button></div>`}
-      <div><h1>${esc(r.title)}</h1>${r.intro ? `<p class="r-intro">${rich(r.intro)}</p>` : ''}</div>
+      ${r.photo ? '' : `<div class="r-emoji" aria-hidden="true">${r.emoji}</div>`}
+      <div class="r-titre"><h1>${esc(r.title)}</h1>${r.intro ? `<p class="r-intro">${rich(r.intro)}</p>` : ''}</div>
+      <div class="r-icons"><button class="heart-btn" type="button" data-fav aria-pressed="${favs.has(r.id)}" aria-label="${favs.has(r.id) ? 'Retirer des favoris' : 'Ajouter aux favoris'}">${favs.has(r.id) ? ICON.heartFull : ICON.heart}</button><button class="r-cart" type="button" data-cart aria-pressed="${inCart(r.id)}" aria-label="Liste de courses">${cartBtnHTML(r)}</button></div>
     </div>
-    ${r.photo ? `<figure class="r-photo"><img src="${r.photo}" alt="${esc(r.title)}, fait maison" loading="lazy"><button class="heart-btn" type="button" data-fav aria-pressed="${favs.has(r.id)}" aria-label="${favs.has(r.id) ? 'Retirer des favoris' : 'Ajouter aux favoris'}">${favs.has(r.id) ? ICON.heartFull : ICON.heart}</button></figure>` : ''}
+    ${r.photo ? `<figure class="r-photo"><img src="${r.photo}" alt="${esc(r.title)}, fait maison" loading="lazy"></figure>` : ''}
     <div class="pills">${pills}</div>
     <div class="actions">
       <button class="btn primary" type="button" data-cook>${ICON.pan}Mode cuisine</button>
-      <button class="btn" type="button" data-cart aria-pressed="${inCart(r.id)}">${cartBtnHTML(r)}</button>
       <button class="btn" type="button" data-share>${ICON.share}Partager</button>
     </div>
     ${r.tip ? `<div class="tip"><b>Le détail qui change tout</b><span>${rich(r.tip)}</span></div>` : ''}
