@@ -153,21 +153,21 @@
 /* favori et liste de courses : deux icônes à droite du titre */
 section.recipe .r-head { grid-template-columns: auto minmax(0, 1fr) auto; }
 section.recipe .r-head.solo { grid-template-columns: minmax(0, 1fr) auto; }
-.r-icons { display: flex; gap: 10px; align-self: start; padding-top: 6px; }
-.heart-btn, .r-cart { width: 50px; height: 50px; border-radius: 50%; border: 1.5px solid var(--ink); display: grid; place-items: center; cursor: pointer; background: transparent; color: var(--ink); transition: transform .15s ease, background-color .15s ease; }
-.heart-btn svg, .r-cart svg { width: 24px; height: 24px; }
+.r-icons { display: flex; gap: 8px; align-self: start; padding-top: 6px; }
+.heart-btn, .r-share, .r-cart { width: 50px; height: 50px; border-radius: 50%; border: 1.5px solid var(--ink); display: grid; place-items: center; cursor: pointer; background: transparent; color: var(--ink); transition: transform .15s ease, background-color .15s ease; }
+.heart-btn svg, .r-share svg, .r-cart svg { width: 24px; height: 24px; }
 .heart-btn[aria-pressed="true"] { background: var(--red); border-color: var(--red); color: #fff; }
 .r-cart[aria-pressed="true"] { background: var(--cire); border-color: var(--cire); color: var(--cire-ink); }
-.heart-btn:active, .r-cart:active { transform: scale(.9); }
+.heart-btn:active, .r-share:active, .r-cart:active { transform: scale(.9); }
 .heart-btn.pop, .r-cart.bump { animation: coeur-pop .45s cubic-bezier(.3, 1.8, .5, 1); }
 @keyframes coeur-pop { 0% { transform: scale(.6); } 60% { transform: scale(1.25); } 100% { transform: scale(1); } }
 @media (max-width: 680px) {
-  section.recipe .r-head, section.recipe .r-head.solo { grid-template-columns: minmax(0, 1fr) auto; }
-  section.recipe .r-head .r-emoji { grid-column: 1; grid-row: 1; }
-  section.recipe .r-head .r-icons { grid-column: 2; grid-row: 1; }
-  section.recipe .r-head:not(.solo) .r-titre { grid-column: 1 / -1; grid-row: 2; }
-  .heart-btn, .r-cart { width: 44px; height: 44px; }
-  .heart-btn svg, .r-cart svg { width: 21px; height: 21px; }
+  section.recipe { position: relative; }
+  section.recipe .r-head, section.recipe .r-head.solo { grid-template-columns: minmax(0, 1fr); }
+  section.recipe .r-head .r-titre { grid-column: 1; grid-row: auto; }
+  section.recipe .r-head .r-icons { position: absolute; top: 14px; right: 16px; padding-top: 0; }
+  .heart-btn, .r-share, .r-cart { width: 42px; height: 42px; }
+  .heart-btn svg, .r-share svg, .r-cart svg { width: 20px; height: 20px; }
 }
 </style>
 <style>
@@ -1128,13 +1128,12 @@ function detailHTML(r) {
     <div class="r-head${r.photo ? ' solo' : ''}">
       ${r.photo ? '' : `<div class="r-emoji" aria-hidden="true">${r.emoji}</div>`}
       <div class="r-titre"><h1>${esc(r.title)}</h1>${r.intro ? `<p class="r-intro">${rich(r.intro)}</p>` : ''}</div>
-      <div class="r-icons"><button class="heart-btn" type="button" data-fav aria-pressed="${favs.has(r.id)}" aria-label="${favs.has(r.id) ? 'Retirer des favoris' : 'Ajouter aux favoris'}">${favs.has(r.id) ? ICON.heartFull : ICON.heart}</button><button class="r-cart" type="button" data-cart aria-pressed="${inCart(r.id)}" aria-label="Liste de courses">${cartBtnHTML(r)}</button></div>
+      <div class="r-icons"><button class="heart-btn" type="button" data-fav aria-pressed="${favs.has(r.id)}" aria-label="${favs.has(r.id) ? 'Retirer des favoris' : 'Ajouter aux favoris'}">${favs.has(r.id) ? ICON.heartFull : ICON.heart}</button><button class="r-share" type="button" data-share aria-label="Partager la recette">${ICON.share}</button><button class="r-cart" type="button" data-cart aria-pressed="${inCart(r.id)}" aria-label="Liste de courses">${cartBtnHTML(r)}</button></div>
     </div>
     ${r.photo ? `<figure class="r-photo"><img src="${r.photo}" alt="${esc(r.title)}, fait maison" loading="lazy"></figure>` : ''}
     <div class="pills">${pills}</div>
     <div class="actions">
       <button class="btn primary" type="button" data-cook>${ICON.pan}Mode cuisine</button>
-      <button class="btn" type="button" data-share>${ICON.share}Partager</button>
     </div>
     ${r.tip ? `<div class="tip"><b>Le détail qui change tout</b><span>${rich(r.tip)}</span></div>` : ''}
     ${r.shop ? shopHTML(r.shop) : ''}
