@@ -102,6 +102,18 @@
 .bw-choix:active { background: color-mix(in srgb, var(--on-slate) 18%, transparent); }
 </style></head><body>
 <style>
+/* cœur favori sur la photo de la fiche */
+.r-photo, .r-emoji { position: relative; }
+.heart-btn { position: absolute; top: 12px; right: 12px; width: 50px; height: 50px; border-radius: 50%; border: 0; display: grid; place-items: center; cursor: pointer; background: rgba(8, 16, 24, .55); color: #fff; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); transition: transform .15s ease, background-color .15s ease; }
+.heart-btn svg { width: 26px; height: 26px; }
+.heart-btn[aria-pressed="true"] { background: #fff; color: var(--red); }
+.heart-btn:active { transform: scale(.9); }
+.heart-btn.pop { animation: coeur-pop .45s cubic-bezier(.3, 1.8, .5, 1); }
+@keyframes coeur-pop { 0% { transform: scale(.6); } 60% { transform: scale(1.25); } 100% { transform: scale(1); } }
+.r-emoji .heart-btn { top: -10px; right: -10px; width: 40px; height: 40px; }
+.r-emoji .heart-btn svg { width: 21px; height: 21px; }
+</style>
+<style>
 /* filtres : panneau (téléphone) et menus déroulants (ordi) */
 .chip .icon, .filtres-btn svg { width: 16px; height: 16px; vertical-align: -3px; margin-right: 6px; }
 .chip b { display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 5px; margin-left: 4px; border-radius: 999px; background: var(--cire); color: var(--cire-ink); font-size: 11.5px; }
@@ -1028,15 +1040,14 @@ function detailHTML(r) {
   <section class="recipe wrap" id="r-${r.id}" data-comment-target hidden>
     <button class="back" type="button" data-back>${ICON.back}Toutes les recettes</button>
     <div class="r-head${r.photo ? ' solo' : ''}">
-      ${r.photo ? '' : `<div class="r-emoji" aria-hidden="true">${r.emoji}</div>`}
+      ${r.photo ? '' : `<div class="r-emoji"><span aria-hidden="true">${r.emoji}</span><button class="heart-btn" type="button" data-fav aria-pressed="${favs.has(r.id)}" aria-label="${favs.has(r.id) ? 'Retirer des favoris' : 'Ajouter aux favoris'}">${favs.has(r.id) ? ICON.heartFull : ICON.heart}</button></div>`}
       <div><h1>${esc(r.title)}</h1>${r.intro ? `<p class="r-intro">${rich(r.intro)}</p>` : ''}</div>
     </div>
-    ${r.photo ? `<figure class="r-photo"><img src="${r.photo}" alt="${esc(r.title)}, fait maison" loading="lazy"></figure>` : ''}
+    ${r.photo ? `<figure class="r-photo"><img src="${r.photo}" alt="${esc(r.title)}, fait maison" loading="lazy"><button class="heart-btn" type="button" data-fav aria-pressed="${favs.has(r.id)}" aria-label="${favs.has(r.id) ? 'Retirer des favoris' : 'Ajouter aux favoris'}">${favs.has(r.id) ? ICON.heartFull : ICON.heart}</button></figure>` : ''}
     <div class="pills">${pills}</div>
     <div class="actions">
       <button class="btn primary" type="button" data-cook>${ICON.pan}Mode cuisine</button>
       <button class="btn" type="button" data-cart aria-pressed="${inCart(r.id)}">${cartBtnHTML(r)}</button>
-      <button class="btn" type="button" data-fav aria-pressed="${favs.has(r.id)}">${favs.has(r.id) ? ICON.heartFull + 'Dans mes favoris' : ICON.heart + 'Ajouter aux favoris'}</button>
       <button class="btn" type="button" data-share>${ICON.share}Partager</button>
     </div>
     ${r.tip ? `<div class="tip"><b>Le détail qui change tout</b><span>${rich(r.tip)}</span></div>` : ''}
@@ -1078,7 +1089,9 @@ $('#details').addEventListener('click', e => {
     favs.has(r.id) ? favs.delete(r.id) : favs.add(r.id); saveFavs();
     const b = $('[data-fav]', sec);
     b.setAttribute('aria-pressed', favs.has(r.id));
-    b.innerHTML = favs.has(r.id) ? ICON.heartFull + 'Dans mes favoris' : ICON.heart + 'Ajouter aux favoris';
+    b.innerHTML = favs.has(r.id) ? ICON.heartFull : ICON.heart;
+    b.setAttribute('aria-label', favs.has(r.id) ? 'Retirer des favoris' : 'Ajouter aux favoris');
+    b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop');
     toast(favs.has(r.id) ? 'Ajoutée à tes favoris' : 'Retirée de tes favoris');
     renderGrid(); return;
   }
@@ -1691,6 +1704,11 @@ window.lancerIntro = (opts = {}) => {
     try { renderCartBadge(); } catch (e) {}
     try { if (!$('#cart').hidden) renderCart(); } catch (e) {}
     try { route(); } catch (e) {}
+    document.querySelectorAll('section.recipe [data-fav]').forEach(b => {
+      const id = b.closest('section.recipe').id.replace(/^r-/, ''), on = favs.has(id);
+      b.setAttribute('aria-pressed', String(on)); b.setAttribute('aria-label', on ? 'Retirer des favoris' : 'Ajouter aux favoris');
+      if (b.classList.contains('heart-btn')) b.innerHTML = on ? ICON.heartFull : ICON.heart;
+    });
   }
 
   /* au démarrage ou à la connexion : on fusionne le téléphone et le compte */

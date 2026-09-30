@@ -65,6 +65,11 @@
     try { renderCartBadge(); } catch (e) {}
     try { if (!$('#cart').hidden) renderCart(); } catch (e) {}
     try { route(); } catch (e) {}
+    document.querySelectorAll('section.recipe [data-fav]').forEach(b => {
+      const id = b.closest('section.recipe').id.replace(/^r-/, ''), on = favs.has(id);
+      b.setAttribute('aria-pressed', String(on)); b.setAttribute('aria-label', on ? 'Retirer des favoris' : 'Ajouter aux favoris');
+      if (b.classList.contains('heart-btn')) b.innerHTML = on ? ICON.heartFull : ICON.heart;
+    });
   }
 
   /* au démarrage ou à la connexion : on fusionne le téléphone et le compte */
