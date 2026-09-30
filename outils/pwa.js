@@ -321,11 +321,13 @@
       + '<button type="button" class="bw-go" data-retour>Retour aux recettes</button>'
       + (standalone ? '' : '<button type="button" class="bw-later" data-installer-app>Installer l\'appli sur ce téléphone</button>')
       + '<button type="button" class="bw-later" data-tuto>Revoir le tour du proprio</button>'
+      + '<button type="button" class="bw-later" data-faq>Questions fréquentes</button>'
       + '<button type="button" class="bw-later" data-deco>Me déconnecter</button>');
     const bx = el.querySelector('[data-boite]'); if (bx) bx.addEventListener('click', boiteReception);
     const ms = el.querySelector('[data-messages]'); if (ms) ms.addEventListener('click', () => ecranChat());
     el.querySelector('[data-inviter]').addEventListener('click', () => { if (window.inviterPote) window.inviterPote(); });
     el.querySelector('[data-tuto]').addEventListener('click', () => { fermer(); if (window.revoirTuto) window.revoirTuto(); });
+    el.querySelector('[data-faq]').addEventListener('click', () => { fermer(); if (window.ouvrirFaq) window.ouvrirFaq(); });
     el.querySelector('[data-retour]').addEventListener('click', fermer);
     const ia = el.querySelector('[data-installer-app]'); if (ia) ia.addEventListener('click', ecranInstall);
     const am = el.querySelector('[data-ajout-mail]');
