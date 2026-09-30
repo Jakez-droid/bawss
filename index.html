@@ -2282,7 +2282,7 @@ window.lancerIntro = (opts = {}) => {
     const r = BY_ID[id]; if (!r) return;
     toast('Je prépare ta carte…');
     let image = null; if (r.photo) { try { image = await chargerImage(r.photo); } catch (e) {} }
-    const blob = await carteStory({ image, emoji: r.emoji, legende: 'La recette de Jakez', droite: (EFFORT[r.effort] || [''])[0] ? r.effort : '', titre: r.title + '.', sousTitre: 'À toi de Bawsser.', accroche: texteBrut(r.intro) });
+    const blob = await carteStory({ image, emoji: r.emoji, legende: 'La recette de Jakez', droite: (EFFORT[r.effort] || [''])[0] ? r.effort : '', titre: r.title + '.', sousTitre: 'À toi de Bawsser.', accroche: '' });
     ecranStory(blob, r.title);
   }
   async function storyRealisation(id, blobPhoto, note) {
