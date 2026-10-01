@@ -757,6 +757,9 @@ body { background-image: radial-gradient(color-mix(in srgb, var(--ink) 7%, trans
 @keyframes heart { 40% { transform: scale(1.18) rotate(-6deg); } }
 .btn.bump { animation: heart .45s cubic-bezier(.3, 2, .5, 1); }
 
+.fin-bawss { display: grid; justify-items: center; gap: 6px; margin: 34px 0 calc(env(safe-area-inset-bottom, 0px) + 40px); text-align: center; }
+.fin-bawss b { font-family: var(--f-display); font-weight: 900; text-transform: uppercase; font-size: 30px; line-height: 1; letter-spacing: .02em; background: var(--cire); color: var(--cire-ink); padding: 3px 10px 1px; transform: rotate(-2deg); box-shadow: 3px 3px 0 var(--ink); }
+.fin-bawss span { font-style: italic; font-size: 14px; color: var(--muted); }
 /* FAQ */
 .ing-cart { display: flex; align-items: center; gap: 10px; width: 100%; margin: 14px 0 10px; border: 0; border-radius: 14px; background: var(--ink); color: var(--paper); padding: 13px 16px; font: 800 16px var(--f-body); text-align: left; cursor: pointer; box-shadow: 3px 3px 0 var(--cire); transition: transform .15s ease, background-color .15s ease; }
 .ing-cart svg { width: 24px; height: 24px; flex: none; }
@@ -812,6 +815,7 @@ body { background-image: radial-gradient(color-mix(in srgb, var(--ink) 7%, trans
     <div class="count" id="count" aria-live="polite"></div>
     <div class="grid" id="grid"></div>
     <p class="tuto-again-p"><button type="button" class="invite-btn" id="invite-btn">👋 Inviter un pote</button><button type="button" class="tuto-again" id="tuto-again">↺ Revoir le tour du proprio</button><button type="button" class="tuto-again" id="faq-btn">❓ Questions fréquentes</button></p>
+    <div class="fin-bawss" aria-label="Bawss"><b>Bawss</b><span id="fin-slogan">Cuisine sans filet.</span></div>
     <div class="fp" id="fp" hidden role="dialog" aria-modal="true" aria-label="Filtres"><div class="fp-box"></div></div>
     <div class="empty" id="empty" hidden>
       <p><b>Rien. Nada.</b><br>Même le frigo de ton Jakez un dimanche soir a plus de choix.</p>
@@ -2125,6 +2129,9 @@ window.lancerIntro = (opts = {}) => {
   };
   $('#invite-btn').addEventListener('click', () => window.inviterPote());
 })();
+
+/* ---------- signature en bas de la liste ---------- */
+(function () { const S = ['Cuisine sans filet.', 'Cuisine 2 rue.', 'Du beurre & des larmes.']; const e = document.getElementById('fin-slogan'); if (e) e.textContent = S[Math.floor(Math.random() * S.length)]; })();
 
 /* ---------- FAQ ---------- */
 (function () {
