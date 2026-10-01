@@ -2388,7 +2388,6 @@ window.lancerIntro = (opts = {}) => {
   const piste = band.firstElementChild;
   const cle = t => norm(t).replace(/\s+/g, ' ').trim();
   const DICO = new Map(EXPRESSIONS.map(e => [cle(e.br), e]));
-  const BONUS = ['Tu l’as appris, ressors-le.', 'À placer au prochain repas de famille.', 'Ton Jakez valide.'];
   let bulle = null, t = null;
   const fermer = () => { clearTimeout(t); if (bulle) { bulle.remove(); bulle = null; } piste.style.animationPlayState = ''; };
   band.addEventListener('click', e => {
@@ -2397,7 +2396,7 @@ window.lancerIntro = (opts = {}) => {
     fermer();
     piste.style.animationPlayState = 'paused';
     bulle = document.createElement('div'); bulle.className = 'band-bulle'; bulle.setAttribute('role', 'status');
-    bulle.innerHTML = `<b>${esc(x.br)}</b><span>${esc(x.fr)}</span>` + (Math.random() < .35 ? `<i>${BONUS[Math.floor(Math.random() * BONUS.length)]}</i>` : '');
+    bulle.innerHTML = `<b>${esc(x.br)}</b><span>${esc(x.fr)}</span>`;
     document.body.appendChild(bulle);
     const r = m.getBoundingClientRect(), w = bulle.offsetWidth, cx = r.left + r.width / 2;
     const left = Math.max(12, Math.min(cx - w / 2, innerWidth - w - 12));
