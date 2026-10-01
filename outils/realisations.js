@@ -68,7 +68,10 @@
     const rows = await charger(q => q.eq('recette', id).limit(40));
     if (!rows) return;
     const n = rows.length;
-    b.innerHTML = haut(n ? 'Faite ' + n + ' fois par la bande' : 'Personne ne l\'a encore postée. Sois le premier !') + (n ? bande(rows) : '');
+    /* aucune photo : on n'affiche rien (le bouton « Je l'ai bawssée » suffit) */
+    if (!n) { b.innerHTML = ''; b.hidden = true; go(); return; }
+    b.hidden = false;
+    b.innerHTML = haut('Faite ' + n + ' fois par la bande') + bande(rows);
     go(); brancherBande(b, rows, () => afficherRecette(id));
   }
 
