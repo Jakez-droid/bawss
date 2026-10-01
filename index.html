@@ -414,7 +414,7 @@ button { font: inherit; color: inherit; }
 .tile .heart { position: absolute; top: 10px; right: 12px; z-index: 1; font-size: 16px; color: var(--cire); }
 .tile .laurel { position: absolute; left: 10px; top: 10px; z-index: 1; font-family: var(--f-mono); font-size: 10.5px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; background: var(--cire); color: var(--cire-ink); padding: 3px 7px; }
 .card .body { position: absolute; left: 0; right: 0; bottom: 0; padding: 14px 14px 13px; display: grid; gap: 6px; z-index: 1; }
-.card h3 { margin: 0; font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: 23px; line-height: .95; letter-spacing: .005em; text-wrap: balance; overflow-wrap: anywhere; }
+.card h3 { margin: 0; font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: 23px; line-height: .95; letter-spacing: .005em; text-wrap: balance; overflow-wrap: normal; hyphens: manual; min-width: 0; }
 .card.big h3 { font-size: clamp(34px, 4.4vw, 54px); }
 .card.big .body { padding: 22px 22px 20px; }
 .card .meta { color: color-mix(in srgb, var(--on-slate) 78%, transparent); font-size: 12.5px; }
@@ -433,7 +433,7 @@ button { font: inherit; color: inherit; }
 .r-head { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 22px; align-items: end; padding-block: 16px 6px; }
 .r-head.solo { grid-template-columns: minmax(0, 1fr); }
 .r-emoji { width: 104px; height: 104px; border-radius: var(--r); display: grid; place-items: center; font-size: 56px; background: var(--slate); }
-.r-head h1 { font-family: var(--f-display); font-weight: 900; text-transform: uppercase; font-size: clamp(48px, 9vw, 112px); line-height: .86; margin: 0 0 10px; text-wrap: balance; overflow-wrap: anywhere; }
+.r-head h1 { font-family: var(--f-display); font-weight: 900; text-transform: uppercase; font-size: clamp(48px, 9vw, 112px); line-height: .86; margin: 0 0 10px; text-wrap: balance; overflow-wrap: normal; hyphens: manual; min-width: 0; }
 .r-intro { color: var(--muted); max-width: 62ch; margin: 0; font-size: 17px; }
 .r-photo { margin: 18px 0 4px; aspect-ratio: 16 / 9; max-width: 100%; border-radius: var(--r); overflow: hidden; background: var(--slate); }
 .r-photo img { width: 100%; height: 100%; object-fit: cover; object-position: center 55%; display: block; }
@@ -1173,6 +1173,16 @@ const compte = (k, o) => RECIPES.filter(r => matches(r, k) && FILTRES[k].val(r).
 const COUV = { 'Plat': 't-plat', 'Entrée': 't-entree', 'Sandwich & snack': 't-snack', 'Base': 't-base', 'Dessert': 't-dessert', 'Sauce & condiment': 't-sauce' };
 const TYPE_COURT = { 'Sandwich & snack': 'Snack', 'Sauce & condiment': 'Sauce' };
 const couv = t => COUV[t] || 't-plat';
+/* titres : jamais coupés au milieu d'un mot ; si un mot est trop long pour la carte, on réduit la taille du titre */
+function ajusterTitres(els) {
+  els.forEach(el => {
+    el.style.fontSize = '';
+    if (!el.clientWidth) return;
+    let fs = parseFloat(getComputedStyle(el).fontSize); const min = fs * .5;
+    while (el.scrollWidth > el.clientWidth + 1 && fs > min) { fs -= 1; el.style.fontSize = fs + 'px'; }
+  });
+}
+const ajusterGrille = () => requestAnimationFrame(() => ajusterTitres(document.querySelectorAll('#grid .card h3, #feature h2')));
 function renderGrid() {
   const list = RECIPES.filter(matches).sort((a, b) => rang(a) - rang(b));
   const big = !filtrage();
@@ -1198,7 +1208,11 @@ function renderGrid() {
       <div class="meta">${effortHTML(f.effort)}<span>${esc(f.type)}</span></div>
       <span class="btn primary go">Je la cuisine →</span></div>`;
   }
+  ajusterGrille();
 }
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { ajusterGrille(); if (current) ajusterTitres(document.querySelectorAll('#r-' + current + ' .r-head h1')); });
+let resizeT = null;
+addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(() => { ajusterGrille(); if (current) ajusterTitres(document.querySelectorAll('#r-' + current + ' .r-head h1')); }, 150); });
 $('#lede').textContent = `Enlève ton choupen, mets ton tablier et va dans ta cuisine. ${RECIPES.length} recettes testées et approuvées. Cherche un plat ou un ingrédient, ajuste les portions, et passe en mode cuisine une fois aux fourneaux. Si tu paniques, appelle le bawss. Prends une dose de brezhoneg à la fin et casse-toi manger avant que ça refroidisse, strouillou !`;
 
 $('#types').addEventListener('click', e => {
@@ -1516,6 +1530,7 @@ function route() {
     $('#list').hidden = true;
     $('#r-' + id).hidden = false;
     window.scrollTo(0, 0);
+    ajusterTitres(document.querySelectorAll('#r-' + id + ' .r-head h1'));
     document.title = BY_ID[id].title + ' · Les recettes 2 Jakez';
   } else {
     $('#list').hidden = false;
