@@ -63,7 +63,7 @@
       if (!g) { act.insertAdjacentHTML('beforeend', '<button type="button" class="btn rz-go" data-rz-go>📸 Je l’ai bawssée</button>'); g = act.querySelector('[data-rz-go]'); }
       if (!g.dataset.branche) { g.dataset.branche = '1'; g.addEventListener('click', () => (moi ? choisirPhoto(id) : ecranCompte('connexion'))); }
     };
-    if (!moi) { b.innerHTML = haut('Connecte-toi pour voir les photos de la bande'); go(); return; }
+    if (!moi) { b.innerHTML = ''; b.hidden = true; go(); return; }
     if (!b.innerHTML) { b.innerHTML = haut(''); go(); }
     const rows = await charger(q => q.eq('recette', id).limit(40));
     if (!rows) return;
