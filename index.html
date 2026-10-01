@@ -1822,7 +1822,7 @@ window.lancerIntro = (opts = {}) => {
   if (!opts.son && !seanceVue) {
     const g = document.createElement('div');
     g.className = 'bt-seance'; g.setAttribute('role', 'dialog'); g.setAttribute('aria-label', 'Lancer l’intro');
-    g.innerHTML = `<p class="bs-k">Bawss présente</p><p class="bs-t">Monte le son,<br>mon gars.</p><button type="button" class="bs-go">▶ Lancer la séance</button><button type="button" class="bs-sans">Passer l’intro</button>`;
+    g.innerHTML = `<p class="bs-k">Bawss présente</p><p class="bs-t">Monte le son<br>mon Bawss.</p><button type="button" class="bs-go">▶ Lancer la séance</button><button type="button" class="bs-sans">Passer l’intro</button>`;
     document.body.appendChild(g); document.documentElement.style.overflow = 'hidden';
     const fin = () => { try { localStorage.setItem('bawss-seance', '1'); } catch (e) {} g.remove(); document.documentElement.style.overflow = ''; };
     g.querySelector('.bs-go').addEventListener('click', () => { fin(); window.lancerIntro({ son: true }); });
