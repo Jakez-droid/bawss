@@ -2400,6 +2400,9 @@ window.lancerIntro = (opts = {}) => {
 (function () {
   const band = document.querySelector('.band'); if (!band) return;
   const piste = band.firstElementChild;
+  /* départ au hasard : on avance l'animation d'un temps aléatoire, pas toujours la même expression en premier */
+  const dur = parseFloat(getComputedStyle(piste).animationDuration) || 0;
+  if (dur) piste.style.animationDelay = -(Math.random() * dur).toFixed(1) + 's';
   const cle = t => norm(t).replace(/\s+/g, ' ').trim();
   const DICO = new Map(EXPRESSIONS.map(e => [cle(e.br), e]));
   let bulle = null, t = null;
