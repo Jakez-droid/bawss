@@ -1,0 +1,23 @@
+# Supabase (offre gratuite) met le projet en pause après 7 jours sans activité.
+# Tous les 3 jours, on fait une petite requête à la base pour la garder éveillée.
+# Clé utilisée : la clé publique, déjà présente dans l'appli. Aucun mail, rien chez les utilisateurs.
+name: Garder Supabase éveillé
+
+on:
+  schedule:
+    - cron: "17 6 */3 * *"   # tous les 3 jours vers 8 h (heure de Paris)
+  workflow_dispatch:          # bouton « Run workflow » dans l'onglet Actions
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Requête à la base
+        run: |
+          code=$(curl -s -o /tmp/r.txt -w "%{http_code}" -X POST \
+            "https://ppbyclkztomepipemhdy.supabase.co/rest/v1/rpc/pseudo_libre" \
+            -H "apikey: sb_publishable_RiL4oWlS4C5Pye5Gz-joBw_zure_NBr" \
+            -H "Content-Type: application/json" \
+            -d '{"p":"ping-garde-eveille"}')
+          echo "Réponse $code : $(cat /tmp/r.txt)"
+          test "$code" = "200"
