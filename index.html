@@ -747,6 +747,13 @@ body { background-image: radial-gradient(color-mix(in srgb, var(--ink) 7%, trans
 .cs-piece { position: absolute; left: 0; top: 0; width: 34px; height: 34px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #FFF2A8, #F4B400 50%, #B07D00); border: 2px solid #8A6200; font-style: normal; font-size: 26px; line-height: 30px; text-align: center; }
 .cs-piece:not(:empty) { background: none; border: 0; }
 .cs-vol { position: absolute; z-index: 30; font-family: var(--f-display); font-weight: 900; text-transform: uppercase; line-height: .86; background: var(--cire); color: var(--cire-ink); padding: 0 .08em; box-shadow: 6px 6px 0 var(--red); white-space: nowrap; }
+.bt-seance { position: fixed; inset: 0; z-index: 205; background: radial-gradient(ellipse at 50% 45%, #1C2B38 0%, #05090D 70%); color: #F2F3EF; display: grid; place-content: center; justify-items: center; gap: 22px; padding: 24px; text-align: center; animation: bs-in .5s ease; }
+@keyframes bs-in { from { opacity: 0; } }
+.bt-seance .bs-k { margin: 0; font: 500 12px var(--f-mono); letter-spacing: .3em; text-transform: uppercase; color: #F4B400; }
+.bt-seance .bs-t { margin: 0; font: 900 clamp(48px, 13vw, 110px)/.9 var(--f-display); text-transform: uppercase; }
+.bt-seance .bs-go { border: 0; border-radius: 999px; background: #F4B400; color: #0E1B26; font: 900 clamp(22px, 5.5vw, 30px) var(--f-display); text-transform: uppercase; letter-spacing: .04em; padding: 16px 30px; cursor: pointer; box-shadow: 0 0 0 0 rgba(244, 180, 0, .6); animation: bs-pouls 1.4s ease-out infinite; }
+@keyframes bs-pouls { 70% { box-shadow: 0 0 0 22px rgba(244, 180, 0, 0); } 100% { box-shadow: 0 0 0 0 rgba(244, 180, 0, 0); } }
+.bt-seance .bs-sans { border: 0; background: none; color: rgba(242, 243, 239, .55); font: 500 14px var(--f-body); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; padding: 8px; }
 .bt.shake-t .bt-title h1 { animation: shake .45s cubic-bezier(.36, .07, .19, .97); }
 .bt-cine.shake { animation: shake .5s cubic-bezier(.36, .07, .19, .97); }
 
@@ -1810,6 +1817,19 @@ route();
 /* lancée au chargement, et relancée quand on touche la signature BAWSS en bas de la liste */
 window.lancerIntro = (opts = {}) => {
   if (location.hash || !window.gsap || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  /* premier lancement : un écran « séance » dont le toucher débloque le son (les téléphones l'exigent) */
+  let seanceVue = '1'; try { seanceVue = localStorage.getItem('bawss-seance'); } catch (e) {}
+  if (!opts.son && !seanceVue) {
+    const g = document.createElement('div');
+    g.className = 'bt-seance'; g.setAttribute('role', 'dialog'); g.setAttribute('aria-label', 'Lancer l’intro');
+    g.innerHTML = `<p class="bs-k">Bawss présente</p><p class="bs-t">Monte le son,<br>mon gars.</p><button type="button" class="bs-go">▶ Lancer la séance</button><button type="button" class="bs-sans">Passer l’intro</button>`;
+    document.body.appendChild(g); document.documentElement.style.overflow = 'hidden';
+    const fin = () => { try { localStorage.setItem('bawss-seance', '1'); } catch (e) {} g.remove(); document.documentElement.style.overflow = ''; };
+    g.querySelector('.bs-go').addEventListener('click', () => { fin(); window.lancerIntro({ son: true }); });
+    g.querySelector('.bs-sans').addEventListener('click', () => { fin(); dispatchEvent(new Event('bawss-intro-fin')); });
+    return;
+  }
+  try { localStorage.setItem('bawss-seance', '1'); } catch (e) {}
   /* à chaque ouverture, l'intro suivante (mémorisé dans ce navigateur seulement) */
   const INTROS = ['trailer', 'phare', 'bandit'];
   let n = 0;
