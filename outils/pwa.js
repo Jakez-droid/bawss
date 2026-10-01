@@ -94,7 +94,7 @@
       if (r && r.error && invitePar()) await sb.from('profils').insert(ligne).then(() => {}, () => {});   // colonne pas encore créée
       return;
     }
-    moi.admin = !!p.admin; moi.pseudo = p.pseudo || moi.pseudo; majBouton(); chatDemarrer();
+    moi.admin = !!p.admin; moi.pseudo = p.pseudo || moi.pseudo; majBouton(); chatDemarrer(); if (moi.admin) nouveauxMembres();
     const distant = p.maj_le || '1970-01-01T00:00:00Z';
     let f, c;
     if (fusion) {
@@ -351,6 +351,26 @@
     rzCompte(el.querySelector('[data-rz-compte]'));
     if (moi.admin) membres(el.querySelector('[data-membres]'));
   }
+  /* pour Jakez : les nouveaux inscrits depuis sa dernière visite (pastille + bandeau) */
+  let NOUVEAUX = [];
+  function pastilleMembres(n) {
+    if (!bouton) return;
+    let d = bouton.querySelector('.mb-dot');
+    if (n > 0) { if (!d) { d = document.createElement('span'); d.className = 'mb-dot'; bouton.appendChild(d); } d.textContent = '+' + (n > 9 ? '9' : n); }
+    else if (d) d.remove();
+  }
+  async function nouveauxMembres() {
+    if (!sb || !moi || !moi.admin) return;
+    const vu = ls.get('bawss-membres-vus');
+    if (!vu) { ls.set('bawss-membres-vus', new Date().toISOString()); return; }
+    const r = await sb.rpc('membres').then(x => x, () => ({ error: true }));
+    if (r.error) return;
+    NOUVEAUX = (r.data || []).filter(m => m.cree_le > vu && m.pseudo !== moi.pseudo);
+    pastilleMembres(NOUVEAUX.length);
+    if (!NOUVEAUX.length) return;
+    const noms = NOUVEAUX.slice(0, 3).map(m => esc2(m.pseudo) + (m.invite_par ? ' (invité par ' + esc2(m.invite_par) + ')' : '')).join(', ') + (NOUVEAUX.length > 3 ? '…' : '');
+    notif('<b>🎉 ' + NOUVEAUX.length + ' nouveau' + (NOUVEAUX.length > 1 ? 'x membres' : ' membre') + ' depuis ta dernière visite</b><span>' + noms + '</span>', ecranMonCompte, true);
+  }
   async function membres(box) {
     box.innerHTML = '<p>Chargement des membres…</p>';
     let r = await sb.rpc('membres').then(x => x, e => ({ error: e }));
@@ -359,7 +379,9 @@
     const L = r.data || [], j = d => new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
     const semaine = L.filter(m => Date.now() - new Date(m.vu_le) < 7 * 864e5).length;
     box.innerHTML = '<div class="bw-stats"><div><b>' + L.length + '</b><span>membres</span></div><div><b>' + L.filter(m => m.installee).length + '</b><span>appli installée</span></div><div><b>' + semaine + '</b><span>venus cette semaine</span></div></div>'
-      + '<ul class="bw-membres">' + L.map(m => '<li><b>' + esc2(m.pseudo) + '</b><span>' + (m.email && !/@bawss\.app$/.test(m.email) ? esc2(m.email) + ' · ' : '') + esc2(m.plateforme || '') + (m.installee ? ' · installée' : '') + (m.invite_par ? ' · invité par ' + esc2(m.invite_par) : '') + ' · inscrit le ' + j(m.cree_le) + ' · vu le ' + j(m.vu_le) + '</span></li>').join('') + '</ul>';
+      + '<ul class="bw-membres">' + L.map(m => '<li' + (NOUVEAUX.some(n => n.pseudo === m.pseudo) ? ' class="neuf"' : '') + '><b>' + (NOUVEAUX.some(n => n.pseudo === m.pseudo) ? '🆕 ' : '') + esc2(m.pseudo) + '</b><span>' + (m.email && !/@bawss\.app$/.test(m.email) ? esc2(m.email) + ' · ' : '') + esc2(m.plateforme || '') + (m.installee ? ' · installée' : '') + (m.invite_par ? ' · invité par ' + esc2(m.invite_par) : '') + ' · inscrit le ' + j(m.cree_le) + ' · vu le ' + j(m.vu_le) + '</span></li>').join('') + '</ul>';
+    /* vus : on remet le compteur à zéro */
+    ls.set('bawss-membres-vus', new Date().toISOString()); NOUVEAUX = []; pastilleMembres(0);
   }
   if (bouton) bouton.addEventListener('click', ecranMonCompte);
 

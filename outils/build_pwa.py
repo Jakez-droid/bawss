@@ -58,6 +58,8 @@ if os.path.exists(ex):
 h = re.sub(r'const BOSS_PHONE = "[^"]*";', 'const BOSS_PHONE = "chat";', h, count=1)
 assert '<b>📞 Appelle le bawss</b>' in h, 'bouton SOS du mode cuisine introuvable'
 h = h.replace('<b>📞 Appelle le bawss</b>', '<b>💬 Écris au Bawss</b>')
+assert 'Si tu paniques, appelle le bawss.' in h, 'phrase d’accueil'
+h = h.replace('Si tu paniques, appelle le bawss.', 'Si tu paniques, écris au Bawss.')
 # script de l'appli installable, en dernier
 i = h.rindex('</script>')
 h = h[:i] + '\n' + js + h[i:]
