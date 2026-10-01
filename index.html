@@ -871,6 +871,16 @@ body { background-image: radial-gradient(color-mix(in srgb, var(--ink) 7%, trans
 .faq details ul { margin: 0 0 8px; padding-left: 20px; }
 .faq details li { margin: 3px 0; }
 .faq-tuto { margin-top: 28px; border: 0; border-radius: 999px; background: var(--ink); color: var(--paper); font: 800 16px var(--f-body); padding: 12px 20px; cursor: pointer; box-shadow: 3px 3px 0 var(--cire); }
+/* lexique breton : même écran plein que la FAQ, liste alphabétique + recherche */
+.lex-q { width: 100%; font: 500 16px var(--f-body); color: var(--ink); background: transparent; border: 2px solid var(--ink); border-radius: 999px; padding: 11px 16px; margin-bottom: 8px; }
+.lex-q:focus { outline: none; border-color: var(--cire); }
+.lex-n { font-family: var(--f-mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 6px 0 4px; }
+.lex-l { list-style: none; margin: 0; padding: 0; }
+.lex-l li { border-top: 1px dashed var(--line); padding: 13px 0; }
+.lex-l li:last-child { border-bottom: 1px dashed var(--line); }
+.lex-l b { display: block; font-family: var(--f-display); font-weight: 900; text-transform: uppercase; font-size: 23px; line-height: 1; letter-spacing: .02em; overflow-wrap: anywhere; }
+.lex-l span { display: block; margin-top: 5px; font-size: 15.5px; line-height: 1.45; color: var(--muted); }
+.lex-vide { color: var(--muted); padding: 18px 0; }
 </style>
 
 <header class="top">
@@ -898,7 +908,7 @@ body { background-image: radial-gradient(color-mix(in srgb, var(--ink) 7%, trans
     </div>
     <div class="count" id="count" aria-live="polite"></div>
     <div class="grid" id="grid"></div>
-    <p class="tuto-again-p"><button type="button" class="invite-btn" id="invite-btn">👋 Inviter un pote</button><button type="button" class="tuto-again" id="tuto-again">↺ Revoir le tour du proprio</button><button type="button" class="tuto-again" id="faq-btn">❓ Questions fréquentes</button></p>
+    <p class="tuto-again-p"><button type="button" class="invite-btn" id="invite-btn">👋 Inviter un pote</button><button type="button" class="tuto-again" id="tuto-again">↺ Revoir le tour du proprio</button><button type="button" class="tuto-again" id="faq-btn">❓ Questions fréquentes</button><button type="button" class="tuto-again" id="lex-btn">📖 Tout le lexique breton</button></p>
     <button type="button" class="fin-bawss" id="fin-bawss" aria-label="Bawss : relancer l’intro"><b>Bawss</b><span id="fin-slogan">Cuisine sans filet.</span></button>
     <div class="fp" id="fp" hidden role="dialog" aria-modal="true" aria-label="Filtres"><div class="fp-box"></div></div>
     <div class="empty" id="empty" hidden>
@@ -1279,7 +1289,7 @@ function renderGrid() {
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { ajusterGrille(); if (current) ajusterTitres(document.querySelectorAll('#r-' + current + ' .r-head h1')); });
 let resizeT = null;
 addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(() => { ajusterGrille(); if (current) ajusterTitres(document.querySelectorAll('#r-' + current + ' .r-head h1')); }, 150); });
-$('#lede').textContent = `Enlève ton choupen, mets ton tablier et va dans ta cuisine. ${RECIPES.length} recettes testées sur des humains encore en vie aujourd’hui. Cherche un plat ou un ingrédient, ajuste les portions, et passe en mode cuisine une fois aux fourneaux. Si tu paniques, demande à ton Jakez. Prends ta dose de brezhoneg à la fin et casse-toi manger avant que ça refroidisse, strouillou !`;
+$('#lede').textContent = `Enlève ton choupen, mets ton tablier et va dans ta cuisine. ${RECIPES.length} recettes testées sur des humains encore en vie aujourd’hui. Cherche un plat ou un ingrédient, ajuste les portions, et passe en mode cuisine une fois aux fourneaux. Si tu paniques, demande à ton Jakez. Fais-le à la mamm gozh et casse-toi manger avant que ça refroidisse, strouillou !`;
 
 $('#types').addEventListener('click', e => {
   const b = e.target.closest('[data-type]'); if (!b) return;
@@ -2454,6 +2464,31 @@ window.lancerIntro = (opts = {}) => {
   };
   document.addEventListener('keydown', e => { if (el && e.key === 'Escape') fermerFaq(); });
   $('#faq-btn').addEventListener('click', () => window.ouvrirFaq());
+/* ---------- lexique breton : toutes les expressions, de A à Z ---------- */
+(function () {
+  const btn = document.getElementById('lex-btn'); if (!btn) return;
+  const cle = s => norm(s).replace(/^(le |la |les |l'|l’|des |du |un |une |j'ai |avoir |faire |prendre |mes |fait a la )/, '').replace(/[^a-z0-9 ]/g, '').trim();
+  const LISTE = EXPRESSIONS.slice().sort((a, b) => cle(a.br).localeCompare(cle(b.br), 'fr'));
+  let el = null;
+  const fermer = () => { if (el) { el.remove(); el = null; document.documentElement.style.overflow = ''; document.removeEventListener('keydown', echap); } };
+  const echap = e => { if (e.key === 'Escape') fermer(); };
+  const rendu = q => {
+    const n = norm(q.trim()), L = n ? LISTE.filter(x => norm(x.br + ' ' + x.fr).includes(n)) : LISTE;
+    el.querySelector('.lex-n').textContent = L.length + (L.length > 1 ? ' expressions' : ' expression');
+    el.querySelector('.lex-l').innerHTML = L.length ? L.map(x => `<li><b>${esc(x.br)}</b><span>${esc(x.fr)}</span></li>`).join('') : '<li class="lex-vide">Rien. Nouzonkit !</li>';
+  };
+  btn.addEventListener('click', () => {
+    fermer();
+    el = document.createElement('div'); el.className = 'faq'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-label', 'Lexique breton');
+    el.innerHTML = `<div class="faq-in"><div class="faq-top"><h1>Lexique <span>breton</span></h1><button type="button" class="faq-x" data-lex-x aria-label="Fermer">✕</button></div><input class="lex-q" type="search" placeholder="Cherche un mot, en breton ou en français" aria-label="Chercher dans le lexique"><div class="lex-n" aria-live="polite"></div><ul class="lex-l"></ul></div>`;
+    document.body.appendChild(el); document.documentElement.style.overflow = 'hidden';
+    el.addEventListener('click', e => { if (e.target.closest('[data-lex-x]')) fermer(); });
+    el.querySelector('.lex-q').addEventListener('input', e => rendu(e.target.value));
+    document.addEventListener('keydown', echap);
+    rendu('');
+    el.querySelector('.faq-x').focus();
+  });
+})();
 })();
 
 /* ---------- Bawss : appli installable, comptes, favoris et liste de courses synchronisés ---------- */
