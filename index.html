@@ -761,6 +761,23 @@ body { background-image: radial-gradient(color-mix(in srgb, var(--ink) 7%, trans
 .fin-bawss b { font-family: var(--f-display); font-weight: 900; text-transform: uppercase; font-size: 30px; line-height: 1; letter-spacing: .02em; background: var(--cire); color: var(--cire-ink); padding: 3px 10px 1px; transform: rotate(-2deg); box-shadow: 3px 3px 0 var(--ink); }
 .fin-bawss:active b { transform: rotate(-2deg) translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
 .fin-bawss span { font-style: italic; font-size: 14px; color: var(--muted); }
+/* couvertures des recettes sans photo : couleur par type, rayures de marinière, emoji en sticker */
+.card.cov { background: var(--cv); }
+.card.cov .tile { overflow: hidden; background: repeating-linear-gradient(180deg, var(--cv) 0 14px, var(--cv2) 14px 22px); }
+.card.cov .tile .emo { position: relative; z-index: 1; font-size: 64px; width: 104px; height: 104px; display: grid; place-items: center; border-radius: 50%; background: #F2F3EF; box-shadow: 4px 4px 0 #0E1B26; transform: translateY(-26%) rotate(-6deg); }
+.card.cov:hover .tile .emo { transform: translateY(-30%) rotate(-12deg); }
+.card.big.cov .tile .emo { font-size: 110px; width: 180px; height: 180px; }
+.card.cov .cov-k { position: absolute; left: 11px; top: 10px; z-index: 2; font: 500 10.5px var(--f-mono); letter-spacing: .12em; text-transform: uppercase; background: #0E1B26; color: #F2F3EF; padding: 3px 7px; }
+.card.cov .body { background: linear-gradient(to top, var(--cv) 55%, transparent); padding-top: 28px; }
+.card.cov h3 { color: var(--cvt); }
+.card.cov .meta { color: color-mix(in srgb, var(--cvt) 80%, transparent); }
+.t-plat { --cv: #C8402E; --cv2: #A93220; --cvt: #FFFFFF; }
+.t-entree { --cv: #2F7D5B; --cv2: #256A4C; --cvt: #FFFFFF; }
+.t-snack { --cv: #F4B400; --cv2: #E3A500; --cvt: #0E1B26; }
+.t-base { --cv: #E9DFC9; --cv2: #DCCFB2; --cvt: #0E1B26; }
+.t-dessert { --cv: #E58FA8; --cv2: #D77A95; --cvt: #0E1B26; }
+.t-sauce { --cv: #6B3A8A; --cv2: #5A2F75; --cvt: #FFFFFF; }
+@media (max-width: 680px) { .card.cov .tile .emo { font-size: 52px; width: 86px; height: 86px; } }
 /* FAQ */
 .ing-cart { display: flex; align-items: center; gap: 10px; width: 100%; margin: 14px 0 10px; border: 0; border-radius: 14px; background: var(--ink); color: var(--paper); padding: 13px 16px; font: 800 16px var(--f-body); text-align: left; cursor: pointer; box-shadow: 3px 3px 0 var(--cire); transition: transform .15s ease, background-color .15s ease; }
 .ing-cart svg { width: 24px; height: 24px; flex: none; }
@@ -1153,12 +1170,15 @@ function matches(r, sauf) {
   return true;
 }
 const compte = (k, o) => RECIPES.filter(r => matches(r, k) && FILTRES[k].val(r).includes(o)).length;
+const COUV = { 'Plat': 't-plat', 'Entrée': 't-entree', 'Sandwich & snack': 't-snack', 'Base': 't-base', 'Dessert': 't-dessert', 'Sauce & condiment': 't-sauce' };
+const TYPE_COURT = { 'Sandwich & snack': 'Snack', 'Sauce & condiment': 'Sauce' };
+const couv = t => COUV[t] || 't-plat';
 function renderGrid() {
   const list = RECIPES.filter(matches).sort((a, b) => rang(a) - rang(b));
   const big = !filtrage();
   $('#grid').innerHTML = list.map((r, i) => `
-    <a class="card ${r.photo ? 'pic' : 'nopic'}" href="#${r.id}">
-      <div class="tile" aria-hidden="true">${r.photo ? `<img src="${r.photo}" alt="" loading="lazy">` : `<span class="emo">${r.emoji}</span>`}
+    <a class="card ${r.photo ? 'pic' : 'nopic cov ' + couv(r.type)}" href="#${r.id}">
+      <div class="tile" aria-hidden="true">${r.photo ? `<img src="${r.photo}" alt="" loading="lazy">` : `<span class="cov-k">${esc(TYPE_COURT[r.type] || r.type)}</span><span class="emo">${r.emoji}</span>`}
         ${favs.has(r.id) ? '<span class="heart">♥</span>' : ''}
       </div>
       <div class="body">
