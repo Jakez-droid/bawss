@@ -1859,6 +1859,7 @@ window.lancerIntro = (opts = {}) => {
   let n = 0;
   try { const v = parseInt(localStorage.getItem('bt-intro'), 10); n = isNaN(v) ? 0 : (v + 1) % INTROS.length; localStorage.setItem('bt-intro', n); } catch (e) { n = Math.floor(Math.random() * INTROS.length); }
   const quelle = opts.quelle && INTROS.includes(opts.quelle) ? opts.quelle : INTROS[n];
+  if (quelle !== INTROS[n]) { try { localStorage.setItem('bt-intro', INTROS.indexOf(quelle)); } catch (e) {} }
 
   /* sons de synthèse : ils ne peuvent démarrer qu'après un geste, d'où le bouton « Mets le son » */
   let AC = null, son = !!opts.son;
@@ -2367,7 +2368,11 @@ window.lancerIntro = (opts = {}) => {
 /* ---------- signature en bas de la liste ---------- */
 (function () { const S = ['Cuisine sans filet.', 'Cuisine 2 rue.', 'Du beurre & des larmes.']; const e = document.getElementById('fin-slogan'); if (e) e.textContent = S[Math.floor(Math.random() * S.length)];
   const b = document.getElementById('fin-bawss');
-  if (b) b.addEventListener('click', () => { if (typeof window.lancerIntro !== 'function') return; window.scrollTo(0, 0); requestAnimationFrame(() => window.lancerIntro({ seance: true })); });
+  if (b) b.addEventListener('click', () => { if (typeof window.lancerIntro !== 'function') return; window.scrollTo(0, 0); /* on enchaîne les intros à chaque toucher ; quand vient le tour du cinéma, c'est la séance complète (Monte le son, BangBawss Films, bande-annonce) */
+    let v = -1; try { v = parseInt(localStorage.getItem('bt-intro'), 10); } catch (e) {}
+    const prochaine = isNaN(v) ? 0 : (v + 1) % 3;
+    if (prochaine === 0) { try { localStorage.setItem('bt-intro', '0'); } catch (e) {} }
+    requestAnimationFrame(() => window.lancerIntro(prochaine === 0 ? { seance: true } : { son: true })); });
 })();
 
 /* ---------- FAQ ---------- */
