@@ -754,6 +754,10 @@ body { background-image: radial-gradient(color-mix(in srgb, var(--ink) 7%, trans
 .bt-seance .bs-go { border: 0; border-radius: 999px; background: #F4B400; color: #0E1B26; font: 900 clamp(22px, 5.5vw, 30px) var(--f-display); text-transform: uppercase; letter-spacing: .04em; padding: 16px 30px; cursor: pointer; box-shadow: 0 0 0 0 rgba(244, 180, 0, .6); animation: bs-pouls 1.4s ease-out infinite; }
 @keyframes bs-pouls { 70% { box-shadow: 0 0 0 22px rgba(244, 180, 0, 0); } 100% { box-shadow: 0 0 0 0 rgba(244, 180, 0, 0); } }
 .bt-seance .bs-sans { border: 0; background: none; color: rgba(242, 243, 239, .55); font: 500 14px var(--f-body); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; padding: 8px; }
+.bt-studio { position: fixed; inset: 0; z-index: 206; background: #000; display: grid; place-items: center; }
+.bt-studio .bs-logo { display: grid; justify-items: center; gap: 6px; opacity: 0; }
+.bt-studio .bs-logo b { font: 900 clamp(54px, 15vw, 140px)/.85 var(--f-display); text-transform: uppercase; letter-spacing: .02em; color: transparent; background: linear-gradient(180deg, #FFF3C4 0%, #F4B400 55%, #B07D00 100%); -webkit-background-clip: text; background-clip: text; }
+.bt-studio .bs-logo span { font: 500 clamp(13px, 3.4vw, 22px) var(--f-mono); letter-spacing: .9em; padding-left: .9em; text-transform: uppercase; color: #D9D9D9; }
 .bt.shake-t .bt-title h1 { animation: shake .45s cubic-bezier(.36, .07, .19, .97); }
 .bt-cine.shake { animation: shake .5s cubic-bezier(.36, .07, .19, .97); }
 
@@ -1822,10 +1826,24 @@ window.lancerIntro = (opts = {}) => {
   if (!opts.son && !seanceVue) {
     const g = document.createElement('div');
     g.className = 'bt-seance'; g.setAttribute('role', 'dialog'); g.setAttribute('aria-label', 'Lancer l’intro');
-    g.innerHTML = `<p class="bs-k">BangBawss Films présente</p><p class="bs-t">Monte le son<br>mon Bawss.</p><button type="button" class="bs-go">▶ Lancer la séance</button><button type="button" class="bs-sans">Passer l’intro</button>`;
+    g.innerHTML = `<p class="bs-k">BangBawss Films présente</p><p class="bs-t">Monte le son<br>mon Bawss.</p><button type="button" class="bs-go">▶ Deomp dezhi !</button><button type="button" class="bs-sans">Passer l’intro</button>`;
     document.body.appendChild(g); document.documentElement.style.overflow = 'hidden';
     const fin = () => { try { localStorage.setItem('bawss-seance', '1'); } catch (e) {} g.remove(); document.documentElement.style.overflow = ''; };
-    g.querySelector('.bs-go').addEventListener('click', () => { fin(); window.lancerIntro({ son: true }); });
+    g.querySelector('.bs-go').addEventListener('click', () => {
+      /* le toucher débloque le son tout de suite (exigé par les téléphones), pour toute la suite */
+      try { window.bawssAC = window.bawssAC || new (window.AudioContext || window.webkitAudioContext)(); window.bawssAC.resume(); } catch (e) {}
+      fin();
+      /* carton de studio, en silence, puis la bande-annonce */
+      const st = document.createElement('div'); st.className = 'bt-studio';
+      st.innerHTML = '<div class="bs-logo"><b>BangBawss</b><span>Films</span></div>';
+      document.body.appendChild(st); document.documentElement.style.overflow = 'hidden';
+      gsap.timeline()
+        .fromTo(st.firstChild, { opacity: 0, scale: .94 }, { opacity: 1, scale: 1, duration: 1.1, ease: 'power2.out' }, .4)
+        .to(st.firstChild, { scale: 1.04, duration: 1.6, ease: 'none' })
+        .to(st.firstChild, { opacity: 0, duration: .9, ease: 'power2.in' }, '-=.5')
+        .add(() => { window.lancerIntro({ son: true, quelle: 'trailer' }); }, '+=.1')
+        .to(st, { opacity: 0, duration: .3, onComplete: () => st.remove() }, '+=.05');
+    });
     g.querySelector('.bs-sans').addEventListener('click', () => { fin(); dispatchEvent(new Event('bawss-intro-fin')); });
     return;
   }
@@ -1834,11 +1852,11 @@ window.lancerIntro = (opts = {}) => {
   const INTROS = ['trailer', 'phare', 'bandit'];
   let n = 0;
   try { const v = parseInt(localStorage.getItem('bt-intro'), 10); n = isNaN(v) ? 0 : (v + 1) % INTROS.length; localStorage.setItem('bt-intro', n); } catch (e) { n = Math.floor(Math.random() * INTROS.length); }
-  const quelle = INTROS[n];
+  const quelle = opts.quelle && INTROS.includes(opts.quelle) ? opts.quelle : INTROS[n];
 
   /* sons de synthèse : ils ne peuvent démarrer qu'après un geste, d'où le bouton « Mets le son » */
   let AC = null, son = !!opts.son;
-  const ctx = () => { if (!son) return null; try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === 'suspended') AC.resume(); return AC; } catch (e) { return null; } };
+  const ctx = () => { if (!son) return null; try { AC = AC || window.bawssAC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === 'suspended') AC.resume(); return AC; } catch (e) { return null; } };
   const bruit = (a, dur) => { const b = a.createBuffer(1, a.sampleRate * dur, a.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; const s = a.createBufferSource(); s.buffer = b; return s; };
   const env = (g, t, at, peak, d) => { g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + at); g.gain.exponentialRampToValueAtTime(.0001, t + at + d); };
   const S = {
@@ -2313,7 +2331,7 @@ window.lancerIntro = (opts = {}) => {
   let lance = false;
   const tenter = () => {
     if (lance || lu()) return;
-    if (document.querySelector('.bt, .bw, .pk, .mag') || location.hash) { setTimeout(tenter, 900); return; }
+    if (document.querySelector('.bt, .bw, .pk, .mag, .bt-seance, .bt-studio') || location.hash) { setTimeout(tenter, 900); return; }
     lance = true; invitation();
   };
   addEventListener('bawss-intro-fin', () => setTimeout(tenter, 500));
