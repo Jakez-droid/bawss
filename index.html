@@ -656,7 +656,7 @@ body { background-image: radial-gradient(color-mix(in srgb, var(--ink) 7%, trans
 /* ===== Ouverture : la bande-annonce BAWSS ===== */
 .bt { position: fixed; inset: 0; z-index: 200; overflow: hidden; background: var(--paper); background-image: radial-gradient(color-mix(in srgb, var(--ink) 7%, transparent) 1px, transparent 1.4px); background-size: 8px 8px; }
 .bt-title { position: absolute; left: 0; right: 0; top: 14vh; z-index: 2; }
-.bt-title h1 { font-family: var(--f-display); font-weight: 900; font-size: clamp(52px, 11vw, 132px); line-height: .86; margin: 0; text-transform: uppercase; color: var(--ink); text-wrap: balance; }
+.bt-title h1 { font-family: var(--f-display); font-weight: 900; font-size: clamp(52px, 11vw, 132px); line-height: .86; margin: 0; text-transform: uppercase; letter-spacing: -.005em; color: var(--ink); text-wrap: balance; }
 .bt-title .w { display: inline-block; font-style: normal; animation: drop .38s cubic-bezier(.2, 1.6, .4, 1) calc(.2s + var(--i) * .3s) backwards; }
 .bt-boss { display: inline-block; position: relative; z-index: 3; background: var(--cire); color: var(--cire-ink); padding: 0 .08em; box-shadow: 6px 6px 0 var(--red); opacity: 0; }
 .bt-cine { position: absolute; inset: 0; z-index: 5; background: #000; display: grid; place-items: center; overflow: hidden; opacity: 0; }
@@ -758,16 +758,16 @@ body { background-image: radial-gradient(color-mix(in srgb, var(--ink) 7%, trans
 .bl-retombe b { font-family: var(--f-display); font-weight: 900; text-transform: uppercase; color: #6B300A; transform: rotate(-8deg); }
 .bl-plaque { position: relative; width: min(84vw, 500px); aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle at 40% 36%, #4C4C4C 0%, #262626 42%, #121212 78%); box-shadow: 0 0 0 9px #2C2C2C, 0 0 0 13px #0A0A0A, 0 34px 70px rgba(0, 0, 0, .75); }
 .bl-chaleur { position: absolute; inset: -10%; border-radius: 50%; background: radial-gradient(circle, rgba(255, 120, 30, .38) 0%, rgba(255, 90, 0, 0) 64%); filter: blur(12px); pointer-events: none; }
-.bl-crepe { position: absolute; inset: 4%; border-radius: 50%; transform: scale(.18); opacity: 0; }
+.bl-crepe { position: absolute; inset: 4%; z-index: 2; border-radius: 50%; transform: scale(.18); opacity: 0; }
 .bl-pate { position: absolute; inset: 0; border-radius: 50%; overflow: hidden; background: radial-gradient(circle at 50% 50%, #F7EBC6 0%, #F2DFAC 72%, #EACF8F 100%); box-shadow: 0 0 0 2px rgba(200, 150, 70, .5); }
 .bl-dore { position: absolute; inset: 0; border-radius: 50%; opacity: 0; background: radial-gradient(circle, rgba(214, 150, 70, .55) 0%, rgba(196, 120, 40, .7) 70%, rgba(150, 80, 20, .95) 100%); }
 .bl-dore i { position: absolute; border-radius: 50%; background: rgba(120, 58, 14, .55); filter: blur(1.5px); }
 .bl-mot { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--f-display); font-weight: 900; text-transform: uppercase; font-size: min(21vw, 128px); letter-spacing: .02em; color: #6B300A; opacity: 0; transform: rotate(-8deg); }
-.bl-rozell { position: absolute; left: 50%; top: 50%; width: 47%; height: 13px; margin-top: -6.5px; transform-origin: 0 50%; border-radius: 7px; background: linear-gradient(#D7A867, #8E5D2A); box-shadow: 0 7px 12px rgba(0, 0, 0, .5); opacity: 0; }
+.bl-rozell { position: absolute; z-index: 3; left: 50%; top: 50%; width: 47%; height: 13px; margin-top: -6.5px; transform-origin: 0 50%; border-radius: 7px; background: linear-gradient(#D7A867, #8E5D2A); box-shadow: 0 7px 12px rgba(0, 0, 0, .5); opacity: 0; }
 .bl-rozell::before { content: ""; position: absolute; left: -9px; top: 50%; width: 22px; height: 22px; margin-top: -11px; border-radius: 50%; background: #A87436; box-shadow: 0 5px 9px rgba(0, 0, 0, .5); }
-.bl-louche { position: absolute; left: 50%; top: 50%; width: 24%; aspect-ratio: 1; margin: -12% 0 0 -12%; border-radius: 50%; background: radial-gradient(circle at 42% 38%, #FFFFFF 0%, #C9CFD3 40%, #7C858B 100%); box-shadow: 0 14px 22px rgba(0, 0, 0, .55); opacity: 0; }
+.bl-louche { position: absolute; z-index: 3; left: 50%; top: 50%; width: 24%; aspect-ratio: 1; margin: -12% 0 0 -12%; border-radius: 50%; background: radial-gradient(circle at 42% 38%, #FFFFFF 0%, #C9CFD3 40%, #7C858B 100%); box-shadow: 0 14px 22px rgba(0, 0, 0, .55); opacity: 0; }
 .bl-louche::after { content: ""; position: absolute; left: 85%; top: 42%; width: 120%; height: 12%; border-radius: 6px; background: linear-gradient(#D9DEE1, #8D969C); transform: rotate(-24deg); transform-origin: 0 50%; }
-.bl-spatule { position: absolute; left: 50%; top: 50%; width: 78%; height: 24px; margin-top: -12px; border-radius: 4px 12px 12px 4px; background: linear-gradient(90deg, #E1E5E8 0%, #A3ACB2 58%, #6E4A26 58.5%, #4A2F15 100%); box-shadow: 0 9px 16px rgba(0, 0, 0, .55); opacity: 0; }
+.bl-spatule { position: absolute; z-index: 1; left: 50%; top: 50%; width: 78%; height: 24px; margin-top: -12px; border-radius: 4px 12px 12px 4px; background: linear-gradient(90deg, #E1E5E8 0%, #A3ACB2 58%, #6E4A26 58.5%, #4A2F15 100%); box-shadow: 0 9px 16px rgba(0, 0, 0, .55); opacity: 0; }
 .bl-fumee { position: absolute; inset: 0; pointer-events: none; }
 .bl-fumee i { position: absolute; left: 0; top: 0; width: 90px; height: 90px; border-radius: 50%; background: rgba(255, 255, 255, .16); filter: blur(14px); opacity: 0; }
 /* ===== intro 5 : le fest-noz ===== */
@@ -783,10 +783,9 @@ body { background-image: radial-gradient(color-mix(in srgb, var(--ink) 7%, trans
 .fn-vortex { position: absolute; border-radius: 50%; opacity: 0; pointer-events: none; }
 .fn-vortex i { position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(from 0deg, rgba(255, 226, 122, 0), rgba(255, 226, 122, .95) 10%, rgba(255, 255, 255, 0) 22%, rgba(255, 150, 80, .9) 35%, rgba(255, 255, 255, 0) 48%, rgba(255, 226, 122, .95) 60%, rgba(255, 255, 255, 0) 72%, rgba(255, 150, 80, .9) 85%, rgba(255, 226, 122, 0)); filter: blur(3px); }
 .fn-flash { position: absolute; inset: 0; z-index: 400; background: #FFF4D6; opacity: 0; pointer-events: none; }
-.fn-scene { position: absolute; z-index: 5; }
-.fn-scene svg { display: block; width: 100%; height: 100%; overflow: visible; }
-.fn-drapeau { position: absolute; z-index: 300; filter: drop-shadow(0 12px 22px rgba(0, 0, 0, .6)); }
-.fn-drapeau i { position: absolute; top: 0; height: 100%; background-repeat: no-repeat; }
+.fn-drapeau { position: absolute; z-index: 300; }
+.fn-drapeau i { position: absolute; top: 0; height: 100%; }
+.fn-drapeau svg { display: block; width: 100%; height: 100%; }
 .bt-seance { position: fixed; inset: 0; z-index: 205; background: radial-gradient(ellipse at 50% 45%, #1C2B38 0%, #05090D 70%); color: #F2F3EF; display: grid; place-content: center; justify-items: center; gap: 22px; padding: 24px; text-align: center; animation: bs-in .5s ease; }
 @keyframes bs-in { from { opacity: 0; } }
 .bt-seance .bs-k { margin: 0; font: 500 12px var(--f-mono); letter-spacing: .3em; text-transform: uppercase; color: #F4B400; }
@@ -2324,7 +2323,7 @@ window.lancerIntro = (opts = {}) => {
 
   /* ===== 5. Le fest-noz : la ronde s'emballe, le Gwenn-ha-Du claque, BAWSS jaillit ===== */
   function festnoz() {
-    const sc = add('<svg class="fn-fil"></svg><div class="fn-sol"></div><div class="fn-scene"></div><div class="fn-feu"></div><div class="fn-vortex"><i></i></div><div class="fn-drapeau"></div><div class="fn-flash"></div>', 'bt-fest');
+    const sc = add('<svg class="fn-fil"></svg><div class="fn-sol"></div><div class="fn-feu"></div><div class="fn-vortex"><i></i></div><div class="fn-drapeau"></div><div class="fn-flash"></div>', 'bt-fest');
     const c = s => sc.querySelector(s);
     /* guirlande de lampions */
     const fil = c('.fn-fil'), top = H * .07, sag = H * .07, N0 = 13; let d = '';
@@ -2336,16 +2335,6 @@ window.lancerIntro = (opts = {}) => {
     const cx = W / 2, cy = H * .74, rx = Math.min(W * .42, 300), ry = rx * .36, N = 10;
     const feu = c('.fn-feu'); gsap.set(feu, { left: cx - rx * 1.1, top: cy - rx * .55, width: rx * 2.2, height: rx * 1.1 });
     extra.push(gsap.to(feu, { opacity: .7, duration: .18, yoyo: true, repeat: -1, ease: 'none' }));
-    /* les sonneurs sur leur estrade, au fond : bombarde et biniou, les joues qui gonflent à chaque note */
-    const scene = c('.fn-scene'), sw = Math.min(W * .66, 330), shh = sw * .62;
-    gsap.set(scene, { left: cx - sw / 2, top: cy - ry - shh - H * .05, width: sw, height: shh });
-    scene.innerHTML = `<svg viewBox="0 0 200 124"><ellipse cx="100" cy="60" rx="96" ry="60" fill="url(#fnSpot)"/><defs><radialGradient id="fnSpot"><stop offset="0" stop-color="#FFC978" stop-opacity=".55"/><stop offset="1" stop-color="#FFC978" stop-opacity="0"/></radialGradient></defs>
-      <rect x="8" y="100" width="184" height="14" fill="#120E1E"/><path d="M8 100 h184 l-6 7 l-6 -7 l-6 7 l-6 -7 l-6 7 l-6 -7 l-6 7 l-6 -7 l-6 7 l-6 -7 l-6 7 l-6 -7 l-6 7 l-6 -7 l-6 7 l-6 -7 l-6 7 l-6 -7 l-6 7 l-6 -7 l-6 7 l-6 -7 l-6 7 l-6 -7 l-6 7 l-6 -7 l-6 7 l-6 -7 l-6 7 l-6 -7 l-6 7 l-6 -7 z" fill="#C8372D"/>
-      <g fill="#0A0D1A"><circle cx="66" cy="38" r="8"/><circle class="fn-joue" cx="73" cy="41" r="4.5"/><path d="M57 50 Q66 46 75 50 L77 100 L55 100Z"/><path d="M74 41 L102 66 L106 63 L76 38Z" fill="#C89A5B"/><path d="M101 63 l9 9 l4 -4z" fill="#C89A5B"/><path d="M62 54 L84 54 M64 64 L92 58" stroke="#0A0D1A" stroke-width="5" stroke-linecap="round"/></g>
-      <g fill="#0A0D1A"><circle cx="134" cy="38" r="8"/><circle class="fn-joue" cx="127" cy="41" r="4.5"/><path d="M125 50 Q134 46 143 50 L145 100 L123 100Z"/><ellipse cx="122" cy="62" rx="13" ry="9" fill="#5B2A3A"/><path d="M126 41 L108 64 L111 66 L129 43Z" fill="#C89A5B"/><path d="M138 50 L150 18 L153 19 L141 52Z" fill="#C89A5B"/><path d="M130 58 L114 62" stroke="#0A0D1A" stroke-width="5" stroke-linecap="round"/></g></svg>`;
-    const joues = [...scene.querySelectorAll('.fn-joue')];
-    joues.forEach(j => { j.style.transformBox = 'fill-box'; j.style.transformOrigin = 'center'; });
-    const souffle = () => joues.forEach(j => gsap.fromTo(j, { scale: 1.9 }, { scale: 1, duration: .22, ease: 'power2.out', overwrite: true }));
     /* les danseurs : bras liés par le petit doigt, qui balancent avant-arrière comme à l'an-dro */
     const homme = '<svg viewBox="0 0 44 110"><ellipse cx="22" cy="11" rx="13" ry="2.6" fill="#0A0D1A"/><rect x="15" y="3" width="14" height="8" rx="2" fill="#0A0D1A"/><circle cx="22" cy="19" r="7" fill="#0A0D1A"/><path d="M14 28 Q22 25 30 28 L31 63 L13 63Z" fill="#0A0D1A"/><path class="bras" d="M-2 36 L14 30 M30 30 L46 36" stroke="#0A0D1A" stroke-width="5" stroke-linecap="round"/><path d="M17 62 L15 107 M27 62 L29 107" stroke="#0A0D1A" stroke-width="6" stroke-linecap="round"/></svg>';
     const femme = '<svg viewBox="0 0 44 110"><rect x="18" y="-4" width="8" height="19" rx="4" fill="#EDE6D3"/><circle cx="22" cy="20" r="6.5" fill="#0A0D1A"/><path d="M15 28 Q22 25 29 28 L30 52 L14 52Z" fill="#0A0D1A"/><path d="M14 50 L30 50 L38 98 L6 98Z" fill="#0A0D1A"/><path class="bras" d="M-2 36 L15 30 M29 30 L46 36" stroke="#0A0D1A" stroke-width="5" stroke-linecap="round"/><path d="M18 97 L18 107 M26 97 L26 107" stroke="#0A0D1A" stroke-width="5" stroke-linecap="round"/></svg>';
@@ -2365,7 +2354,7 @@ window.lancerIntro = (opts = {}) => {
     const tick = (t, dt) => {
       if (!vivant) return; dt = Math.min(dt, 60) / 1000;
       ring.a += sp.v * dt; ph += dt * (3 + sp.v * 1.3) * Math.PI / 2; placer();
-      acc += dt * (3.2 + sp.v * .9); if (acc >= 1) { acc -= 1; const f = air[n++ % air.length]; if (f) { S.bombarde(f, Math.max(.07, .26 - sp.v * .02)); souffle(); } if (n % 2) S.stamp(); }
+      acc += dt * (3.2 + sp.v * .9); if (acc >= 1) { acc -= 1; const f = air[n++ % air.length]; if (f) S.bombarde(f, Math.max(.07, .26 - sp.v * .02)); if (n % 2) S.stamp(); }
     };
     placer(); gsap.ticker.add(tick);
     let stopBourdon = null;
@@ -2374,14 +2363,13 @@ window.lancerIntro = (opts = {}) => {
     gsap.set(vortex, { left: cx - rx * 1.15, top: cy - rx * 1.15 - 30, width: rx * 2.3, height: rx * 2.3, scaleY: .3 });
     /* le Gwenn-ha-Du, découpé en lamelles qui ondulent */
     const fw = Math.min(W * .86, 440), fh = fw * .64, drap = c('.fn-drapeau'), hermine = (x, y) => `<g transform="translate(${x} ${y})" fill="#0A0A0A"><circle cx="-3" cy="-6" r="1.6"/><circle cx="3" cy="-6" r="1.6"/><circle cx="0" cy="-9" r="1.6"/><path d="M0 -4 L-3.5 6 L0 3.5 L3.5 6Z"/></g>`;
-    let svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 270 180">';
+    let svg = '';
     for (let i = 0; i < 9; i++) svg += `<rect y="${i * 20}" width="270" height="20" fill="${i % 2 ? '#FFFFFF' : '#0A0A0A'}"/>`;
     svg += '<rect width="120" height="100" fill="#FFFFFF"/>';
     [[20, 22], [60, 22], [100, 22], [40, 50], [80, 50], [20, 78], [60, 78], [100, 78]].forEach(([x, y]) => { svg += hermine(x, y); });
-    svg += '</svg>';
-    const url = `url("data:image/svg+xml;utf8,${encodeURIComponent(svg)}")`, NL = 16, lw = fw / NL;
-    gsap.set(drap, { left: cx - fw / 2, top: cy - ry - fh * .75, width: fw, height: fh, opacity: 0, scale: 0, rotation: -25 });
-    const lames = Array.from({ length: NL }, (_, k) => { const l = document.createElement('i'); l.style.cssText = `left:${k * lw}px;width:${lw + 1}px;background-image:${url};background-size:${fw}px ${fh}px;background-position:${-k * lw}px 0`; drap.appendChild(l); return l; });
+    const NL = 16, lw = fw / NL, vw = 270 / NL;
+    gsap.set(drap, { left: cx - fw / 2, top: cy - ry - fh * .75, width: fw, height: fh, opacity: 0, rotation: -25, y: 60 });
+    const lames = Array.from({ length: NL }, (_, k) => { const l = document.createElement('i'); l.style.cssText = `left:${k * lw}px;width:${lw + .6}px`; l.innerHTML = `<svg viewBox="${k * vw} 0 ${vw + .4} 180" preserveAspectRatio="none" shape-rendering="geometricPrecision">${svg}</svg>`; drap.appendChild(l); return l; });
     tl = gsap.timeline({ delay: START })
       .to(sc, { opacity: 1, duration: .6 })
       .add(() => { stopBourdon = S.bourdon(); }, .1)
@@ -2397,12 +2385,11 @@ window.lancerIntro = (opts = {}) => {
         vivant = false; gsap.ticker.remove(tick); if (stopBourdon) stopBourdon();
         S.hit(); try { navigator.vibrate && navigator.vibrate([60, 30, 90]); } catch (e) {}
         gens.forEach((p, i) => { const { x, y, k } = pos[i], ax = x - cx, ay = (y - cy) || 1; p.style.transform = ''; gsap.set(p, { x, y, scale: k }); gsap.to(p, { x: x + ax * 4, y: y + ay * 6 - 80, rotation: (Math.random() - .5) * 720, opacity: 0, duration: .9, ease: 'power2.out' }); });
-        gsap.to(scene, { opacity: 0, duration: .4 });
       }, 'boum')
       .fromTo(c('.fn-flash'), { opacity: 1 }, { opacity: 0, duration: .6, ease: 'power2.out', immediateRender: false }, 'boum')
       .to(vortex, { scale: 0, opacity: 0, duration: .3, ease: 'power2.in' }, 'boum')
       /* le drapeau surgit du tourbillon et claque au vent */
-      .to(drap, { opacity: 1, scale: 1, rotation: 0, duration: .45, ease: 'back.out(1.8)' }, 'boum')
+      .to(drap, { opacity: 1, rotation: 0, y: 0, duration: .45, ease: 'back.out(1.8)' }, 'boum')
       .add(() => { extra.push(gsap.fromTo(lames, { y: -10 }, { y: 10, duration: .32, ease: 'sine.inOut', stagger: { each: .045, repeat: -1, yoyo: true } })); S.whoosh(); }, 'boum')
       .add(() => revelerTitre(), 'boum+=.4')
       .add(() => {
