@@ -786,6 +786,28 @@ body { background-image: radial-gradient(color-mix(in srgb, var(--ink) 7%, trans
 .fn-drapeau { position: absolute; z-index: 300; }
 .fn-drapeau i { position: absolute; top: 0; height: 100%; }
 .fn-drapeau svg { display: block; width: 100%; height: 100%; }
+/* ===== intro 6 : le micro-ondes ===== */
+.bt-micro { position: absolute; inset: -4px; z-index: 5; overflow: hidden; opacity: 0; display: grid; place-items: center; background: linear-gradient(#34404C 0%, #232C35 62%, #6B4A2E 62.2%, #4E3420 100%); }
+.mo-four { position: relative; width: min(90vw, 560px); aspect-ratio: 1.6; border-radius: 18px; padding: 4.5%; display: grid; grid-template-columns: 1fr 25%; gap: 4%; background: linear-gradient(#F4F4F0, #CDD1CF); box-shadow: 0 34px 50px rgba(0, 0, 0, .6), inset 0 -6px 0 rgba(0, 0, 0, .12); perspective: 1000px; }
+.mo-four::after { content: ""; position: absolute; left: 8%; right: 8%; bottom: -12px; height: 12px; background: linear-gradient(#3A3A3A, #1C1C1C); border-radius: 0 0 6px 6px; z-index: -1; }
+.mo-cavite { grid-area: 1 / 1; position: relative; border-radius: 8px; overflow: hidden; background: linear-gradient(#2C3034, #191C1F); box-shadow: inset 0 0 0 3px #111; }
+.mo-lumiere { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 20%, rgba(255, 214, 120, .95) 0%, rgba(255, 170, 60, .55) 45%, rgba(255, 150, 40, .2) 100%); opacity: 0; transition: opacity .15s; }
+.bt-micro.on .mo-lumiere { opacity: 1; }
+.mo-plateau { position: absolute; left: 14%; right: 14%; bottom: 9%; height: 17%; border-radius: 50%; background: radial-gradient(ellipse at 50% 40%, #F2F4F5 0%, #BFC6CA 70%, #8E979D 100%); box-shadow: 0 3px 0 rgba(0, 0, 0, .35); }
+.mo-mot { position: absolute; left: 50%; bottom: 17%; transform-origin: 50% 100%; font-family: var(--f-display); font-weight: 900; text-transform: uppercase; line-height: .86; white-space: nowrap; background: var(--cire); color: var(--cire-ink); padding: 0 .08em; box-shadow: 4px 4px 0 var(--red); }
+.mo-mot.dos { color: transparent; }
+.mo-porte { grid-area: 1 / 1; position: relative; z-index: 2; border-radius: 10px; border: 11px solid #ECEEEB; background: radial-gradient(circle, rgba(0, 0, 0, 0) 1.3px, rgba(12, 14, 16, .5) 1.7px) 0 0 / 7px 7px; box-shadow: inset 0 0 0 2px #9AA2A5, 0 0 0 1px #B8BDBB; transform-origin: 0 50%; }
+.mo-poignee { position: absolute; right: -9px; top: 18%; bottom: 18%; width: 7px; border-radius: 4px; background: linear-gradient(90deg, #C3C8C6, #8E9593); }
+.mo-panneau { display: flex; flex-direction: column; gap: 9%; padding-top: 4%; }
+.mo-ecran { border-radius: 6px; background: #0C140F; color: #7CFF6B; font: 700 clamp(18px, 5.6vw, 38px) var(--f-mono); text-align: center; padding: 10% 0; letter-spacing: .04em; text-shadow: 0 0 8px rgba(124, 255, 107, .8); font-variant-numeric: tabular-nums; }
+.mo-touches { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7%; }
+.mo-touches i { aspect-ratio: 1.3; border-radius: 5px; background: #DADDDA; box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .14); }
+.mo-go { align-self: center; width: 58%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #F4F6F5, #BFC5C2); box-shadow: inset 0 -4px 0 rgba(0, 0, 0, .18), 0 0 0 3px #A9AFAC; }
+.mo-go.appui { transform: scale(.9); box-shadow: inset 0 3px 0 rgba(0, 0, 0, .2), 0 0 0 3px #A9AFAC; }
+.mo-vapeur { position: absolute; inset: 0; z-index: 8; pointer-events: none; }
+.mo-vapeur i { position: absolute; left: 0; top: 0; width: 110px; height: 110px; border-radius: 50%; background: rgba(255, 255, 255, .6); filter: blur(16px); opacity: 0; }
+.bt-micro.tremble { animation: mo-tremble .09s linear infinite; }
+@keyframes mo-tremble { 25% { transform: translate(1px, -1px); } 75% { transform: translate(-1px, 1px); } }
 .bt-seance { position: fixed; inset: 0; z-index: 205; background: radial-gradient(ellipse at 50% 45%, #1C2B38 0%, #05090D 70%); color: #F2F3EF; display: grid; place-content: center; justify-items: center; gap: 22px; padding: 24px; text-align: center; animation: bs-in .5s ease; }
 @keyframes bs-in { from { opacity: 0; } }
 .bt-seance .bs-k { margin: 0; font: 500 12px var(--f-mono); letter-spacing: .3em; text-transform: uppercase; color: #F4B400; }
@@ -1918,7 +1940,7 @@ window.lancerIntro = (opts = {}) => {
   }
   try { localStorage.setItem('bawss-seance', '1'); } catch (e) {}
   /* à chaque ouverture, l'intro suivante (mémorisé dans ce navigateur seulement) */
-  const INTROS = ['trailer', 'phare', 'bandit', 'bilig', 'festnoz'];
+  const INTROS = ['trailer', 'phare', 'bandit', 'bilig', 'festnoz', 'microondes'];
   let n = 0;
   try { const v = parseInt(localStorage.getItem('bt-intro'), 10); n = isNaN(v) ? 0 : (v + 1) % INTROS.length; localStorage.setItem('bt-intro', n); } catch (e) { n = Math.floor(Math.random() * INTROS.length); }
   const quelle = opts.quelle && INTROS.includes(opts.quelle) ? opts.quelle : INTROS[n];
@@ -2245,6 +2267,10 @@ window.lancerIntro = (opts = {}) => {
     bombarde(fr, d = .22) { const a = ctx(); if (!a) return; const t = a.currentTime, o = a.createOscillator(), lfo = a.createOscillator(), lg = a.createGain(), f = a.createBiquadFilter(), g = a.createGain(); o.type = 'sawtooth'; o.frequency.value = fr; lfo.frequency.value = 6; lg.gain.value = fr * .012; lfo.connect(lg).connect(o.frequency); f.type = 'bandpass'; f.frequency.value = 1500; f.Q.value = .9; env(g, t, .015, .2, d); o.connect(f).connect(g).connect(a.destination); o.start(t); lfo.start(t); o.stop(t + d + .05); lfo.stop(t + d + .05); },
     bourdon(d) { const a = ctx(); if (!a) return null; const t = a.currentTime, g = a.createGain(), f = a.createBiquadFilter(), os = []; f.type = 'lowpass'; f.frequency.value = 650; g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.07, t + .6); [146.8, 147.4, 220].forEach(fr => { const o = a.createOscillator(); o.type = 'sawtooth'; o.frequency.value = fr; o.connect(f); o.start(t); os.push(o); }); f.connect(g).connect(a.destination);
       return () => { try { const n = a.currentTime; g.gain.cancelScheduledValues(n); g.gain.setValueAtTime(g.gain.value, n); g.gain.exponentialRampToValueAtTime(.0001, n + .15); os.forEach(o => o.stop(n + .2)); } catch (e) {} }; },
+    bip() { const a = ctx(); if (!a) return; const t = a.currentTime, o = a.createOscillator(), g = a.createGain(); o.type = 'square'; o.frequency.value = 2100; env(g, t, .002, .09, .08); o.connect(g).connect(a.destination); o.start(t); o.stop(t + .12); },
+    ronron() { const a = ctx(); if (!a) return null; const t = a.currentTime, g = a.createGain(), f = a.createBiquadFilter(), os = []; f.type = 'lowpass'; f.frequency.value = 380; g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.22, t + .2); [[60, 'sawtooth'], [120, 'square'], [121.5, 'sine']].forEach(([fr, ty]) => { const o = a.createOscillator(); o.type = ty; o.frequency.value = fr; o.connect(f); o.start(t); os.push(o); }); f.connect(g).connect(a.destination);
+      return () => { try { const n = a.currentTime; g.gain.cancelScheduledValues(n); g.gain.setValueAtTime(g.gain.value, n); g.gain.exponentialRampToValueAtTime(.0001, n + .08); os.forEach(o => o.stop(n + .1)); } catch (e) {} }; },
+    ding() { const a = ctx(); if (!a) return; const t = a.currentTime; [[2093, .32], [4186, .1], [6279, .05]].forEach(([fr, v]) => { const o = a.createOscillator(), g = a.createGain(); o.frequency.value = fr; env(g, t, .002, v, 1.8); o.connect(g).connect(a.destination); o.start(t); o.stop(t + 2); }); },
     sifflet() { const a = ctx(); if (!a) return; const t = a.currentTime, o = a.createOscillator(), g = a.createGain(); o.frequency.setValueAtTime(1900, t); o.frequency.exponentialRampToValueAtTime(420, t + .75); env(g, t, .02, .12, .7); o.connect(g).connect(a.destination); o.start(t); o.stop(t + .8); }
   });
   /* un mot BAWSS qui part d'un élément de la scène et file se poser dans le titre */
@@ -2402,7 +2428,51 @@ window.lancerIntro = (opts = {}) => {
       .add(finir, 'boum+=3.3');
   }
 
-  ({ trailer, phare, bandit, bilig, festnoz })[quelle]();
+  /* ===== 6. Le micro-ondes : 3, 2, 1… DING ===== */
+  function microondes() {
+    const sc = add(`<div class="mo-four"><div class="mo-cavite"><div class="mo-lumiere"></div><div class="mo-plateau"></div><div class="mo-mot">bawss</div></div><div class="mo-porte"><i class="mo-poignee"></i></div><div class="mo-panneau"><div class="mo-ecran">0:00</div><div class="mo-touches">${'<i></i>'.repeat(9)}</div><div class="mo-go"></div></div></div><div class="mo-vapeur">${'<i></i>'.repeat(14)}</div>`, 'bt-micro');
+    const c = s => sc.querySelector(s), four = c('.mo-four'), cav = c('.mo-cavite'), mot = c('.mo-mot'), porte = c('.mo-porte'), ecran = c('.mo-ecran'), go = c('.mo-go');
+    gsap.set(mot, { fontSize: Math.max(22, cav.clientHeight * .3) });
+    const tour = { a: Math.PI * .35 }, R = cav.clientWidth * .05; let tourne = false, stopRonron = null;
+    const poser = () => { const co = Math.cos(tour.a); mot.classList.toggle('dos', co < 0); mot.style.transform = `translateX(calc(-50% + ${Math.sin(tour.a) * R}px)) scaleX(${Math.max(.06, Math.abs(co))})`; };
+    const tick = (t, dt) => { if (!tourne) return; tour.a += Math.min(dt, 60) / 1000 * 2.4; poser(); };
+    poser(); gsap.ticker.add(tick);
+    extra.push({ kill: () => { gsap.ticker.remove(tick); if (stopRonron) stopRonron(); } });
+    const affiche = t => () => { ecran.textContent = t; };
+    const appui = () => gsap.timeline().add(() => { go.classList.add('appui'); S.bip(); }).add(() => go.classList.remove('appui'), '+=.12');
+    tl = gsap.timeline({ delay: START })
+      .to(sc, { opacity: 1, duration: .45 })
+      .from(four, { scale: .88, y: 30, duration: .6, ease: 'back.out(1.5)' }, '<')
+      .add(appui(), .7).add(affiche('0:05'), .7)
+      .add(appui(), 1.0)
+      .add(() => { sc.classList.add('on'); tourne = true; stopRonron = S.ronron(); }, 1.1)
+      .add(affiche('0:04'), 1.75).add(affiche('0:03'), 2.35).add(affiche('0:02'), 2.95).add(affiche('0:01'), 3.55)
+      /* il reste bloqué sur 0:01… */
+      .add(() => sc.classList.add('tremble'), 3.6)
+      .add(S.coeur, 3.9).add(S.coeur, 4.6)
+      .to(four, { scale: 1.06, duration: 1.3, ease: 'sine.inOut' }, 3.6)
+      .addLabel('ding', 5.0)
+      .add(() => {
+        sc.classList.remove('tremble', 'on'); if (stopRonron) stopRonron(); stopRonron = null; ecran.textContent = 'MIAM'; S.ding();
+        tourne = false; const cible = Math.ceil(tour.a / (2 * Math.PI)) * 2 * Math.PI; gsap.to(tour, { a: cible, duration: .35, ease: 'power2.out', onUpdate: poser });
+      }, 'ding')
+      .to(four, { scale: 1, duration: .3, ease: 'power2.out' }, 'ding')
+      .to(porte, { rotationY: -108, duration: .55, ease: 'back.out(1.4)' }, 'ding+=.45')
+      .add(S.clonk, 'ding+=.45')
+      .add(() => {
+        const r = cav.getBoundingClientRect();
+        sc.querySelectorAll('.mo-vapeur i').forEach((v, i) => {
+          const x = r.left + r.width * (.15 + Math.random() * .7) - 55, y = r.top + r.height * (.3 + Math.random() * .5) - 55;
+          gsap.fromTo(v, { x, y, opacity: .85, scale: .5 }, { x: x + (Math.random() - .5) * 140, y: y - 160 - Math.random() * 160, opacity: 0, scale: 2.2, duration: 1.4 + Math.random() * .8, delay: i * .03, ease: 'power1.out' });
+        });
+      }, 'ding+=.55')
+      .add(() => revelerTitre(), 'ding+=.9')
+      .add(() => { volVers(mot, .6); mot.style.visibility = 'hidden'; }, 'ding+=1.05')
+      .to(sc, { opacity: 0, duration: .5 }, 'ding+=1.25')
+      .add(finir, 'ding+=3.1');
+  }
+
+  ({ trailer, phare, bandit, bilig, festnoz, microondes })[quelle]();
 };
 
 
@@ -2598,7 +2668,7 @@ window.lancerIntro = (opts = {}) => {
   const b = document.getElementById('fin-bawss');
   if (b) b.addEventListener('click', () => { if (typeof window.lancerIntro !== 'function') return; window.scrollTo(0, 0); /* on enchaîne les intros à chaque toucher ; quand vient le tour du cinéma, c'est la séance complète (Monte le son, BangBawss Films, bande-annonce) */
     let v = -1; try { v = parseInt(localStorage.getItem('bt-intro'), 10); } catch (e) {}
-    const prochaine = isNaN(v) ? 0 : (v + 1) % 5;
+    const prochaine = isNaN(v) ? 0 : (v + 1) % 6;
     if (prochaine === 0) { try { localStorage.setItem('bt-intro', '0'); } catch (e) {} }
     requestAnimationFrame(() => window.lancerIntro(prochaine === 0 ? { seance: true } : { son: true })); });
 })();
