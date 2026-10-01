@@ -872,6 +872,7 @@ body { background-image: radial-gradient(color-mix(in srgb, var(--ink) 7%, trans
 .faq details li { margin: 3px 0; }
 .faq-tuto { margin-top: 28px; border: 0; border-radius: 999px; background: var(--ink); color: var(--paper); font: 800 16px var(--f-body); padding: 12px 20px; cursor: pointer; box-shadow: 3px 3px 0 var(--cire); }
 /* lexique breton : même écran plein que la FAQ, liste alphabétique + recherche */
+.lex-d { margin: -6px 0 16px; font-size: 16px; color: var(--muted); }
 .lex-q { width: 100%; font: 500 16px var(--f-body); color: var(--ink); background: transparent; border: 2px solid var(--ink); border-radius: 999px; padding: 11px 16px; margin-bottom: 8px; }
 .lex-q:focus { outline: none; border-color: var(--cire); }
 .lex-n { font-family: var(--f-mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 6px 0 4px; }
@@ -908,7 +909,7 @@ body { background-image: radial-gradient(color-mix(in srgb, var(--ink) 7%, trans
     </div>
     <div class="count" id="count" aria-live="polite"></div>
     <div class="grid" id="grid"></div>
-    <p class="tuto-again-p"><button type="button" class="invite-btn" id="invite-btn">👋 Inviter un pote</button><button type="button" class="tuto-again" id="tuto-again">↺ Revoir le tour du proprio</button><button type="button" class="tuto-again" id="faq-btn">❓ Questions fréquentes</button><button type="button" class="tuto-again" id="lex-btn">📖 Tout le lexique breton</button></p>
+    <p class="tuto-again-p"><button type="button" class="invite-btn" id="invite-btn">👋 Inviter un pote</button><button type="button" class="tuto-again" id="tuto-again">↺ Revoir le tour du proprio</button><button type="button" class="tuto-again" id="faq-btn">❓ Questions fréquentes</button><button type="button" class="tuto-again" id="lex-btn">📖 Lexique breton</button></p>
     <button type="button" class="fin-bawss" id="fin-bawss" aria-label="Bawss : relancer l’intro"><b>Bawss</b><span id="fin-slogan">Cuisine sans filet.</span></button>
     <div class="fp" id="fp" hidden role="dialog" aria-modal="true" aria-label="Filtres"><div class="fp-box"></div></div>
     <div class="empty" id="empty" hidden>
@@ -2480,7 +2481,7 @@ window.lancerIntro = (opts = {}) => {
   btn.addEventListener('click', () => {
     fermer();
     el = document.createElement('div'); el.className = 'faq'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-label', 'Lexique breton');
-    el.innerHTML = `<div class="faq-in"><div class="faq-top"><h1>Lexique <span>breton</span></h1><button type="button" class="faq-x" data-lex-x aria-label="Fermer">✕</button></div><input class="lex-q" type="search" placeholder="Cherche un mot, en breton ou en français" aria-label="Chercher dans le lexique"><div class="lex-n" aria-live="polite"></div><ul class="lex-l"></ul></div>`;
+    el.innerHTML = `<div class="faq-in"><div class="faq-top"><h1>Lexique <span>breton</span></h1><button type="button" class="faq-x" data-lex-x aria-label="Fermer">✕</button></div><p class="lex-d">Apprends le bigouden avec ton Jakez.</p><input class="lex-q" type="search" placeholder="Cherche un mot, en breton ou en français" aria-label="Chercher dans le lexique"><div class="lex-n" aria-live="polite"></div><ul class="lex-l"></ul></div>`;
     document.body.appendChild(el); document.documentElement.style.overflow = 'hidden';
     el.addEventListener('click', e => { if (e.target.closest('[data-lex-x]')) fermer(); });
     el.querySelector('.lex-q').addEventListener('input', e => rendu(e.target.value));
