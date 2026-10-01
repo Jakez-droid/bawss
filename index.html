@@ -757,6 +757,7 @@ body { background-image: radial-gradient(color-mix(in srgb, var(--ink) 7%, trans
 .bt-studio { position: fixed; inset: 0; z-index: 206; background: #000; display: grid; place-items: center; }
 .bt-studio .bs-logo { display: grid; justify-items: center; gap: 6px; opacity: 0; }
 .bt-studio .bs-logo b { font: 900 clamp(54px, 15vw, 140px)/.85 var(--f-display); text-transform: uppercase; letter-spacing: .02em; color: transparent; background: linear-gradient(180deg, #FFF3C4 0%, #F4B400 55%, #B07D00 100%); -webkit-background-clip: text; background-clip: text; }
+.bt-studio .bs-logo i { margin-top: 18px; font: italic 500 clamp(14px, 3.6vw, 22px) var(--f-body); color: #A8A8A8; letter-spacing: .08em; }
 .bt-studio .bs-logo span { font: 500 clamp(13px, 3.4vw, 22px) var(--f-mono); letter-spacing: .9em; padding-left: .9em; text-transform: uppercase; color: #D9D9D9; }
 .bt.shake-t .bt-title h1 { animation: shake .45s cubic-bezier(.36, .07, .19, .97); }
 .bt-cine.shake { animation: shake .5s cubic-bezier(.36, .07, .19, .97); }
@@ -1826,7 +1827,7 @@ window.lancerIntro = (opts = {}) => {
   if (!opts.son && !seanceVue) {
     const g = document.createElement('div');
     g.className = 'bt-seance'; g.setAttribute('role', 'dialog'); g.setAttribute('aria-label', 'Lancer l’intro');
-    g.innerHTML = `<p class="bs-k">BangBawss Films présente</p><p class="bs-t">Monte le son<br>mon Bawss.</p><button type="button" class="bs-go">▶ Deomp dezhi !</button><button type="button" class="bs-sans">Passer l’intro</button>`;
+    g.innerHTML = `<p class="bs-t">Monte le son<br>mon Bawss.</p><button type="button" class="bs-go">▶ Deomp dezhi !</button><button type="button" class="bs-sans">Passer l’intro</button>`;
     document.body.appendChild(g); document.documentElement.style.overflow = 'hidden';
     const fin = () => { try { localStorage.setItem('bawss-seance', '1'); } catch (e) {} g.remove(); document.documentElement.style.overflow = ''; };
     g.querySelector('.bs-go').addEventListener('click', () => {
@@ -1835,7 +1836,7 @@ window.lancerIntro = (opts = {}) => {
       fin();
       /* carton de studio, en silence, puis la bande-annonce */
       const st = document.createElement('div'); st.className = 'bt-studio';
-      st.innerHTML = '<div class="bs-logo"><b>BangBawss</b><span>Films</span></div>';
+      st.innerHTML = '<div class="bs-logo"><b>BangBawss</b><span>Films</span><i>présente</i></div>';
       document.body.appendChild(st); document.documentElement.style.overflow = 'hidden';
       gsap.timeline()
         .fromTo(st.firstChild, { opacity: 0, scale: .94 }, { opacity: 1, scale: 1, duration: 1.1, ease: 'power2.out' }, .4)
