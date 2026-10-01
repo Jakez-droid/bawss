@@ -660,13 +660,16 @@ body { background-image: radial-gradient(color-mix(in srgb, var(--ink) 7%, trans
 .bt-cine { position: absolute; inset: 0; z-index: 5; background: #000; display: grid; place-items: center; overflow: hidden; opacity: 0; }
 .bt-cine .lb { position: absolute; left: -5%; right: -5%; height: 11%; background: #000; z-index: 5; }
 .bt-cine .lb.haut { top: 0; border-bottom: 1px solid #222; } .bt-cine .lb.bas { bottom: 0; border-top: 1px solid #222; }
-.bt-cine::after { content: ""; position: absolute; inset: 0; z-index: 6; pointer-events: none; opacity: .09; background-image: radial-gradient(#FFF 1px, transparent 1.2px); background-size: 3px 3px; animation: grain .25s steps(2) infinite; }
+.bt-coupe { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 2; opacity: 0; filter: contrast(1.25) saturate(1.3) brightness(.92); }
+.bt-cine::before { content: ""; position: absolute; inset: 0; z-index: 6; pointer-events: none; opacity: .35; background: linear-gradient(90deg, transparent 0 18%, rgba(255, 255, 255, .5) 18.1%, transparent 18.3% 71%, rgba(255, 255, 255, .35) 71.1%, transparent 71.25%); animation: rayures .9s steps(3) infinite; }
+@keyframes rayures { 33% { transform: translateX(-9%); opacity: .15; } 66% { transform: translateX(13%); opacity: .4; } }
+.bt-cine::after { content: ""; position: absolute; inset: 0; z-index: 6; pointer-events: none; opacity: .14; background-image: radial-gradient(#FFF 1px, transparent 1.2px); background-size: 3px 3px; animation: grain .25s steps(2) infinite; }
 @keyframes grain { 50% { background-position: 1px 2px; } }
-.bt-carton { position: absolute; padding-inline: 24px; text-align: center; color: #F2F2F2; font-family: var(--f-display); font-weight: 800; text-transform: uppercase; letter-spacing: .12em; font-size: clamp(24px, 5.5vw, 52px); line-height: 1.1; text-wrap: balance; }
-.bt-carton.lent { color: #D9D9D9; font-weight: 700; }
-.bt-carton.menace { color: #E4322B; font-size: clamp(34px, 8vw, 78px); font-weight: 900; letter-spacing: .04em; text-shadow: 0 0 24px rgba(228, 50, 43, .55); }
-.bt-carton.claque { font-size: clamp(34px, 8.5vw, 84px); font-weight: 900; letter-spacing: .03em; color: #FFFFFF; }
-.bt-carton.rafale { font-size: clamp(60px, 17vw, 190px); font-weight: 900; letter-spacing: 0; line-height: .9; color: #FFFFFF; }
+.bt-carton { position: absolute; z-index: 3; padding-inline: 24px; text-align: center; color: #F2F2F2; font-family: var(--f-display); font-weight: 800; text-transform: uppercase; letter-spacing: .06em; font-size: clamp(40px, 11vw, 84px); line-height: 1.1; text-wrap: balance; }
+.bt-carton.lent { color: #ECECEC; font-weight: 800; }
+.bt-carton.menace { color: #E4322B; font-size: clamp(54px, 15vw, 120px); font-weight: 900; letter-spacing: .04em; text-shadow: 0 0 24px rgba(228, 50, 43, .55); }
+.bt-carton.claque { font-size: clamp(44px, 12vw, 104px); font-weight: 900; letter-spacing: .03em; color: #FFFFFF; }
+.bt-carton.rafale { font-size: clamp(64px, 19vw, 200px); font-weight: 900; letter-spacing: 0; line-height: .9; color: #FFFFFF; }
 .bt-carton small { display: block; font-size: .42em; letter-spacing: .3em; color: #A8A8A8; margin-top: 12px; }
 .bt-gros { position: absolute; z-index: 4; font-family: var(--f-display); font-weight: 900; text-transform: uppercase; font-size: clamp(90px, 26vw, 300px); line-height: .8; color: transparent; background: linear-gradient(100deg, #D99A00 0 38%, #FFF6C8 48%, #FFFFFF 50%, #FFF6C8 52%, #F4B400 62% 100%); background-size: 300% 100%; background-position: 120% 0; -webkit-background-clip: text; background-clip: text; filter: drop-shadow(0 0 30px rgba(244, 180, 0, .55)); opacity: 0; }
 .bt-onde { position: absolute; z-index: 3; width: 34vmin; height: 34vmin; border-radius: 50%; border: 6px solid rgba(244, 180, 0, .85); box-shadow: 0 0 30px rgba(244, 180, 0, .6), inset 0 0 30px rgba(244, 180, 0, .5); opacity: 0; }
@@ -682,21 +685,27 @@ body { background-image: radial-gradient(color-mix(in srgb, var(--ink) 7%, trans
 .bt-ui .son.on { animation: none; background: rgba(0, 0, 0, .35); border-color: #FFFFFF; color: #FFFFFF; }
 @keyframes appel { 50% { transform: scale(1.08); } }
 /* phare et bandit manchot */
-.bt-nuit { position: absolute; inset: 0; z-index: 20; background: radial-gradient(ellipse at 50% 120%, #0E2233 0%, #04080E 70%); --a: -60deg; --x: 16%; --y: 88%;
-  -webkit-mask: conic-gradient(from calc(var(--a) - 9deg) at var(--x) var(--y), transparent 0deg 18deg, #000 21deg 357deg, transparent 360deg);
-  mask: conic-gradient(from calc(var(--a) - 9deg) at var(--x) var(--y), transparent 0deg 18deg, #000 21deg 357deg, transparent 360deg); }
+.bt-nuit { position: absolute; inset: 0; z-index: 20; background: radial-gradient(ellipse at 50% 120%, #0E2233 0%, #04080E 70%); --a: -60deg; --w: 9deg; --x: 16%; --y: 88%;
+  -webkit-mask: conic-gradient(from calc(var(--a) - var(--w)) at var(--x) var(--y), transparent 0deg calc(var(--w) * 2), #000 calc(var(--w) * 2 + 3deg) 357deg, transparent 360deg);
+  mask: conic-gradient(from calc(var(--a) - var(--w)) at var(--x) var(--y), transparent 0deg calc(var(--w) * 2), #000 calc(var(--w) * 2 + 3deg) 357deg, transparent 360deg); }
 .bt-nuit::before { content: ""; position: absolute; inset: 0; background-image: radial-gradient(1.4px 1.4px at 12% 18%, #fff, transparent), radial-gradient(1px 1px at 32% 8%, #fff, transparent), radial-gradient(1.2px 1.2px at 58% 22%, #fff, transparent), radial-gradient(1px 1px at 76% 12%, #fff, transparent), radial-gradient(1.4px 1.4px at 88% 30%, #fff, transparent), radial-gradient(1px 1px at 44% 38%, #fff, transparent), radial-gradient(1px 1px at 22% 44%, #fff, transparent); opacity: .7; }
 .bt-nuit.panne { -webkit-mask: none; mask: none; }
-.bt-rayon { position: absolute; inset: 0; z-index: 21; --a: -60deg; --x: 16%; --y: 88%; mix-blend-mode: screen;
-  background: conic-gradient(from calc(var(--a) - 9deg) at var(--x) var(--y), rgba(255, 236, 160, .22) 0deg 18deg, transparent 22deg 356deg, rgba(255, 236, 160, .22) 360deg); }
-.bt-poussiere { position: absolute; inset: 0; z-index: 21; --a: -60deg; --x: 16%; --y: 88%;
-  -webkit-mask: conic-gradient(from calc(var(--a) - 9deg) at var(--x) var(--y), #000 0deg 18deg, transparent 21deg 357deg, #000 360deg);
-  mask: conic-gradient(from calc(var(--a) - 9deg) at var(--x) var(--y), #000 0deg 18deg, transparent 21deg 357deg, #000 360deg); }
+.bt-rayon { position: absolute; inset: 0; z-index: 21; --a: -60deg; --w: 9deg; --x: 16%; --y: 88%; mix-blend-mode: screen;
+  background: conic-gradient(from calc(var(--a) - var(--w)) at var(--x) var(--y), rgba(255, 236, 160, .22) 0deg calc(var(--w) * 2), transparent calc(var(--w) * 2 + 4deg) 356deg, rgba(255, 236, 160, .22) 360deg); }
+.bt-poussiere { position: absolute; inset: 0; z-index: 21; --a: -60deg; --w: 9deg; --x: 16%; --y: 88%;
+  -webkit-mask: conic-gradient(from calc(var(--a) - var(--w)) at var(--x) var(--y), #000 0deg calc(var(--w) * 2), transparent calc(var(--w) * 2 + 3deg) 357deg, #000 360deg);
+  mask: conic-gradient(from calc(var(--a) - var(--w)) at var(--x) var(--y), #000 0deg calc(var(--w) * 2), transparent calc(var(--w) * 2 + 3deg) 357deg, #000 360deg); }
 .bt-poussiere i { position: absolute; border-radius: 50%; background: #FFF6CC; box-shadow: 0 0 6px 1px rgba(255, 240, 180, .8); }
 .bt-brume { position: absolute; left: -20%; right: -20%; bottom: 0; height: 40%; z-index: 23; background: radial-gradient(ellipse at 30% 100%, rgba(200, 215, 230, .28), transparent 60%), radial-gradient(ellipse at 75% 100%, rgba(200, 215, 230, .22), transparent 55%); }
 .bt-cote { position: absolute; left: 0; right: 0; bottom: 0; height: 16%; z-index: 22; }
 .bt-cote svg { width: 100%; height: 100%; display: block; }
-.bt-phare { position: absolute; left: 0; top: 0; z-index: 22; width: clamp(46px, 9vw, 70px); }
+.bt-phare { position: absolute; left: 0; top: 0; z-index: 22; width: clamp(72px, 17vw, 110px); }
+.bt-pluie { position: absolute; inset: -10% 0 0; z-index: 26; pointer-events: none; background-image: repeating-linear-gradient(105deg, transparent 0 11px, rgba(190, 210, 230, .32) 11px 12px, transparent 12px 23px), repeating-linear-gradient(103deg, transparent 0 17px, rgba(190, 210, 230, .2) 17px 18px, transparent 18px 31px); background-size: 120px 260px, 90px 200px; animation: pluie .35s linear infinite; }
+@keyframes pluie { to { background-position: -60px 260px, -40px 200px; } }
+.bt-eclair { position: absolute; inset: 0; z-index: 27; pointer-events: none; background: radial-gradient(ellipse at 70% 10%, #FFFFFF, #CFE2FF 40%, rgba(160, 190, 230, .6)); mix-blend-mode: screen; }
+.bt-blanc { position: absolute; inset: 0; z-index: 28; pointer-events: none; background: #FFFBEA; }
+.bt-embruns { position: absolute; inset: 0; z-index: 24; pointer-events: none; }
+.bt-embruns i { position: absolute; left: 0; top: 0; width: 14px; height: 14px; border-radius: 50%; background: radial-gradient(circle, rgba(235, 245, 255, .9), rgba(235, 245, 255, 0) 70%); }
 .bt-phare svg, .bt-mouette svg, .bt-levier svg { display: block; width: 100%; height: auto; }
 .bt-mouette { position: absolute; z-index: 21; }
 .bt-flare { position: absolute; z-index: 24; height: 4px; left: -10%; right: -10%; background: linear-gradient(90deg, transparent, rgba(255, 245, 200, .9) 45%, #FFFFFF 50%, rgba(255, 245, 200, .9) 55%, transparent); filter: blur(1px); }
@@ -707,6 +716,37 @@ body { background-image: radial-gradient(color-mix(in srgb, var(--ink) 7%, trans
 .bt-levier { position: absolute; z-index: 15; width: 34px; }
 .bt-cadre { position: absolute; inset: 0; z-index: 25; border: 10px dotted #F4B400; pointer-events: none; }
 .bt-ui { z-index: 40; }
+/* intro casino */
+.bt-pt { font-style: normal; opacity: 0; }
+.bt-casino { position: absolute; inset: 0; z-index: 10; background: radial-gradient(ellipse at 50% 40%, #3A0E1E 0%, #14040B 55%, #070205 100%); display: grid; place-items: center; overflow: hidden; }
+.cs-lueur { position: absolute; inset: -20%; background: radial-gradient(circle at 50% 45%, rgba(244, 180, 0, .18), transparent 45%); }
+.bt-casino.rouge { background: radial-gradient(ellipse at 50% 40%, #7A0F14 0%, #2A0408 60%, #0A0103 100%); }
+.cs-machine { position: relative; width: min(86vw, 640px); padding: clamp(14px, 3vw, 26px); padding-top: clamp(34px, 6vw, 54px); border-radius: 26px; background: linear-gradient(180deg, #C8372D, #8E1F1A); box-shadow: inset 0 3px 0 rgba(255, 255, 255, .35), inset 0 -6px 0 rgba(0, 0, 0, .3), 0 30px 60px rgba(0, 0, 0, .6); margin-right: min(10vw, 60px); }
+.cs-machine.secoue { animation: shake .45s cubic-bezier(.36, .07, .19, .97); }
+.cs-fronton { position: absolute; top: clamp(8px, 1.6vw, 14px); left: 0; right: 0; text-align: center; color: #F4B400; font: 900 clamp(18px, 4vw, 26px) var(--f-display); letter-spacing: .4em; text-shadow: 0 0 10px rgba(244, 180, 0, .8); }
+.cs-ampoules { position: absolute; inset: 0; pointer-events: none; }
+.cs-ampoules i { position: absolute; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; background: #5A3A10; animation: bulbe .45s steps(1) infinite; animation-delay: calc(var(--k) * -.15s); }
+@keyframes bulbe { 0% { background: #FFE27A; box-shadow: 0 0 10px 3px rgba(255, 220, 110, .9); } 34% { background: #5A3A10; box-shadow: none; } }
+.bt-casino.fou .cs-ampoules i { animation-duration: .12s; }
+.cs-vitre { position: relative; display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(6px, 1.4vw, 12px); background: #0E1B26; padding: clamp(6px, 1.4vw, 12px); border-radius: 14px; box-shadow: inset 0 0 0 3px #F4B400; }
+.cs-reel { position: relative; height: 160px; overflow: hidden; border-radius: 8px; background: linear-gradient(180deg, #9a9a92 0%, #F4F1E8 22%, #FFFFFF 50%, #F4F1E8 78%, #9a9a92 100%); }
+.cs-bande b { display: grid; place-items: center; font-family: var(--f-display); font-weight: 900; text-transform: uppercase; color: #0E1B26; letter-spacing: .01em; line-height: 1; white-space: nowrap; }
+.cs-reel.flou .cs-bande { filter: blur(3px); }
+.cs-reel.gagne { animation: gagne .3s steps(1) 6; }
+@keyframes gagne { 50% { background: #F4B400; } }
+.cs-ligne { position: absolute; left: 0; right: 0; top: 50%; height: 3px; margin-top: -1.5px; background: rgba(228, 50, 43, .7); box-shadow: 0 0 8px rgba(228, 50, 43, .8); pointer-events: none; }
+.cs-plateau { height: clamp(16px, 4vw, 30px); margin: clamp(10px, 2vw, 16px) 12% 0; border-radius: 0 0 14px 14px; background: linear-gradient(180deg, #0E1B26, #23384A); box-shadow: inset 0 4px 6px rgba(0, 0, 0, .6); }
+.cs-levier { position: absolute; left: calc(50% + min(43vw, 320px) - min(5vw, 30px) - 2px); top: calc(50% - clamp(110px, 28vw, 200px)); width: clamp(28px, 6vw, 44px); height: clamp(130px, 32vw, 230px); transform-origin: 50% 100%; }
+.cs-tige { position: absolute; left: 50%; bottom: 0; width: 28%; height: 86%; transform: translateX(-50%); border-radius: 99px; background: linear-gradient(90deg, #8B949B, #E6EBEE, #8B949B); border: 2px solid #0E1B26; }
+.cs-boule { position: absolute; left: 0; top: 0; width: 100%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #FF8A80, #E4322B 45%, #8E1F1A); border: 2px solid #0E1B26; }
+.cs-socle { position: absolute; left: -20%; right: -20%; bottom: -8px; height: 16px; border-radius: 6px; background: #23384A; border: 2px solid #0E1B26; }
+.cs-mesure { position: absolute; visibility: hidden; font: 900 100px var(--f-display); text-transform: uppercase; white-space: nowrap; }
+.cs-perdu { position: absolute; z-index: 3; font: 900 clamp(70px, 22vw, 200px) var(--f-display); text-transform: uppercase; color: #E4322B; -webkit-text-stroke: 3px #FFFFFF; text-shadow: 6px 6px 0 #000; }
+.cs-flash { position: absolute; inset: 0; z-index: 4; background: #FFF6CC; opacity: 0; pointer-events: none; }
+.cs-pluie { position: absolute; inset: 0; z-index: 5; pointer-events: none; }
+.cs-piece { position: absolute; left: 0; top: 0; width: 34px; height: 34px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #FFF2A8, #F4B400 50%, #B07D00); border: 2px solid #8A6200; font-style: normal; font-size: 26px; line-height: 30px; text-align: center; }
+.cs-piece:not(:empty) { background: none; border: 0; }
+.cs-vol { position: absolute; z-index: 30; font-family: var(--f-display); font-weight: 900; text-transform: uppercase; line-height: .86; background: var(--cire); color: var(--cire-ink); padding: 0 .08em; box-shadow: 6px 6px 0 var(--red); white-space: nowrap; }
 .bt.shake-t .bt-title h1 { animation: shake .45s cubic-bezier(.36, .07, .19, .97); }
 .bt-cine.shake { animation: shake .5s cubic-bezier(.36, .07, .19, .97); }
 
@@ -1792,6 +1832,10 @@ window.lancerIntro = (opts = {}) => {
     stamp() { const a = ctx(); if (!a) return; const t = a.currentTime, o = a.createOscillator(), g = a.createGain(); o.frequency.setValueAtTime(160, t); o.frequency.exponentialRampToValueAtTime(60, t + .1); env(g, t, .002, .7, .14); o.connect(g).connect(a.destination); o.start(t); o.stop(t + .2); },
     corne() { const a = ctx(); if (!a) return; const t = a.currentTime, g = a.createGain(), f = a.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 420; env(g, t, .25, .35, 1.6); [72, 73.5, 108].forEach(fr => { const o = a.createOscillator(); o.type = 'sawtooth'; o.frequency.value = fr; o.connect(f); o.start(t); o.stop(t + 2); }); f.connect(g).connect(a.destination); },
     bzz() { const a = ctx(); if (!a) return; const t = a.currentTime, o = a.createOscillator(), g = a.createGain(); o.type = 'sawtooth'; o.frequency.value = 100; env(g, t, .01, .12, .3); o.connect(g).connect(a.destination); o.start(t); o.stop(t + .35); },
+    tonnerre() { const a = ctx(); if (!a) return; const t = a.currentTime, s = bruit(a, 3.2), f = a.createBiquadFilter(), g = a.createGain(); f.type = 'lowpass'; f.frequency.setValueAtTime(900, t); f.frequency.exponentialRampToValueAtTime(90, t + 2.8); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.9, t + .03); g.gain.exponentialRampToValueAtTime(.35, t + .4); g.gain.exponentialRampToValueAtTime(.6, t + .7); g.gain.exponentialRampToValueAtTime(.0001, t + 3.1); s.connect(f).connect(g).connect(a.destination); s.start(t); },
+    clonk() { const a = ctx(); if (!a) return; const t = a.currentTime, o = a.createOscillator(), g = a.createGain(); o.type = 'triangle'; o.frequency.setValueAtTime(220, t); o.frequency.exponentialRampToValueAtTime(90, t + .12); env(g, t, .002, .6, .16); o.connect(g).connect(a.destination); o.start(t); o.stop(t + .2); S.caisse(.25); },
+    perdu() { const a = ctx(); if (!a) return; const t = a.currentTime; [[0, 196], [.22, 156]].forEach(([d, fr]) => { const o = a.createOscillator(), g = a.createGain(); o.type = 'square'; o.frequency.value = fr; env(g, t + d, .01, .18, .26); o.connect(g).connect(a.destination); o.start(t + d); o.stop(t + d + .3); }); },
+    pieces() { const a = ctx(); if (!a) return; const t = a.currentTime; for (let i = 0; i < 22; i++) { const o = a.createOscillator(), g = a.createGain(), d = i * .07 + Math.random() * .05; o.type = 'sine'; o.frequency.value = 1800 + Math.random() * 1600; env(g, t + d, .001, .09, .12); o.connect(g).connect(a.destination); o.start(t + d); o.stop(t + d + .16); } },
     tic() { const a = ctx(); if (!a) return; const t = a.currentTime, o = a.createOscillator(), g = a.createGain(); o.type = 'square'; o.frequency.value = 1400; env(g, t, .001, .08, .03); o.connect(g).connect(a.destination); o.start(t); o.stop(t + .05); },
     braam() { const a = ctx(); if (!a) return; const t = a.currentTime, out = a.createGain(), dl = a.createDelay(), fb = a.createGain(); dl.delayTime.value = .38; fb.gain.value = .38; out.connect(a.destination); out.connect(dl); dl.connect(fb).connect(dl); dl.connect(a.destination);
       const g = a.createGain(), f = a.createBiquadFilter(); f.type = 'lowpass'; f.frequency.setValueAtTime(160, t); f.frequency.exponentialRampToValueAtTime(1600, t + .12); f.frequency.exponentialRampToValueAtTime(240, t + 3.8); env(g, t, .03, .55, 3.9); [36.7, 37, 55, 73.4, 74, 110].forEach(fr => { const o = a.createOscillator(); o.type = 'sawtooth'; o.frequency.value = fr; o.connect(f); o.start(t); o.stop(t + 4.2); }); f.connect(g).connect(out);
@@ -1802,7 +1846,7 @@ window.lancerIntro = (opts = {}) => {
   const el = document.createElement('div');
   el.className = 'bt'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'Intro');
   const mots = ['Cuisine-', 'moi', 'ça', 'comme', 'un'];
-  el.innerHTML = `<div class="wrap bt-title"><h1>${mots.map((w, i) => `<i class="w" style="--i:${i}">${w}</i>`).join(' ').replace('</i> <i class="w" style="--i:1">', '</i><i class="w" style="--i:1">').replace('ça</i> ', 'ça</i><br>')} <span class="bt-boss">bawss</span>.</h1></div>
+  el.innerHTML = `<div class="wrap bt-title"><h1>${mots.map((w, i) => `<i class="w" style="--i:${i}">${w}</i>`).join(' ').replace('</i> <i class="w" style="--i:1">', '</i><i class="w" style="--i:1">').replace('ça</i> ', 'ça</i><br>')} <span class="bt-boss">bawss</span><i class="bt-pt">.</i></h1></div>
     <div class="bt-ui"><button type="button" class="son">🔊 Mets le son</button><button type="button" class="passer">Passer ›</button></div>`;
   document.body.appendChild(el);
   document.documentElement.style.overflow = 'hidden';
@@ -1827,15 +1871,16 @@ window.lancerIntro = (opts = {}) => {
   q('.son').addEventListener('click', e => { son = !son; ctx(); e.currentTarget.classList.toggle('on', son); e.currentTarget.textContent = son ? '🔊 Son' : '🔇 Son'; });
   document.addEventListener('keydown', function k(e) { if (e.key === 'Escape') { finir(); document.removeEventListener('keydown', k); } });
   const atterrit = () => gsap.timeline()
+    .set(q('.bt-pt'), { opacity: 1 })
     .to(boss, { scaleX: 1.3, scaleY: .72, duration: .08, ease: 'power2.in' })
     .add(() => { el.classList.remove('shake-t'); void el.offsetWidth; el.classList.add('shake-t'); }, '<')
     .to(boss, { scaleX: 1, scaleY: 1, duration: .6, ease: 'elastic.out(1.1, .35)' });
 
   /* ===== 1. La bande-annonce ===== */
   function trailer() {
-    const cine = add(`<div class="lb haut"></div><div class="lb bas"></div><div class="bt-carton"></div><div class="bt-onde"></div><div class="bt-streak"></div><div class="bt-gros">bawss</div><div class="bt-critiques"></div><div class="bt-note">INTERDIT AUX MOINS DE 18 CRÊPES · DÉCONSEILLÉ AUX AMATEURS DE BEURRE DOUX</div>`, 'bt-cine');
+    const cine = add(`<div class="lb haut"></div><div class="lb bas"></div><div class="bt-carton"></div><div class="bt-onde"></div><div class="bt-streak"></div><div class="bt-gros">bawss</div><div class="bt-critiques"></div>`, 'bt-cine');
     const c = s => cine.querySelector(s);
-    const carton = c('.bt-carton'), gros = c('.bt-gros'), onde = c('.bt-onde'), streak = c('.bt-streak'), crit = c('.bt-critiques'), note = c('.bt-note');
+    const carton = c('.bt-carton'), gros = c('.bt-gros'), onde = c('.bt-onde'), streak = c('.bt-streak'), crit = c('.bt-critiques');
     const cartes = [
       ['Dans un monde…', 'lent', 1.7, 'rien'],
       ['Où le matcha a envahi nos campagnes…', 'lent', 1.6, 'rien'],
@@ -1847,10 +1892,21 @@ window.lancerIntro = (opts = {}) => {
       ['À condition…', 'normal', .5, 'rien'],
       ['De cuisiner…', 'rafale', .34, 'hit'],
       ['Comme…', 'rafale', .3, 'hit'],
-      ['Un…', 'rafale', .3, 'hit']
+      ['Un…', 'rafale', .3, 'hit'],
+      ['@karaage', 'coupe', .1], ['@chou-farci', 'coupe', .1], ['@curry-japonais', 'coupe', .1], ['@krapao', 'coupe', .1], ['@tatin-d-aubergine', 'coupe', .1], ['@tartiflette', 'coupe', .1], ['@poulet-roti', 'coupe', .1], ['@lasagnes-a-la-bolognaise', 'coupe', .1]
     ];
+    /* coupes « montage » : une photo de vraie bouffe plein écran, une fraction de seconde */
+    const img = document.createElement('img'); img.className = 'bt-coupe'; img.alt = ''; cine.insertBefore(img, cine.firstChild);
+    cartes.forEach(([t]) => { if (t[0] === '@') { const r = BY_ID[t.slice(1)]; if (r && r.photo) { const i = new Image(); i.src = r.photo; } } });
     tl = gsap.timeline({ delay: START }).to(cine, { opacity: 1, duration: .6 }).addLabel('debut');
     cartes.forEach(([txt, style, d, s]) => {
+      if (txt[0] === '@') {
+        const r = BY_ID[txt.slice(1)]; if (!r || !r.photo) return;
+        tl.add(() => { img.src = r.photo; S.caisse(style === 'lente' ? .2 : .35); }, '+=.02')
+          .fromTo(img, { opacity: 1, scale: style === 'lente' ? 1.02 : 1.18 }, { scale: style === 'lente' ? 1.1 : 1.05, duration: d, ease: 'power2.out' }, '<')
+          .set(img, { opacity: 0 });
+        return;
+      }
       const vite = style === 'rafale' || style === 'claque';
       tl.add(() => { carton.innerHTML = txt; carton.className = 'bt-carton ' + style; }, vite ? '+=.04' : '+=.14').add(S[s], '<');
       if (style === 'lent') tl.fromTo(carton, { opacity: 0, scale: .92, letterSpacing: '.28em' }, { opacity: 1, scale: 1.04, letterSpacing: '.14em', duration: d + .5, ease: 'power1.out' }, '<').to(carton, { opacity: 0, duration: .35 }, '>-.3');
@@ -1885,8 +1941,7 @@ window.lancerIntro = (opts = {}) => {
     tl.to(crit, { opacity: 0, duration: .3 }, '+=1.1')
       .add(() => { carton.className = 'bt-carton claque'; carton.innerHTML = 'Prochainement dans ta cuisine<small>Que tu le veuilles ou non</small>'; S.hit(); })
       .fromTo(carton, { opacity: 0, scale: 1.3 }, { opacity: 1, scale: 1, duration: .3, ease: 'power3.out' }, '<')
-      .fromTo(note, { opacity: 0 }, { opacity: 1, duration: .3 }, '<+=.4')
-      .to([carton, note], { opacity: 0, duration: .3 }, '+=1.5')
+      .to(carton, { opacity: 0, duration: .3 }, '+=1.5')
       .to(cine, { opacity: 0, duration: .5 })
       .add(() => { S.grosse(); gsap.timeline().fromTo(boss, { opacity: 1, y: -H, rotation: -20 }, { y: 0, rotation: -2.5, duration: .45, ease: 'power3.in' }).add(atterrit()); }, '-=.2')
       .add(finir, '+=1.5');
@@ -1897,6 +1952,8 @@ window.lancerIntro = (opts = {}) => {
     const nuit = add('', 'bt-nuit'), rayon = add('', 'bt-rayon');
     const poussiere = add(Array.from({ length: 90 }, () => `<i style="left:${Math.random() * 100}%;top:${Math.random() * 90}%;width:${1.5 + Math.random() * 2.5}px;height:${1.5 + Math.random() * 2.5}px;opacity:${.35 + Math.random() * .6}"></i>`).join(''), 'bt-poussiere');
     const brume = add('', 'bt-brume');
+    const pluie = add('', 'bt-pluie'), eclair = add('', 'bt-eclair'), blanc = add('', 'bt-blanc');
+    const embruns = add(Array.from({ length: 26 }, () => '<i></i>').join(''), 'bt-embruns');
     const cote = add(`<svg viewBox="0 0 400 90" preserveAspectRatio="none"><path d="M0 90 V52 Q20 40 38 50 Q52 34 70 46 L96 38 Q112 44 118 56 L140 60 V90Z" fill="#070D14"/><path d="M250 90 V66 Q268 50 286 60 Q300 48 318 58 Q336 44 356 56 Q378 50 400 60 V90Z" fill="#070D14"/><g class="bt-houle"><path d="M-100 90 V74 ${Array.from({ length: 16 }, (_, i) => `Q${-100 + i * 40 + 10} 66 ${-100 + i * 40 + 20} 74 T${-100 + i * 40 + 40} 74`).join(' ')} V90Z" fill="#0B1824"/></g></svg>`, 'bt-cote');
     const tour = add(`<svg viewBox="0 0 50 130"><path d="M17 130 L20 40 H30 L33 130Z" fill="#E9EDF0" stroke="#050A10" stroke-width="2"/><path d="M18.6 110 H31.4 L32.1 122 H17.9Z M19.4 76 H30.6 L31.1 88 H18.9Z" fill="#C8372D"/><rect x="18" y="26" width="14" height="14" fill="#FFE27A" stroke="#050A10" stroke-width="2"/><path d="M15 26 L25 14 L35 26Z" fill="#C8372D" stroke="#050A10" stroke-width="2"/><path d="M5 130 Q25 118 45 130Z" fill="#1A2632"/></svg>`, 'bt-phare');
     const mouette = add(`<svg viewBox="0 0 60 24"><path d="M2 14 Q14 2 30 12 Q46 2 58 14 Q46 8 30 18 Q14 8 2 14Z" fill="#070D14"/></svg>`, 'bt-mouette');
@@ -1907,21 +1964,40 @@ window.lancerIntro = (opts = {}) => {
     const un = [...el.querySelectorAll('.bt-title .w')].pop().getBoundingClientRect();
     const aUn = angle(un.left + un.width / 2, un.top + un.height / 2), cible = angle(slot.cx, slot.cy);
     const setA = v => [nuit, rayon, poussiere].forEach(e => e.style.setProperty('--a', v + 'deg'));
+    /* à la fin, le faisceau s'élargit juste assez pour éclairer BAWSS en entier (les 4 coins + une marge) */
+    const coins = [[slot.x, slot.y], [slot.x + slot.w, slot.y], [slot.x, slot.y + slot.h], [slot.x + slot.w, slot.y + slot.h]];
+    const largeur = Math.max(9, ...coins.map(([x, y]) => Math.abs(angle(x, y) - cible))) + 4;
+    const fx = { w: 9 }, setW = () => [nuit, rayon, poussiere].forEach(e => e.style.setProperty('--w', fx.w + 'deg'));
     const st = { a: -70 }; setA(st.a);
     const lampe = on => { nuit.classList.toggle('panne', !on); rayon.style.opacity = on ? 1 : 0; poussiere.style.opacity = on ? 1 : 0; };
-    gsap.set([nuit, rayon, tour, brume, cote, poussiere], { opacity: 0 });
+    gsap.set([nuit, rayon, tour, brume, cote, poussiere, pluie, embruns], { opacity: 0 });
+    gsap.set([eclair, blanc], { opacity: 0 });
+    /* embruns : des gerbes d'écume qui giclent sur les rochers, en boucle */
+    embruns.querySelectorAll('i').forEach((g, n) => {
+      const x = (n % 2 ? .62 + Math.random() * .36 : Math.random() * .34) * W, y = H * (.86 + Math.random() * .05);
+      gsap.set(g, { x, y, scale: .4 + Math.random() * .9 });
+      extra.push(gsap.to(g, { y: y - 40 - Math.random() * 70, x: x + (Math.random() - .5) * 50, opacity: 0, duration: .9 + Math.random() * .6, repeat: -1, repeatDelay: Math.random() * 1.2, delay: START + Math.random() * 2, ease: 'power2.out' }));
+    });
+    /* éclair : la nuit s'efface une fraction de seconde, tout devient blanc bleuté, puis le tonnerre */
+    const foudre = () => gsap.timeline()
+      .add(S.tonnerre)
+      .to(eclair, { keyframes: { opacity: [0, .9, .1, .75, 0, .4, 0] }, duration: .55, ease: 'none' })
+      .to(nuit, { keyframes: { opacity: [1, .25, .9, .35, 1] }, duration: .5, ease: 'none' }, 0)
+      .add(() => { try { navigator.vibrate && navigator.vibrate([30, 40, 60]); } catch (e) {} }, 0);
     gsap.set(mouette, { left: -80, top: H * .3, width: 54 });
     extra.push(gsap.to(brume, { x: 60, duration: 9, delay: START, ease: 'sine.inOut' }));
     extra.push(gsap.to(el.querySelector('.bt-houle'), { x: 40, duration: 2.6, yoyo: true, repeat: -1, ease: 'sine.inOut' }));
     extra.push(gsap.to(poussiere.querySelectorAll('i'), { x: () => 20 + Math.random() * 40, y: () => -10 - Math.random() * 20, duration: () => 4 + Math.random() * 4, ease: 'none' }));
     const bouge = (to, d, ease = 'sine.inOut') => ({ a: to, duration: d, ease, onUpdate: () => setA(st.a) });
     tl = gsap.timeline({ delay: START })
-      .to([nuit, tour, brume, cote], { opacity: 1, duration: .9, ease: 'power2.in' })
-      .to([rayon, poussiere], { opacity: 1, duration: .5 }, .6)
-      .add(S.corne, .5)
-      .to(st, bouge(80, 1.3), .9)
-      .to(mouette, { x: W + 160, y: -H * .12, duration: 2.6, ease: 'none' }, 1.1)
-      .to(mouette, { keyframes: { scaleY: [1, -.6, 1, -.6, 1, -.6, 1, -.6, 1, -.6, 1] }, duration: 2.6, ease: 'none' }, 1.1)
+      .to([nuit, tour, brume, cote, pluie, embruns], { opacity: 1, duration: .9, ease: 'power2.in' })
+      .add(foudre(), .95)
+      .to([rayon, poussiere], { opacity: 1, duration: .5 }, 1.5)
+      .add(S.corne, 1.4)
+      .to(st, bouge(80, 1.3), 1.6)
+      .to(mouette, { x: W + 160, y: -H * .12, duration: 2.6, ease: 'none' }, 1.8)
+      .to(mouette, { keyframes: { scaleY: [1, -.6, 1, -.6, 1, -.6, 1, -.6, 1, -.6, 1] }, duration: 2.6, ease: 'none' }, 1.8)
+      .add(foudre(), 3.1)
       .to(st, bouge(-40, 1.1), '>')
       .to(st, bouge(aUn, .6, 'back.out(2)'), '>')
       .add(S.bzz, '>+.35')
@@ -1930,50 +2006,122 @@ window.lancerIntro = (opts = {}) => {
       .add(() => lampe(true), '>+.55')
       .to(st, bouge(cible + 25, .5), '>+.15')
       .to(st, bouge(cible, .35, 'back.out(3)'), '>')
+      .to(fx, { w: largeur, duration: .35, ease: 'power2.out', onUpdate: setW }, '<')
       .add(S.corne, '>-.1')
-      .add(() => { gsap.set(boss, { opacity: 1 }); boss.classList.add('glow'); atterrit(); }, '>-.05')
+      .add(() => { gsap.set(boss, { opacity: 1 }); boss.classList.add('glow'); atterrit(); try { navigator.vibrate && navigator.vibrate(90); } catch (e) {} }, '>-.05')
+      .fromTo(blanc, { opacity: 1 }, { opacity: 0, duration: .9, ease: 'power2.out', immediateRender: false }, '<')
+      .to([pluie, embruns], { opacity: 0, duration: .6 }, '<')
       .fromTo(boss, { scale: 1.6, filter: 'brightness(2.2)' }, { scale: 1, filter: 'brightness(1)', duration: .7, ease: 'power3.out' }, '<')
       .add(() => { const f = add('', 'bt-flare'); gsap.set(f, { top: slot.cy }); gsap.fromTo(f, { scaleX: 0, opacity: 1 }, { scaleX: 1, opacity: 0, duration: 1.1, ease: 'power2.out', onComplete: () => f.remove() }); }, '<')
-      .to([nuit, rayon, tour, brume, cote, poussiere], { opacity: 0, duration: 1.2, ease: 'power2.inOut' }, '>+.9')
+      .to([nuit, rayon, tour, brume, cote, poussiere, pluie, embruns], { opacity: 0, duration: 1.2, ease: 'power2.inOut' }, '>+.9')
       .add(() => boss.classList.remove('glow'), '>-.4')
       .add(finir, '>+1');
   }
 
-  /* ===== 3. Le bandit manchot ===== */
+  /* ===== 3. Le casino : machine à sous plein écran, règle de trois ===== */
   function bandit() {
-    const mots2 = ['bolos', 'branque', 'bitos', 'bawss'];
-    const lh = boss.offsetHeight, wBawss = boss.offsetWidth;
-    const mes = document.createElement('span'); mes.className = 'bt-boss'; mes.style.cssText = 'position:absolute;visibility:hidden;opacity:1'; q('.bt-title h1').appendChild(mes);
-    const larg = Object.fromEntries(mots2.map(m => { mes.textContent = m; return [m, mes.offsetWidth]; })); mes.remove();
-    boss.classList.add('reel');
-    const tours = 4, bande = Array.from({ length: tours }, () => mots2).flat();
-    boss.innerHTML = `<span class="bt-rouleau">${bande.map(m => { const r = (wBawss - 6) / (larg[m] - 6); return r < 1 ? `<span style="text-align:left;white-space:nowrap;transform-origin:0 50%;transform:scaleX(${r.toFixed(3)})">${m}</span>` : `<span>${m}</span>`; }).join('')}</span>`;
-    gsap.set(boss, { width: wBawss, height: lh, opacity: 0 });
-    const rou = boss.querySelector('.bt-rouleau'), N = mots2.length, pos = k => -k * lh;
-    const levier = add(`<svg viewBox="0 0 34 120"><rect x="12" y="26" width="10" height="84" rx="5" fill="#B9C0C6" stroke="#0E1B26" stroke-width="2.5"/><circle cx="17" cy="18" r="15" fill="#E4322B" stroke="#0E1B26" stroke-width="2.5"/><circle cx="12" cy="13" r="4" fill="#FFFFFF" opacity=".6"/><rect x="6" y="104" width="22" height="14" rx="3" fill="#15283A"/></svg>`, 'bt-levier');
-    gsap.set(levier, { left: Math.min(W - 40, slot.x + wBawss + Math.max(26, wBawss * .16)), top: slot.y - 30, transformOrigin: '50% 95%', opacity: 0 });
-    const cadre = add('', 'bt-cadre'); gsap.set(cadre, { opacity: 0 });
-    const base = N * (tours - 1);
-    tl = gsap.timeline({ delay: START })
-      .to([boss, levier], { opacity: 1, duration: .2 })
-      .to(levier, { scaleY: .55, duration: .35, ease: 'power2.in' })
-      .to(levier, { scaleY: 1, duration: .5, ease: 'elastic.out(1, .4)' })
-      .add(S.whoosh, '<')
-      .fromTo(rou, { y: 0 }, { y: pos(base - 1), duration: 1.3, ease: 'power1.in', onUpdate() { if (Math.random() < .45) S.tic(); } }, '<')
-      .fromTo(boss, { filter: 'blur(0px)' }, { filter: 'blur(2.5px)', duration: .25 }, '<')
-      .to(boss, { filter: 'blur(0px)', duration: .25 })
-      .to(rou, { y: pos(base), duration: .45, ease: 'back.out(2.5)' }, '-=.25').add(S.tic)
-      .to(rou, { y: pos(base + 1), duration: .4, ease: 'back.out(3)' }, '+=.55').add(S.tic)
-      .to(rou, { y: pos(base + 2), duration: .45, ease: 'back.out(3)' }, '+=.55').add(S.tic)
-      .to(rou, { y: pos(base + 2) - lh * .5, duration: .3, ease: 'power1.inOut' }, '+=.35')
-      .to(rou, { y: pos(base + 2), duration: .35, ease: 'bounce.out' })
-      .to(boss, { keyframes: { x: [0, -3, 3, -3, 3, 0] }, duration: .35, ease: 'none' }, '+=.1')
-      .to(rou, { y: pos(base + 3), duration: .7, ease: 'back.out(4)' }, '+=.2').add(S.tic)
-      .addLabel('gagne')
-      .add(atterrit, 'gagne')
-      .to(cadre, { keyframes: { opacity: [0, 1, 0, 1, 0, 1, 0, 1, 0] }, duration: 1.8, ease: 'none' }, 'gagne')
-      .to(levier, { opacity: 0, duration: .4 }, 'gagne+=1.8')
-      .add(finir, 'gagne+=2.3');
+    /* on attend les polices pour mesurer les mots des rouleaux */
+    const t0 = performance.now();
+    (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(() => { if (!fini) monterCasino((performance.now() - t0) / 1000); });
+  }
+  function monterCasino(dejaPasse) {
+    const MOTS = ['bolos', 'branque', 'bitos', 'bawss'];
+    const casino = add(`<div class="cs-lueur"></div><div class="cs-machine"><div class="cs-ampoules"></div><div class="cs-fronton">★ ★ ★</div><div class="cs-vitre"><div class="cs-reel"></div><div class="cs-reel"></div><div class="cs-reel"></div><div class="cs-ligne"></div></div><div class="cs-plateau"></div></div><div class="cs-levier"><i class="cs-tige"></i><b class="cs-boule"></b><i class="cs-socle"></i></div><div class="cs-flash"></div><div class="cs-pluie"></div>`, 'bt-casino');
+    const c = s => casino.querySelector(s), machine = c('.cs-machine'), vitre = c('.cs-vitre'), reels = [...casino.querySelectorAll('.cs-reel')];
+    /* rouleaux : une longue bande de mots, la ligne gagnante au milieu */
+    /* taille des mots : le plus long (« branque ») remplit la largeur d'un rouleau */
+    const mesure = document.createElement('b'); mesure.className = 'cs-mesure'; mesure.textContent = 'branque'; casino.appendChild(mesure);
+    const rw = reels[0].clientWidth, fs = Math.min(120, 100 * (rw - 12) / mesure.offsetWidth); mesure.remove();
+    const h = Math.round(fs * 1.8), RH = Math.round(h * 3), LONG = 44, dec = (RH - h) / 2;
+    reels.forEach((r, n) => {
+      r.style.height = RH + 'px';
+      r.innerHTML = `<div class="cs-bande">${Array.from({ length: LONG }, (_, i) => `<b style="height:${h}px;font-size:${fs}px">${MOTS[(i + n) % 4]}</b>`).join('')}</div>`;
+      r._b = r.firstChild; r._i = 1; gsap.set(r._b, { y: dec - r._i * h });
+    });
+    /* ampoules tout autour de la machine */
+    const amp = c('.cs-ampoules'), mw = machine.offsetWidth, mh = machine.offsetHeight, pas = 22;
+    const nx = Math.max(6, Math.round(mw / pas)), ny = Math.max(4, Math.round(mh / pas)); let k = 0, html = '';
+    const bulbe = (x, y) => { html += `<i style="left:${x}px;top:${y}px;--k:${k++ % 3}"></i>`; };
+    for (let i = 0; i < nx; i++) bulbe(i * mw / nx, 0);
+    for (let i = 0; i < ny; i++) bulbe(mw, i * mh / ny);
+    for (let i = nx; i > 0; i--) bulbe(i * mw / nx, mh);
+    for (let i = ny; i > 0; i--) bulbe(0, i * mh / ny);
+    amp.innerHTML = html;
+    const index = (r, mot, mini) => { let i = mini; while (MOTS[(i + reels.indexOf(r)) % 4] !== mot) i++; return i; };
+    const cible = (r, i) => dec - i * h;
+    const lev = c('.cs-levier');
+    const tirer = () => gsap.timeline()
+      .to(lev, { scaleY: -.55, duration: .28, ease: 'power2.in' })
+      .add(S.clonk)
+      .to(lev, { scaleY: 1, duration: .55, ease: 'elastic.out(1, .4)' });
+    const tourner = (r, mot, d, tours = 2) => {
+      const i = index(r, mot, r._i + tours * 4); r._i = i;
+      return gsap.timeline()
+        .to(r._b, { y: cible(r, i) + h * .35, duration: d, ease: 'power2.inOut', onUpdate() { if (Math.random() < .25) S.tic(); } })
+        .to(r._b, { y: cible(r, i), duration: .32, ease: 'back.out(3)' })
+        .add(S.clonk, '<');
+    };
+    const pluie = c('.cs-pluie');
+    const piece = () => { const p = document.createElement('i'); p.className = 'cs-piece'; p.textContent = Math.random() < .35 ? '🧈' : ''; pluie.appendChild(p); return p; };
+    gsap.set(casino, { opacity: 0 }); 
+    tl = gsap.timeline({ delay: Math.max(.1, START - dejaPasse) })
+      .to(casino, { opacity: 1, duration: .5 })
+      .from(machine, { scale: .8, y: 40, duration: .6, ease: 'back.out(1.6)' }, '<')
+      .from(lev, { x: 80, opacity: 0, duration: .5, ease: 'power3.out' }, '<+.2')
+      /* 1er tirage : perdu */
+      .add(tirer(), '+=.2').add(S.whoosh, '<+.2')
+      .add(() => reels.forEach(r => r.classList.add('flou')), '<+.25')
+      .add(tourner(reels[0], 'bolos', 1.0), '<')
+      .add(tourner(reels[1], 'bolos', 1.3), '<')
+      .add(tourner(reels[2], 'branque', 1.6), '<')
+      .add(() => reels.forEach(r => r.classList.remove('flou')), '>-.3')
+      .addLabel('perdu', '>+.05')
+      .add(S.perdu, 'perdu')
+      .add(() => { casino.classList.add('rouge'); machine.classList.remove('secoue'); void machine.offsetWidth; machine.classList.add('secoue'); try { navigator.vibrate && navigator.vibrate(80); } catch (e) {} }, 'perdu')
+            .add(() => casino.classList.remove('rouge'), 'perdu+=.9')
+      /* 2e tirage : BAWSS, BAWSS… et le troisième fait durer */
+      .add(tirer(), 'perdu+=1.1').add(S.whoosh, '<+.2')
+      .add(() => reels.forEach(r => r.classList.add('flou')), '<+.25')
+      .add(tourner(reels[0], 'bawss', 1.0), '<')
+      .add(tourner(reels[1], 'bawss', 1.3), '<')
+      .add(() => { reels[0].classList.remove('flou'); reels[1].classList.remove('flou'); }, '<+1.0')
+      .addLabel('suspense', '>');
+    /* le troisième rouleau ralentit, cœur qui bat, zoom lent… dépasse BAWSS, puis recule d'un cran */
+    const r3 = reels[2], iB = index(r3, 'bawss', r3._i + 8);
+    tl.to(r3._b, { y: cible(r3, iB - 3), duration: 1.2, ease: 'power1.in', onUpdate() { if (Math.random() < .3) S.tic(); } }, 'suspense-=.8')
+      .add(() => r3.classList.remove('flou'), 'suspense+=.3')
+      .to(r3._b, { y: cible(r3, iB - 1), duration: .7, ease: 'power1.out' }).add(S.tic).add(S.coeur)
+      .to(machine, { scale: 1.12, duration: 2.1, ease: 'sine.inOut' }, '<')
+      .to(r3._b, { y: cible(r3, iB), duration: .55, ease: 'power2.inOut' }, '+=.25').add(S.tic).add(S.coeur, '<+.1')
+      .to(r3._b, { y: cible(r3, iB + 1) + h * .15, duration: .6, ease: 'power2.inOut' }, '+=.2').add(S.tic).add(S.coeur, '<+.15')
+      .to(r3._b, { y: cible(r3, iB + 1), duration: .2 })
+      .to({}, { duration: .45 })
+      .add(S.clonk)
+      .to(r3._b, { y: cible(r3, iB), duration: .28, ease: 'back.out(4)' })
+      .addLabel('gagne');
+    /* gagné : ampoules affolées, flash, secousse, pluie de pièces et de beurre */
+    tl.add(() => { casino.classList.add('fou'); machine.classList.remove('secoue'); void machine.offsetWidth; machine.classList.add('secoue'); S.hit(); S.pieces(); reels.forEach(r => r.classList.add('gagne')); try { navigator.vibrate && navigator.vibrate([60, 40, 60, 40, 120]); } catch (e) {} }, 'gagne')
+      .fromTo(c('.cs-flash'), { opacity: .95 }, { opacity: 0, duration: .5, ease: 'power2.out', immediateRender: false }, 'gagne')
+      .to(machine, { scale: 1.02, duration: .4, ease: 'back.out(2)' }, 'gagne')
+      .add(() => {
+        for (let i = 0; i < 46; i++) {
+          const p = piece(), x = Math.random() * W, rot = Math.random() * 720 - 360;
+          gsap.fromTo(p, { x, y: -60 - Math.random() * H * .6, rotation: 0 }, { y: H + 80, x: x + (Math.random() - .5) * 120, rotation: rot, duration: 1.3 + Math.random() * 1.1, ease: 'power1.in', delay: Math.random() * .6 });
+        }
+      }, 'gagne+=.05');
+    /* BAWSS quitte le rouleau du milieu et file se poser dans le titre */
+    tl.add(() => {
+      const src = reels[1].getBoundingClientRect(), v = document.createElement('div');
+      v.className = 'cs-vol'; v.textContent = 'bawss'; el.appendChild(v);
+      gsap.set(v, { left: src.left + src.width / 2, top: src.top + src.height / 2, xPercent: -50, yPercent: -50, fontSize: fs * 1.15 });
+      const bs = getComputedStyle(boss).fontSize;
+      gsap.timeline()
+        .to(v, { scale: 1.6, rotation: -6, duration: .3, ease: 'back.out(2)' })
+        .to(casino, { opacity: 0, duration: .5 }, '<+.15')
+        .to(v, { left: slot.cx, top: slot.cy, fontSize: bs, scale: 1, rotation: -2.5, duration: .6, ease: 'power3.inOut' }, '<+.1')
+        .add(() => { v.remove(); gsap.set(boss, { opacity: 1 }); S.grosse(); atterrit(); });
+    }, 'gagne+=1.6')
+      .add(finir, 'gagne+=3.6');
   }
 
   ({ trailer, phare, bandit })[quelle]();
