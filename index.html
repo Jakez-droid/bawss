@@ -1829,7 +1829,7 @@ window.lancerIntro = (opts = {}) => {
   if (location.hash || !window.gsap || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   /* premier lancement : un écran « séance » dont le toucher débloque le son (les téléphones l'exigent) */
   let seanceVue = '1'; try { seanceVue = localStorage.getItem('bawss-seance'); } catch (e) {}
-  if (!opts.son && !seanceVue) {
+  if ((!opts.son && !seanceVue) || opts.seance) {
     const g = document.createElement('div');
     g.className = 'bt-seance'; g.setAttribute('role', 'dialog'); g.setAttribute('aria-label', 'Lancer l’intro');
     g.innerHTML = `<p class="bs-t">Monte le son<br>mon Bawss.</p><button type="button" class="bs-go">▶ Deomp dezhi !</button><button type="button" class="bs-sans">Passer l’intro</button>`;
@@ -1848,7 +1848,7 @@ window.lancerIntro = (opts = {}) => {
         .to(st.firstChild, { scale: 1.04, duration: 1.6, ease: 'none' })
         .to(st.firstChild, { opacity: 0, duration: .9, ease: 'power2.in' }, '-=.5')
         .add(() => { window.lancerIntro({ son: true, quelle: 'trailer' }); }, '+=.1')
-        .to(st, { opacity: 0, duration: .3, onComplete: () => st.remove() }, '+=.05');
+        .to(st, { opacity: 0, duration: .3, onComplete: () => st.remove() }, '+=.5');
     });
     g.querySelector('.bs-sans').addEventListener('click', () => { fin(); dispatchEvent(new Event('bawss-intro-fin')); });
     return;
@@ -1930,7 +1930,7 @@ window.lancerIntro = (opts = {}) => {
     const cartes = [
       ['Dans un monde…', 'lent', 1.7, 'rien'],
       ['Où le matcha a envahi nos campagnes…', 'lent', 1.6, 'rien'],
-      ['Où le bar à couscous existe…', 'lent', 1.3, 'rien'],
+      ['Où le crousty Kinder Bueno existe…', 'lent', 1.3, 'rien'],
       ['Où le beurre…', 'normal', .85, 'rien'],
       ['… est doux.', 'menace', 1.4, 'gong'],
       ['Toi seul…', 'claque', .7, 'rien'],
@@ -2367,7 +2367,7 @@ window.lancerIntro = (opts = {}) => {
 /* ---------- signature en bas de la liste ---------- */
 (function () { const S = ['Cuisine sans filet.', 'Cuisine 2 rue.', 'Du beurre & des larmes.']; const e = document.getElementById('fin-slogan'); if (e) e.textContent = S[Math.floor(Math.random() * S.length)];
   const b = document.getElementById('fin-bawss');
-  if (b) b.addEventListener('click', () => { if (typeof window.lancerIntro !== 'function') return; window.scrollTo(0, 0); requestAnimationFrame(() => window.lancerIntro({ son: true })); });
+  if (b) b.addEventListener('click', () => { if (typeof window.lancerIntro !== 'function') return; window.scrollTo(0, 0); requestAnimationFrame(() => window.lancerIntro({ seance: true })); });
 })();
 
 /* ---------- FAQ ---------- */
