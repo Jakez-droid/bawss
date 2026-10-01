@@ -57,7 +57,7 @@ if os.path.exists(ex):
 # pas de numéro de téléphone dans l'appli publique : « Appelle le bawss » devient le chat
 h = re.sub(r'const BOSS_PHONE = "[^"]*";', 'const BOSS_PHONE = "chat";', h, count=1)
 assert '<b>📞 Appelle le bawss</b>' in h, 'bouton SOS du mode cuisine introuvable'
-h = h.replace('<b>📞 Appelle le bawss</b>', '<b>💬 Écris au Bawss</b>')
+h = h.replace('<b>📞 Appelle le bawss</b>', '<b>💬 Demande à ton Jakez</b>')
 # script de l'appli installable, en dernier
 i = h.rindex('</script>')
 h = h[:i] + '\n' + js + h[i:]

@@ -134,11 +134,11 @@
       + '<span>' + (f.dernier.de_admin ? 'Toi : ' : '') + esc2(f.dernier.texte.slice(0, 80)) + '</span><time>' + heure(f.dernier.cree_le) + '</time></button></li>').join('');
     box.querySelectorAll('[data-fil]').forEach(b => b.addEventListener('click', () => ecranChat(b.dataset.fil, b.dataset.nom)));
   }
-  /* sur chaque fiche, « Appelle le bawss » devient « Écris au Bawss » */
+  /* sur chaque fiche, « Appelle le bawss » devient « Demande à ton Jakez » */
   function boutonsBoss() {
     document.querySelectorAll('.boss').forEach(b => {
       const bt = b.querySelector('[data-boss]'); if (!bt || bt.dataset.chat) return;
-      bt.dataset.chat = '1'; bt.textContent = '💬 Écris au Bawss';
+      bt.dataset.chat = '1'; bt.textContent = '💬 Demande à ton Jakez';
       const p = b.querySelector('p'); if (p) p.innerHTML = 'Un problème ?<span>Un doute sur une étape, un plat qui tourne mal… écris-moi, je te réponds.</span>';
     });
   }
