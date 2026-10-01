@@ -29,14 +29,12 @@ assert n == 1, 'en-tête'
 h, n = re.subn(r'<title>Les recettes 2 Jakez</title>\n', '', h, count=1); assert n == 1, 'title'
 h = h.replace('</head><body>', '<style>\n' + css + '</style></head><body>', 1)
 # l'intro ne part plus toute seule : l'écran d'accueil la lance
-a = "/* ---------- ouverture : trois intros en alternance (bande-annonce, phare, bandit manchot) ---------- */\n(() => {\n"
+a = "(window.lancerIntro = (opts = {}) => {\n"
 assert a in h, 'intro'
-h = h.replace(a, a[:-9] + "window.lancerIntro = (opts = {}) => {\n", 1)
+h = h.replace(a, "window.lancerIntro = (opts = {}) => {\n", 1)
 h, n = re.subn(r"\n  \(\{ trailer, phare, bandit \}\)\[quelle\]\(\);\n\}\)\(\);\n", "\n  ({ trailer, phare, bandit })[quelle]();\n};\n", h); assert n == 1, 'fin intro'
-b = "let AC = null, son = false;"
-assert b in h; h = h.replace(b, "let AC = null, son = !!opts.son;", 1)
-c = "q('.son').addEventListener('click'"
-assert c in h; h = h.replace(c, "if (son) { q('.son').classList.add('on'); q('.son').textContent = '🔊 Son'; }\n  " + c, 1)
+assert "son = !!opts.son;" in h, 'son'
+
 # bouton « mon compte » à côté du panier
 k = '<button class="cart-btn" id="cart-btn"'
 assert k in h
