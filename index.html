@@ -837,6 +837,13 @@ body { background-image: radial-gradient(color-mix(in srgb, var(--ink) 7%, trans
 .t-dessert { --cv: #E58FA8; --cv2: #D77A95; --cvt: #0E1B26; }
 .t-sauce { --cv: #6B3A8A; --cv2: #5A2F75; --cvt: #FFFFFF; }
 @media (max-width: 680px) { .card.cov .tile .emo { font-size: 52px; width: 86px; height: 86px; } }
+.band span { cursor: pointer; }
+.band-bulle { position: fixed; z-index: 70; max-width: min(320px, calc(100vw - 24px)); background: var(--cire); color: var(--cire-ink); border: 2px solid var(--ink); border-radius: 14px; padding: 10px 14px 11px; box-shadow: 4px 4px 0 var(--ink); font-family: var(--f-body); animation: bulle-pop .3s cubic-bezier(.3, 1.6, .5, 1); }
+.band-bulle::before { content: ""; position: absolute; top: -9px; left: var(--fl, 50%); width: 14px; height: 14px; margin-left: -7px; background: var(--cire); border-left: 2px solid var(--ink); border-top: 2px solid var(--ink); transform: rotate(45deg); }
+.band-bulle b { display: block; font-family: var(--f-display); font-weight: 900; text-transform: uppercase; font-size: 20px; line-height: 1; letter-spacing: .02em; }
+.band-bulle span { display: block; margin-top: 4px; font-size: 15px; font-weight: 600; line-height: 1.35; }
+.band-bulle i { display: block; margin-top: 5px; font-size: 12.5px; opacity: .75; }
+@keyframes bulle-pop { from { transform: scale(.6) translateY(-6px); opacity: 0; } }
 /* FAQ */
 .ing-cart { display: flex; align-items: center; gap: 10px; width: 100%; margin: 14px 0 10px; border: 0; border-radius: 14px; background: var(--ink); color: var(--paper); padding: 13px 16px; font: 800 16px var(--f-body); text-align: left; cursor: pointer; box-shadow: 3px 3px 0 var(--cire); transition: transform .15s ease, background-color .15s ease; }
 .ing-cart svg { width: 24px; height: 24px; flex: none; }
@@ -2375,6 +2382,33 @@ window.lancerIntro = (opts = {}) => {
     const prochaine = isNaN(v) ? 0 : (v + 1) % 3;
     if (prochaine === 0) { try { localStorage.setItem('bt-intro', '0'); } catch (e) {} }
     requestAnimationFrame(() => window.lancerIntro(prochaine === 0 ? { seance: true } : { son: true })); });
+})();
+
+/* ---------- bandeau breton : on touche un mot, la traduction apparaît ---------- */
+(function () {
+  const band = document.querySelector('.band'); if (!band) return;
+  const piste = band.firstElementChild;
+  const cle = t => norm(t).replace(/\s+/g, ' ').trim();
+  const DICO = new Map(EXPRESSIONS.map(e => [cle(e.br), e]));
+  const BONUS = ['Tu l’as appris, ressors-le.', 'À placer au prochain repas de famille.', 'Ton Jakez valide.'];
+  let bulle = null, t = null;
+  const fermer = () => { clearTimeout(t); if (bulle) { bulle.remove(); bulle = null; } piste.style.animationPlayState = ''; };
+  band.addEventListener('click', e => {
+    const m = e.target.closest('span'); if (!m) return;
+    const x = DICO.get(cle(m.textContent)); if (!x) return;
+    fermer();
+    piste.style.animationPlayState = 'paused';
+    bulle = document.createElement('div'); bulle.className = 'band-bulle'; bulle.setAttribute('role', 'status');
+    bulle.innerHTML = `<b>${esc(x.br)}</b><span>${esc(x.fr)}</span>` + (Math.random() < .35 ? `<i>${BONUS[Math.floor(Math.random() * BONUS.length)]}</i>` : '');
+    document.body.appendChild(bulle);
+    const r = m.getBoundingClientRect(), w = bulle.offsetWidth, cx = r.left + r.width / 2;
+    const left = Math.max(12, Math.min(cx - w / 2, innerWidth - w - 12));
+    bulle.style.left = left + 'px'; bulle.style.top = (r.bottom + 12) + 'px';
+    bulle.style.setProperty('--fl', Math.max(18, Math.min(w - 18, cx - left)) + 'px');
+    bulle.addEventListener('click', fermer);
+    t = setTimeout(fermer, 3200);
+  });
+  addEventListener('scroll', () => { if (bulle) fermer(); }, { passive: true });
 })();
 
 /* ---------- FAQ ---------- */
