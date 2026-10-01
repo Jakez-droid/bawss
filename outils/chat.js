@@ -1,4 +1,4 @@
-  /* ---------- « Écris au Bawss » : conversation privée entre chaque membre et Jakez ---------- */
+  /* ---------- « Demande à ton Jakez » : conversation privée entre chaque membre et Jakez ---------- */
   const CHAT = { non_lus: 0, canal: null, fil: null, cible: null, recette: null };
   const heure = d => { const t = new Date(d), auj = new Date().toDateString() === t.toDateString(); return auj ? t.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : t.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) + ' · ' + t.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }); };
   function pastille(n) {
@@ -21,7 +21,7 @@
   }
   async function alerter(m) {
     const court = esc2(String(m.texte || '').slice(0, 90));
-    if (!moi.admin) { notif('<b>💬 Le Bawss t’a répondu</b><span>' + court + '</span>', () => ecranChat(null, null, null), enCuisine()); return; }
+    if (!moi.admin) { notif('<b>💬 Ton Jakez t’a répondu</b><span>' + court + '</span>', () => ecranChat(null, null, null), enCuisine()); return; }
     const p = await sb.from('profils').select('pseudo').eq('id', m.user_id).maybeSingle().then(x => x, () => ({}));
     const nom = esc2((p && p.data && p.data.pseudo) || 'Un membre'), cuisine = ETAPE_RE.test(m.texte || '');
     notif('<b>' + (cuisine ? '🔥 ' + nom + ' est en cuisine' : '💬 ' + nom + ' t’a écrit') + '</b><span>' + court + '</span>', () => ecranChat(m.user_id, (p && p.data && p.data.pseudo) || 'Membre'), cuisine);
@@ -63,12 +63,12 @@
     CHAT.fil.insertAdjacentHTML('beforeend', bulle(m).replace('<li ', '<li data-id="' + m.id + '" '));
     CHAT.fil.scrollTop = CHAT.fil.scrollHeight;
   }
-  /* la conversation : pour un membre, avec le Bawss ; pour Jakez, avec le membre choisi */
+  /* la conversation : pour un membre, avec ton Jakez ; pour Jakez, avec le membre choisi */
   async function ecranChat(cible, pseudoCible, recette, etape) {
     if (!sb) return;
     if (!moi) { ecranCompte('connexion'); return; }
     CHAT.cible = moi.admin ? cible : moi.id; CHAT.recette = recette || null;
-    const titre = moi.admin ? esc2(pseudoCible || 'Membre') : 'Le <span>Bawss</span>';
+    const titre = moi.admin ? esc2(pseudoCible || 'Membre') : 'Ton <span>Jakez</span>';
     const volet = !moi.admin && enCuisine();
     const ct = document.getElementById('cook-text'), cn = document.getElementById('cook-n');
     const rappel = volet && ct ? '<p class="chat-etape"><b>' + esc2(cn ? cn.textContent : '') + '</b>' + esc2(ct.textContent.slice(0, 160)) + (ct.textContent.length > 160 ? '…' : '') + '</p>' : '';

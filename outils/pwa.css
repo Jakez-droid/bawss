@@ -104,7 +104,7 @@
 .bw-invite-par { justify-self: start; background: var(--cire); color: var(--cire-ink); border-radius: 999px; padding: 8px 16px; font: 600 16px var(--f-body); animation: bw-monte .4s cubic-bezier(.3, 1.4, .5, 1); }
 .bw-inv { font-size: 22px; padding: 12px 18px; }
 
-/* chat « Écris au Bawss » */
+/* chat « Demande à ton Jakez » */
 .me-btn { position: relative; }
 .chat-dot { position: absolute; top: -4px; right: -4px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 999px; background: var(--red, #E4322B); color: #fff; font: 700 11.5px var(--f-body); display: grid; place-items: center; box-shadow: 0 0 0 2px var(--slate); }
 .bw-chat .bw-in { min-height: 100%; padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); gap: 12px; }
