@@ -32,7 +32,7 @@ h = h.replace('</head><body>', '<style>\n' + css + '</style></head><body>', 1)
 a = "(window.lancerIntro = (opts = {}) => {\n"
 assert a in h, 'intro'
 h = h.replace(a, "window.lancerIntro = (opts = {}) => {\n", 1)
-h, n = re.subn(r"\n  \(\{ trailer, phare, bandit \}\)\[quelle\]\(\);\n\}\)\(\);\n", "\n  ({ trailer, phare, bandit })[quelle]();\n};\n", h); assert n == 1, 'fin intro'
+h, n = re.subn(r"\n  (\(\{ trailer, phare, bandit[^}]*\}\)\[quelle\]\(\);)\n\}\)\(\);\n", r"\n  \1\n};\n", h); assert n == 1, 'fin intro'
 assert "son = !!opts.son;" in h, 'son'
 
 # bouton « mon compte » à côté du panier
