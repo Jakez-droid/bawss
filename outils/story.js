@@ -91,7 +91,7 @@
     const fy = H - 130 - 84;
     logoBawss(ctx, M, fy, 84);
     ctx.fillStyle = '#F2F3EF'; ctx.font = '900 58px "Big Shoulders Display", Impact, sans-serif'; ctx.fillText('BAWSS', M + 106, fy + 46);
-    ctx.font = 'italic 500 32px "Hanken Grotesk", sans-serif'; ctx.fillStyle = 'rgba(242,243,239,.75)'; ctx.fillText(auHasard(STORY.slogans), M + 106, fy + 86);
+    ctx.font = 'italic 500 32px "Hanken Grotesk", sans-serif'; ctx.fillStyle = 'rgba(242,243,239,.75)'; ctx.fillText(o.slogan || auHasard(STORY.slogans), M + 106, fy + 86);
     return await new Promise(ok => c.toBlob(ok, 'image/jpeg', 0.9));
   }
   async function partagerStory(blob, titre) {
@@ -107,8 +107,8 @@
     const r = BY_ID[id]; if (!r) return;
     toast('Je prépare ta carte…');
     let image = null; if (r.photo) { try { image = await chargerImage(r.photo); } catch (e) {} }
-    const blob = await carteStory({ image, emoji: r.emoji, legende: 'La recette de ton Jakez', droite: (EFFORT[r.effort] || [''])[0] ? r.effort : '', titre: r.title + '.', sousTitre: 'Comme un Bawss.', accroche: auHasard(STORY.punch) });
-    ecranStory(blob, r.title);
+    const base = { image, emoji: r.emoji, legende: 'La recette de ton Jakez', droite: (EFFORT[r.effort] || [''])[0] ? r.effort : '', titre: r.title + '.', slogan: auHasard(STORY.slogans) };
+    ecranStory(variante(base), r.title).catch(() => toast('La carte n’a pas pu être préparée'));
   }
   async function storyRealisation(id, blobPhoto, note) {
     const r = BY_ID[id];
@@ -116,16 +116,24 @@
     let image = null; try { image = await chargerImage(url); } catch (e) {}
     const jour = new Date().toLocaleDateString('fr-FR', { weekday: 'long' });
     const moment = new Date().getHours() >= 17 ? ' soir' : new Date().getHours() >= 11 ? ' midi' : ' matin';
-    const blob = await carteStory({ image, legende: (moi ? moi.pseudo : '') + ' · ' + jour + moment, note, titre: r.title + '.', sousTitre: 'Comme un Bawss.', accroche: auHasard(STORY.punch) });
     URL.revokeObjectURL(url);
-    return blob;
+    return variante({ image, legende: (moi ? moi.pseudo : '') + ' · ' + jour + moment, note, titre: r.title + '.', slogan: auHasard(STORY.slogans) });
   }
-  function ecranStory(blob, titre, intro) {
-    const src = URL.createObjectURL(blob);
+  /* la carte : par défaut « Cuisiné comme un Bawss. » ; « Changer » passe aux punchlines, puis revient */
+  const variante = base => k => carteStory(k ? Object.assign({}, base, { sousTitre: 'Comme un Bawss.', accroche: STORY.punch[k - 1] }) : Object.assign({}, base, { sousTitre: 'Cuisiné comme un Bawss.', accroche: '' }));
+  async function ecranStory(fabrique, titre, intro) {
+    let k = 0, blob = await fabrique(0), src = URL.createObjectURL(blob);
     const el = ouvrir((intro || '<h1>Ta carte <span>story</span></h1>')
       + '<img class="rz-story" src="' + src + '" alt="Carte story pour ' + esc2(titre) + '">'
+      + '<button type="button" class="rz-changer" data-story-changer>🔄 Changer</button>'
       + '<button type="button" class="bw-go" data-story-go>Partager en story</button>'
       + '<button type="button" class="bw-later" data-story-non>Plus tard</button>');
+    const img = el.querySelector('.rz-story'), ch = el.querySelector('[data-story-changer]');
+    ch.addEventListener('click', async () => {
+      ch.disabled = true; k = (k + 1) % (STORY.punch.length + 1);
+      try { const b = await fabrique(k); URL.revokeObjectURL(src); blob = b; src = URL.createObjectURL(b); img.src = src; } catch (e) {}
+      ch.disabled = false;
+    });
     el.querySelector('[data-story-go]').addEventListener('click', () => partagerStory(blob, titre));
     el.querySelector('[data-story-non]').addEventListener('click', () => { fermer(); URL.revokeObjectURL(src); });
   }
@@ -141,7 +149,7 @@
   function ecranPartage(r) {
     const el = ouvrir('<h1>Partager <span>' + esc2(r.title) + '</span></h1>'
       + '<button type="button" class="bw-choix" data-lien><b>Envoyer le lien</b><span>WhatsApp, Messenger, Insta en message, SMS…</span></button>'
-      + '<button type="button" class="bw-choix" data-insta><b>Story Insta</b><span>Une carte photo prête à poster, avec une punchline</span></button>'
+      + '<button type="button" class="bw-choix" data-insta><b>Story Insta</b><span>Une carte photo prête à poster, « Cuisiné comme un Bawss »</span></button>'
       + '<button type="button" class="bw-later" data-annuler>Annuler</button>');
     el.querySelector('[data-lien]').addEventListener('click', () => { fermer(); envoyerLien(r); });
     el.querySelector('[data-insta]').addEventListener('click', () => storyRecette(r.id));

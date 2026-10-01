@@ -139,7 +139,7 @@
       afficherRecette(id); bandeau();
       go.textContent = 'Je prépare ta carte…';
       let carte = null; try { carte = await storyRealisation(id, img.blob, null); } catch (e) {}
-      if (carte) ecranStory(carte, BY_ID[id].title, '<h1>C\'est en <span>ligne</span></h1><p>Bien joué ' + esc2(moi.pseudo) + ' ! Tu la balances en story ?</p>');
+      if (carte) ecranStory(carte, BY_ID[id].title, '<h1>C\'est en <span>ligne</span></h1><p>Bien joué ' + esc2(moi.pseudo) + ' ! Tu la balances en story ?</p>').catch(() => { fermer(); toast('Bien joué ' + moi.pseudo + ' ! Ta photo est en ligne'); });
       else { fermer(); toast('Bien joué ' + moi.pseudo + ' ! Ta photo est en ligne'); }
     });
   }

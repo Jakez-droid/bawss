@@ -160,3 +160,5 @@
 .bw textarea.rz-com { width: 100%; box-sizing: border-box; font: 500 17px/1.4 var(--f-body); padding: 12px 14px; border-radius: 12px; border: 2px solid transparent; background: #fff; color: var(--ink); resize: none; outline: none; }
 .bw textarea.rz-com:focus { border-color: var(--cire); }
 .rz-compte { justify-self: end; margin-top: -6px; font: 500 12px var(--f-mono); opacity: .6; }
+.rz-changer { justify-self: center; margin-top: -8px; border: 2px solid color-mix(in srgb, var(--on-slate) 40%, transparent); background: transparent; color: var(--on-slate); border-radius: 999px; padding: 9px 18px; font: 700 15px var(--f-body); cursor: pointer; }
+.rz-changer:disabled { opacity: .5; }
