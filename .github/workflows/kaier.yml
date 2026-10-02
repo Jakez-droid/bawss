@@ -1,0 +1,27 @@
+# Kaier : dès que les recettes de Bawss changent (index.html ou photos), on reconstruit le cahier public.
+name: Mettre à jour Kaier
+
+on:
+  push:
+    branches: [main]
+    paths: ["index.html", "img/**", "kaier/src/**", "outils/build_kaier.py"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install pillow
+      - run: python outils/build_kaier.py
+      - name: Enregistrer
+        run: |
+          git config user.name "kaier-bot"
+          git config user.email "kaier-bot@users.noreply.github.com"
+          git add kaier
+          git diff --cached --quiet || (git commit -m "Kaier : recettes mises à jour" && git push)
