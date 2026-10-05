@@ -66,7 +66,7 @@
   /* la conversation : pour un membre, avec ton Jakez ; pour Jakez, avec le membre choisi */
   async function ecranChat(cible, pseudoCible, recette, etape) {
     if (!sb) return;
-    if (!moi) { ecranCompte('connexion'); return; }
+    if (!moi) { ecranCompte('creer', 'Pour écrire à ton Jakez, il te faut juste un pseudo.'); return; }
     CHAT.cible = moi.admin ? cible : moi.id; CHAT.recette = recette || null;
     const titre = moi.admin ? esc2(pseudoCible || 'Membre') : 'Ton <span>Jakez</span>';
     const volet = !moi.admin && enCuisine();

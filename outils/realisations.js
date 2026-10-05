@@ -61,7 +61,7 @@
       const act = document.querySelector('#r-' + id + ' .actions'); if (!act) return;
       let g = act.querySelector('[data-rz-go]');
       if (!g) { act.insertAdjacentHTML('beforeend', '<button type="button" class="btn rz-go" data-rz-go>📸 Je l’ai bawssée</button>'); g = act.querySelector('[data-rz-go]'); }
-      if (!g.dataset.branche) { g.dataset.branche = '1'; g.addEventListener('click', () => (moi ? choisirPhoto(id) : ecranCompte('connexion'))); }
+      if (!g.dataset.branche) { g.dataset.branche = '1'; g.addEventListener('click', () => (moi ? choisirPhoto(id) : ecranCompte('creer', 'Pour poster ta photo, il te faut juste un pseudo.'))); }
     };
     if (!moi) { b.innerHTML = ''; b.hidden = true; go(); return; }
     if (!b.innerHTML) { b.innerHTML = haut(''); go(); }

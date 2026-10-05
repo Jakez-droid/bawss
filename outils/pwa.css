@@ -164,3 +164,9 @@
 .rz-changer:disabled { opacity: .5; }
 .mb-dot { position: absolute; top: -4px; left: -6px; min-width: 22px; height: 20px; padding: 0 5px; border-radius: 999px; background: #F4B400; color: #0E1B26; font: 800 11.5px/20px var(--f-body); text-align: center; box-shadow: 0 0 0 2px var(--slate); }
 .bw-membres li.neuf { background: color-mix(in srgb, #F4B400 22%, transparent); }
+
+/* code de connexion (comptes sans mail) */
+.bw-code { display: grid; gap: 4px; padding: 12px 14px; border-radius: 14px; background: color-mix(in srgb, var(--on-slate) 10%, transparent); color: var(--on-slate); font-size: 15px; }
+.bw-code b { font-size: 16px; }
+.bw-code code { font: 700 16px var(--f-mono, monospace); background: var(--cire); color: var(--cire-ink); padding: 1px 8px; border-radius: 6px; }
+.bw-code small { opacity: .75; font-size: 13px; }

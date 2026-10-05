@@ -58,6 +58,9 @@ if os.path.exists(ex):
 h = re.sub(r'const BOSS_PHONE = "[^"]*";', 'const BOSS_PHONE = "chat";', h, count=1)
 assert '<b>📞 Appelle le bawss</b>' in h, 'bouton SOS du mode cuisine introuvable'
 h = h.replace('<b>📞 Appelle le bawss</b>', '<b>💬 Demande à ton Jakez</b>')
+# FAQ : comptes sans mail
+from patch_compte import patch as patch_compte
+h = patch_compte(h)
 # script de l'appli installable, en dernier
 i = h.rindex('</script>')
 h = h[:i] + '\n' + js + h[i:]

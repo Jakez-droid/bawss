@@ -162,7 +162,8 @@
       corps = '<button type="button" class="bw-go" data-installer' + (promptAndroid ? '' : ' hidden') + '>Installer Bawss</button>'
         + '<ol class="bw-steps" data-android-menu' + (promptAndroid ? ' hidden' : '') + '><li><span>Touche le menu <b>⋮</b> en haut à droite de Chrome.</span></li><li><span>Choisis <b>« Installer l\'application »</b> ou <b>« Ajouter à l\'écran d\'accueil »</b>.</span></li><li><span>Confirme : l\'icône du phare arrive sur ton écran d\'accueil.</span></li></ol>';
     }
-    const el = ouvrir(intro + corps + '<button type="button" class="bw-later" data-plus-tard>Plus tard, continuer dans le navigateur</button>');
+    const rappel = (ios && moi && compteCode() && codeLocal()) ? '<div class="bw-code"><b>Une fois l\'appli ouverte</b><span>Touche 👤 puis « J\'ai déjà un compte » : pseudo <code>' + esc2(moi.pseudo) + '</code>, code <code>' + esc2(codeLocal()) + '</code></span></div>' : '';
+    const el = ouvrir(intro + corps + rappel + '<button type="button" class="bw-later" data-plus-tard>Plus tard</button>');
     const b = el.querySelector('[data-installer]');
     if (b) b.addEventListener('click', async () => {
       if (!promptAndroid) return;
@@ -170,7 +171,7 @@
       try { await promptAndroid.userChoice; } catch (e) {}
       promptAndroid = null;
     });
-    el.querySelector('[data-plus-tard]').addEventListener('click', () => { ls.set('bawss-plus-tard', String(Date.now())); if (moi || !sb) { fermer(); lancer({ son: true }); } else ecranCompte('creer'); });
+    el.querySelector('[data-plus-tard]').addEventListener('click', () => { ls.set('bawss-plus-tard', String(Date.now())); fermer(); });
   }
 
   /* « crée ton compte » / « j'ai déjà un compte » */
@@ -179,8 +180,8 @@
   function traduire(err) {
     const m = String((err && (err.message || err.error_description || err.msg)) || err || '');
     if (/pseudo pris/i.test(m)) return 'Ce pseudo est déjà pris. Ajoute un chiffre, par exemple.';
-    if (/already registered|already exists|already been registered|duplicate|unique/i.test(m)) return 'Il y a déjà un compte avec ce mail. Touche « J\'ai déjà un compte ».';
-    if (/invalid login|invalid credentials|invalid grant/i.test(m)) return 'Mail ou mot de passe incorrect.';
+    if (/already registered|already exists|already been registered|duplicate|unique/i.test(m)) return 'Ce pseudo est déjà pris. Ajoute un chiffre, par exemple. Si c\'est le tien, touche « J\'ai déjà un compte ».';
+    if (/invalid login|invalid credentials|invalid grant/i.test(m)) return 'Pseudo ou code incorrect.';
     if (/password.*(6|characters|short|weak)/i.test(m)) return 'Mot de passe trop court : 6 caractères minimum.';
     if (/same.*password|different from the old/i.test(m)) return 'Choisis un mot de passe différent de l\'ancien.';
     if (/invalid.*email|email.*invalid|valid email/i.test(m)) return 'Ce mail n\'a pas l\'air valide.';
@@ -190,7 +191,7 @@
     if (/fetch|network|failed|load/i.test(m) || !navigator.onLine) return 'Pas de réseau. Il en faut pour créer ton compte ou te connecter.';
     return 'Ça n\'a pas marché (' + m.slice(0, 80) + '). Réessaie.';
   }
-  const champMdp = (id, auto) => '<label for="' + id + '">Mot de passe</label><div class="bw-mdp"><input id="' + id + '" type="password" autocomplete="' + auto + '" minlength="6" required><button type="button" class="bw-voir" aria-label="Afficher le mot de passe">Voir</button></div>';
+  const champMdp = (id, auto, lab) => '<label for="' + id + '">' + (lab || 'Mot de passe') + '</label><div class="bw-mdp"><input id="' + id + '" type="password" autocomplete="' + auto + '" minlength="6" required><button type="button" class="bw-voir" aria-label="Afficher le mot de passe">Voir</button></div>';
   function brancherVoir(el) {
     el.querySelectorAll('.bw-voir').forEach(b => b.addEventListener('click', e => { const md = e.currentTarget.previousElementSibling, v = md.type === 'password'; md.type = v ? 'text' : 'password'; e.currentTarget.textContent = v ? 'Cacher' : 'Voir'; }));
   }
@@ -198,63 +199,77 @@
   addEventListener('bawss-tuto-fini', () => { if (sb && moi) sb.auth.updateUser({ data: { tuto: true } }).then(() => {}, () => {}); });
   function connecte(u, pseudo, message) {
     tutoDuCompte(u);
-    moi = { id: u.id, pseudo: (u.user_metadata && u.user_metadata.pseudo) || pseudo || ls.get('bawss-pseudo') || 'toi', email: u.email, admin: false };
+    moi = { id: u.id, pseudo: (u.user_metadata && u.user_metadata.pseudo) || pseudo || ls.get('bawss-pseudo') || 'toi', email: u.email, invite: !!u.is_anonymous, admin: false };
     ls.set('bawss-pseudo', moi.pseudo);
     return synchroniser(true).then(() => { majBouton(); fermer(); if (message) toast(message.replace('%', moi.pseudo)); rzRafraichir(); });
   }
-  function ecranCompte(mode) {
+  /* code de connexion : deux mots faciles à retenir, pour retrouver son compte sur un autre appareil */
+  const MOTS_CODE = ['crepe', 'bilig', 'kouign', 'galette', 'cidre', 'phare', 'goeland', 'sardine', 'chouchen', 'beurre', 'maquereau', 'bolee', 'chupen', 'biniou', 'homard', 'menhir'];
+  const nouveauCode = () => { const r = n => { try { const a = new Uint32Array(1); crypto.getRandomValues(a); return a[0] % n; } catch (e) { return Math.floor(Math.random() * n); } }; return MOTS_CODE[r(MOTS_CODE.length)] + '-' + String(1000 + r(9000)); };
+  const codeLocal = () => ls.get('bawss-code') || '';
+  const compteCode = () => moi && moi.email && /@bawss\.app$/.test(moi.email);
+  function ecranCompte(mode, raison) {
     const creer = mode !== 'connexion';
     const el = ouvrir((creer ? bandeauInvite2() : '') + logo
-      + (creer ? '<h1>Crée ton <span>compte</span></h1><p>Ton mail, un pseudo, un mot de passe, et tu retrouves tes favoris et ta liste de courses sur tous tes appareils.</p>'
-               : '<h1>Re-<span>salut</span></h1><p>Ton mail et ton mot de passe, et tu retrouves tout.</p>')
+      + (creer ? '<h1>Choisis ton <span>pseudo</span></h1><p>' + (raison ? esc2(raison) + ' ' : '') + 'C\'est tout : pas de mail, pas de mot de passe à inventer.</p>'
+               : '<h1>Re-<span>salut</span></h1><p>Ton pseudo et ton code (tu le trouves dans « Mon compte » sur ton autre appareil).</p>')
       + '<form data-compte style="display:grid;gap:12px" novalidate>'
-      + (creer ? '<label for="bw-mail">Mail</label><input id="bw-mail" type="email" inputmode="email" autocomplete="email" autocapitalize="off" autocorrect="off" spellcheck="false" required>'
-                 + '<label for="bw-pseudo">Pseudo</label><input id="bw-pseudo" type="text" autocomplete="nickname" autocapitalize="words" maxlength="24" required>'
-               : '<label for="bw-mail">Mail</label><input id="bw-mail" type="text" inputmode="email" autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false" required>')
-      + champMdp('bw-mdp', creer ? 'new-password' : 'current-password')
+      + (creer ? '<label for="bw-pseudo">Pseudo</label><input id="bw-pseudo" type="text" autocomplete="nickname" autocapitalize="words" maxlength="24" enterkeyhint="go" required>'
+               : '<label for="bw-mail">Pseudo</label><input id="bw-mail" type="text" autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false" required>'
+                 + champMdp('bw-mdp', 'current-password', 'Code'))
       + '<p class="bw-err" role="alert" hidden></p>'
       + '<button type="submit" class="bw-go">' + (creer ? 'C\'est parti' : 'Me connecter') + '</button></form>'
-      + (creer ? '' : '<button type="button" class="bw-later" data-oubli>Mot de passe oublié ?</button>')
       + '<button type="button" class="bw-later" data-bascule>' + (creer ? 'J\'ai déjà un compte' : 'Pas de compte ? J\'en crée un') + '</button>'
-      + (creer ? '<p class="bw-note">Ton mail sert à te connecter et à retrouver ton mot de passe si tu l\'oublies. Personne ne voit ton mot de passe, même pas ton Jakez.</p>' : '')
-      + '<button type="button" class="bw-later bw-sans" data-sans>Continuer sans compte</button>');
+      + (creer ? '' : '<p class="bw-note">Inscrit avant avec ton mail ? Mets ton mail à la place du pseudo, et ton mot de passe à la place du code.</p>')
+      + '<button type="button" class="bw-later bw-sans" data-sans>Pas maintenant</button>');
     const f = el.querySelector('[data-compte]'), ml = el.querySelector('#bw-mail'), ps = el.querySelector('#bw-pseudo'), md = el.querySelector('#bw-mdp'), go = el.querySelector('.bw-go'), er = el.querySelector('.bw-err');
-    const dernier = ls.get('bawss-mail'); if (!creer && dernier) ml.value = dernier;
+    if (ml) { const dernier = ls.get('bawss-pseudo') && !/^toi$/.test(ls.get('bawss-pseudo')) ? ls.get('bawss-pseudo') : ls.get('bawss-mail'); if (dernier) ml.value = dernier; }
     brancherVoir(el);
-    el.querySelector('[data-bascule]').addEventListener('click', () => ecranCompte(creer ? 'connexion' : 'creer'));
-    el.querySelector('[data-sans]').addEventListener('click', () => { fermer(); lancer({ son: true }); });
-    const ob = el.querySelector('[data-oubli]'); if (ob) ob.addEventListener('click', () => ecranOubli(ml.value.trim()));
+    el.querySelector('[data-bascule]').addEventListener('click', () => ecranCompte(creer ? 'connexion' : 'creer', raison));
+    el.querySelector('[data-sans]').addEventListener('click', () => { fermer(); });
     const dire = t => { er.textContent = t; er.hidden = !t; };
+    const finir = async (u, pseudo, msg) => { await connecte(u, pseudo, msg); };
     f.addEventListener('submit', async e => {
       e.preventDefault(); dire('');
-      let mail = ml.value.trim().toLowerCase();
-      const mdp = md.value, pseudo = ps ? ps.value.trim().replace(/\s+/g, ' ') : '';
-      if (!creer && mail && !mail.includes('@')) mail = pseudoMail(mail);   // anciens comptes créés avec un pseudo
-      if (!mailOk(mail)) return dire('Mets ton adresse mail, par exemple leo@gmail.com.');
-      if (creer && (pseudo.length < 2 || !pseudoMail(pseudo))) return dire('Choisis un pseudo d\'au moins 2 lettres ou chiffres.');
-      if (mdp.length < 6) return dire('Mot de passe trop court : 6 caractères minimum.');
       go.disabled = true; go.textContent = '…';
       try {
-        let r;
         if (creer) {
+          const pseudo = ps.value.trim().replace(/\s+/g, ' ');
+          if (pseudo.length < 2 || !pseudoMail(pseudo)) throw new Error('Choisis un pseudo d\'au moins 2 lettres ou chiffres.');
           const libre = await sb.rpc('pseudo_libre', { p: pseudo }).then(x => (x.error ? null : x.data), () => null);
           if (libre === false) throw new Error('pseudo pris');
-          r = await sb.auth.signUp({ email: mail, password: mdp, options: { data: { pseudo }, emailRedirectTo: RETOUR } });
-          if (!r.error && r.data && !r.data.session) throw new Error('confirm');
-          if (!r.error && r.data && r.data.user && Array.isArray(r.data.user.identities) && !r.data.user.identities.length) throw new Error('already registered');
+          // 1) compte pseudo + code (marche sur tous les appareils)
+          const code = nouveauCode();
+          let r = await sb.auth.signUp({ email: pseudoMail(pseudo), password: code, options: { data: { pseudo } } }).then(x => x, x => ({ error: x }));
+          if (!r.error && r.data && r.data.user && Array.isArray(r.data.user.identities) && !r.data.user.identities.length) throw new Error('pseudo pris');
+          if (r.error && /already|registered|exists|duplicate/i.test(r.error.message || '')) throw new Error('pseudo pris');
+          if (!r.error && r.data && r.data.session) {
+            ls.set('bawss-code', code);
+            await finir(r.data.user, pseudo, 'Bienvenue % !');
+            return;
+          }
+          // 2) sinon, compte lié à ce téléphone (quand la base ne permet pas le 1)
+          r = await sb.auth.signInAnonymously({ options: { data: { pseudo } } }).then(x => x, x => ({ error: x }));
+          if (r.error || !r.data || !r.data.user) throw new Error('compte indispo');
+          await finir(r.data.user, pseudo, 'Bienvenue % !');
         } else {
-          r = await sb.auth.signInWithPassword({ email: mail, password: mdp });
+          const id = ml.value.trim(), mdp = md.value.trim();
+          if (!id) throw new Error('Mets ton pseudo.');
+          if (!mdp) throw new Error('Mets ton code.');
+          const mail = id.includes('@') ? id.toLowerCase() : pseudoMail(id);
+          const r = await sb.auth.signInWithPassword({ email: mail, password: mdp });
+          if (r.error) throw r.error;
+          if (mail.endsWith('@bawss.app')) ls.set('bawss-code', mdp); else ls.set('bawss-mail', mail);
+          await finir(r.data.user, '', 'Re-salut % !');
         }
-        if (r.error) throw r.error;
-        if (!mail.endsWith('@bawss.app')) ls.set('bawss-mail', mail);
-        await connecte(r.data.user, pseudo, creer ? 'Bienvenue % !' : 'Re-salut % !');
-        lancer({ son: true });
       } catch (err) {
-        dire(traduire(err));
+        const m = String(err && err.message || err);
+        dire(/^compte indispo$/.test(m) ? 'Les comptes ne répondent pas pour l\'instant. Tu peux utiliser Bawss sans compte, et réessayer plus tard.'
+          : /^(Choisis|Mets)/.test(m) ? m : traduire(err));
         go.disabled = false; go.textContent = creer ? 'C\'est parti' : 'Me connecter';
       }
     });
-    if (!ios) setTimeout(() => ml.focus(), 300);
+    if (!ios) setTimeout(() => (ps || ml).focus(), 300);
   }
 
   /* « mot de passe oublié » : un lien part par mail */
@@ -304,18 +319,24 @@
     if (moi) { i.textContent = (moi.pseudo || '?').slice(0, 1).toUpperCase(); bouton.classList.add('on'); bouton.setAttribute('aria-label', 'Mon compte : ' + moi.pseudo); }
     else { i.textContent = ''; bouton.classList.remove('on'); bouton.setAttribute('aria-label', 'Me connecter'); }
   }
+  function blocCode() {
+    if (moi.invite) return '<div class="bw-code"><b>Compte lié à ce téléphone</b><span>Si tu changes de téléphone, crée un nouveau pseudo.</span></div>';
+    if (compteCode()) {
+      const c = codeLocal();
+      return '<div class="bw-code"><b>Pour te connecter sur un autre appareil</b><span>Pseudo : <code>' + esc2(moi.pseudo) + '</code></span>'
+        + (c ? '<span>Code : <code>' + esc2(c) + '</code></span>' : '<span>Code : le mot de passe que tu avais choisi.</span>')
+        + '<small>Touche « J\'ai déjà un compte » sur l\'autre appareil. Fais une capture d\'écran pour ne pas l\'oublier.</small></div>';
+    }
+    return '<p class="bw-note">Connecté avec ' + esc2(moi.email || '') + '</p>';
+  }
   async function ecranMonCompte() {
-    if (!moi) { ecranCompte(sb ? 'connexion' : 'creer'); return; }
-    const sansMail = !moi.email || /@bawss\.app$/.test(moi.email);
+    if (!moi) { ecranCompte('creer'); return; }
     const el = ouvrir(logo + '<h1>Salut <span>' + esc2(moi.pseudo) + '</span></h1>'
       + '<button type="button" class="bw-go bw-inv" data-inviter>👋 Inviter un pote</button>'
       + (moi.admin ? '<button type="button" class="bw-choix" data-boite><b>📥 Boîte de réception' + (CHAT.non_lus ? ' · ' + CHAT.non_lus : '') + '</b><span>Les messages de la bande</span></button>'
                    : '<button type="button" class="bw-choix" data-messages><b>💬 Demande à ton Jakez' + (CHAT.non_lus ? ' · ' + CHAT.non_lus + ' nouveau' + (CHAT.non_lus > 1 ? 'x' : '') : '') + '</b><span>Une question, un plat raté, une idée : ton Jakez te répond</span></button>')
       + '<p>Tes favoris et ta liste de courses sont gardés sur ton compte : tu les retrouves en te connectant sur un autre appareil.</p>'
-      + (sansMail ? '<form data-ajout-mail style="display:grid;gap:12px" novalidate><div class="bw-alert">Ajoute ton mail : c\'est lui qui te permettra de retrouver ton mot de passe si tu l\'oublies.</div>'
-                   + '<label for="bw-mail-a">Mail</label><input id="bw-mail-a" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false">'
-                   + '<p class="bw-err" role="alert" hidden></p><button type="submit" class="bw-go">Ajouter mon mail</button></form>'
-                  : '<p class="bw-note">Connecté avec ' + esc2(moi.email) + '</p>')
+      + blocCode()
       + '<div data-rz-compte></div>'
       + '<div data-membres></div>'
       + '<button type="button" class="bw-go" data-retour>Retour aux recettes</button>'
@@ -398,21 +419,24 @@
     const b = document.createElement('div');
     b.className = 'bw-invite'; b.setAttribute('role', 'region'); b.setAttribute('aria-label', 'Découvrir Bawss');
     b.innerHTML = '<svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#15283A"/><polygon points="40,36 60,36 64,84 36,84" fill="#F2F3EF"/><polygon points="39.2,46 60.8,46 61.5,54 38.5,54" fill="#E4322B"/><polygon points="37.7,64 62.3,64 63,72 37,72" fill="#E4322B"/><rect x="42" y="24" width="16" height="12" fill="#F4B400"/><polygon points="39,24 61,24 50,15" fill="#E4322B"/></svg>'
-      + '<p><b>Bawss</b><span>Toutes les recettes de ton Jakez, en appli</span></p>'
-      + '<button type="button" class="bw-inv-go">' + (telephone && !standalone ? 'Installer' : 'Mon compte') + '</button>'
+      + '<p><b>Bawss</b><span>Mets-le sur ton écran d\'accueil, comme une vraie appli</span></p>'
+      + '<button type="button" class="bw-inv-go">Installer</button>'
       + '<button type="button" class="bw-inv-x" aria-label="Fermer">✕</button>';
     document.body.appendChild(b);
-    b.querySelector('.bw-inv-go').addEventListener('click', () => { b.remove(); if (telephone && !standalone) ecranInstall(); else ecranCompte('creer'); });
-    b.querySelector('.bw-inv-x').addEventListener('click', () => b.remove());
+    b.querySelector('.bw-inv-go').addEventListener('click', () => { b.remove(); ecranInstall(); });
+    b.querySelector('.bw-inv-x').addEventListener('click', () => { b.remove(); ls.set('bawss-bandeau-non', String(Date.now())); });
   }
   function demarrer() {
     if (lienMail === 'recovery') return;          // l'écran « nouveau mot de passe » s'en occupe
     if (lienMail === 'erreur') { nettoyer(); ouvrir(logo + '<h1>Lien <span>expiré</span></h1><p>Ce lien ne marche plus : il a déjà servi ou il est trop vieux. Redemande-en un.</p><button type="button" class="bw-go" data-ok>OK</button>'); ecran.querySelector('[data-ok]').addEventListener('click', () => ecranOubli(ls.get('bawss-mail') || '')); return; }
     if (lienMail === 'mail') { nettoyer(); toast('Ton mail est confirmé'); }
-    if (arrivee && !moi && !lienMail) { bandeauInvite(); return; }
-    if (telephone && !standalone && !recent && !lienMail) { ecranInstall(); return; }
-    if (!moi && sb) { ecranCompte('creer'); return; }
-    if (!lienMail) lancer();
+    if (lienMail) return;
+    if (!arrivee) lancer();
+    // l'installation est proposée à partir de la 2e visite, sans bloquer
+    const jour = new Date().toISOString().slice(0, 10);
+    if (ls.get('bawss-jour') !== jour) { ls.set('bawss-jour', jour); ls.set('bawss-visites', String(parseInt(ls.get('bawss-visites') || '0', 10) + 1)); }
+    const refus = Date.now() - parseInt(ls.get('bawss-bandeau-non') || '0', 10) < 7 * 864e5;
+    if (telephone && !standalone && !recent && !refus && parseInt(ls.get('bawss-visites') || '0', 10) >= 2) { let essais = 0; const tente = () => { if (ecran || document.querySelector('[class^="bt-"],[class*=" bt-"],.tuto,[class^="tt-"]')) { if (++essais < 20) setTimeout(tente, 3000); return; } bandeauInvite(); }; setTimeout(tente, arrivee ? 4000 : 6000); }
   }
   if (!sb) { majBouton(); demarrer(); }
   else {
@@ -426,7 +450,7 @@
     sb.auth.getSession().then(({ data }) => {
       const u = data && data.session && data.session.user;
       tutoDuCompte(u);
-      if (u) moi = { id: u.id, pseudo: (u.user_metadata && u.user_metadata.pseudo) || ls.get('bawss-pseudo') || 'toi', email: u.email, admin: false };
+      if (u) moi = { id: u.id, pseudo: (u.user_metadata && u.user_metadata.pseudo) || ls.get('bawss-pseudo') || 'toi', email: u.email, invite: !!u.is_anonymous, admin: false };
       go();
       if (moi) synchroniser(false);
       rzRafraichir();
