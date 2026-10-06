@@ -4056,7 +4056,7 @@ window.lancerIntro = (opts = {}) => {
   }
   addEventListener('bawss-intro-fin', () => proposerCompte());
 
-  /* clin d'œil réservé à un membre : une seule fois, juste après l'intro */
+  /* clin d'œil réservé à un membre : une seule fois, un dimanche, juste après l'intro */
   const CLINS = { nus2velours: 'Prends un macdo mon nus2velz' };
   const CLIN_LIEN = 'https://deliveroo.fr/fr/menu/marseille/marseille-camas/mcdonalds-marseille-rue-de-rome';   /* McDonald's rue de Rome (Castellane) sur Deliveroo */
   function ecranLabour(phrase) {
@@ -4072,11 +4072,13 @@ window.lancerIntro = (opts = {}) => {
     if (clinFait || !moi) return;
     const phrase = CLINS[String(moi.pseudo || '').toLowerCase().trim()];
     if (!phrase || ls.get('bawss-clin-labour')) return;
+    if (new Date().getDay() !== 0) return;   /* seulement le dimanche (labour d'ar Sul…) */
     if (ecran || document.querySelector('.bt, .bt-seance, .bt-studio, .tuto, .pk, .mag')) { if (essai < 120) setTimeout(() => clinDoeil(essai + 1), 1000); return; }
     clinFait = true; ls.set('bawss-clin-labour', String(Date.now()));
     ecranLabour(phrase);
   }
   addEventListener('bawss-intro-fin', () => setTimeout(clinDoeil, 300));
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') setTimeout(clinDoeil, 600); });
   function demarrer() {
     if (lienMail === 'recovery') return;          // l'écran « nouveau mot de passe » s'en occupe
     if (lienMail === 'erreur') { nettoyer(); ouvrir(logo + '<h1>Lien <span>expiré</span></h1><p>Ce lien ne marche plus : il a déjà servi ou il est trop vieux. Redemande-en un.</p><button type="button" class="bw-go" data-ok>OK</button>'); ecran.querySelector('[data-ok]').addEventListener('click', () => ecranOubli(ls.get('bawss-mail') || '')); return; }
