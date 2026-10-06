@@ -683,6 +683,27 @@ body { background-image: radial-gradient(color-mix(in srgb, var(--ink) 7%, trans
 .bt-onde { position: absolute; z-index: 3; width: 34vmin; height: 34vmin; border-radius: 50%; border: 6px solid rgba(244, 180, 0, .85); box-shadow: 0 0 30px rgba(244, 180, 0, .6), inset 0 0 30px rgba(244, 180, 0, .5); opacity: 0; }
 .bt-streak { position: absolute; left: -20%; right: -20%; top: 50%; height: 3px; background: linear-gradient(90deg, transparent, #9FD8FF 40%, #FFFFFF 50%, #9FD8FF 60%, transparent); box-shadow: 0 0 24px 6px rgba(159, 216, 255, .6); opacity: 0; }
 .bt-critiques { position: absolute; inset: 0; z-index: 4; }
+/* fins cuisine : le couteau / la poêle (u = largeur d'un écran de téléphone / 100) */
+.bt-cine { --u: min(1vw, .5625vh); }
+.bt-scene { position: absolute; inset: 0; z-index: 4; display: grid; place-items: center; transform-origin: 50% 50%; pointer-events: none; }
+.bt-scene .bt-gros { z-index: 6; }
+.bt-fige, .bt-moitie { position: absolute; inset: 0; opacity: 0; z-index: 1; }
+.bt-fige, .bt-moitie img { width: 100%; height: 100%; max-width: none; object-fit: cover; filter: contrast(1.25) saturate(1.3) brightness(.6); }
+.bt-moitie img { position: absolute; inset: 0; }
+.bt-moitie.a { clip-path: polygon(0 0, 100% 0, 100% 34%, 0 66%); }
+.bt-moitie.b { clip-path: polygon(0 66%, 100% 34%, 100% 100%, 0 100%); }
+.bt-fx { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 5; pointer-events: none; }
+.bt-avant { position: absolute; z-index: 5; font-family: var(--f-display); font-weight: 900; text-transform: uppercase; font-size: clamp(90px, 26vw, 300px); line-height: .8; opacity: 0; }
+.bt-avant.acier { color: transparent; background: linear-gradient(100deg, #6E7378 0 40%, #F4F7FA 49%, #FFFFFF 50%, #F4F7FA 51%, #8A9095 60% 100%); background-size: 300% 100%; background-position: 120% 0; -webkit-background-clip: text; background-clip: text; -webkit-text-stroke: 1.5px rgba(255, 255, 255, .28); filter: drop-shadow(0 0 12px rgba(190, 220, 255, .35)); }
+.bt-avant.grave { color: #121214; text-shadow: 0 1.5px 0 rgba(255, 255, 255, .14), 0 -1px 0 rgba(0, 0, 0, .9); }
+.bt-lame { position: absolute; left: 0; top: 0; height: 2.5px; background: linear-gradient(90deg, transparent, #CFE6FF 20%, #FFF 50%, #CFE6FF 80%, transparent); box-shadow: 0 0 12px 4px rgba(200, 230, 255, .8), 0 0 48px 12px rgba(160, 210, 255, .35); transform-origin: 0 50%; opacity: 0; z-index: 7; }
+.bt-couteau { position: absolute; left: 0; top: 0; height: auto; z-index: 8; opacity: 0; filter: drop-shadow(0 0 7px rgba(200, 230, 255, .7)); }
+.bt-eclat { position: absolute; width: 160px; height: 160px; background: radial-gradient(circle, #FFF 0 3%, rgba(255, 255, 255, .7) 6%, transparent 30%), linear-gradient(90deg, transparent 47%, rgba(255, 255, 255, .9) 50%, transparent 53%), linear-gradient(0deg, transparent 48.5%, rgba(255, 255, 255, .8) 50%, transparent 51.5%); opacity: 0; z-index: 9; mix-blend-mode: screen; }
+.bt-poele { position: absolute; left: 50%; top: 47%; width: calc(84 * var(--u)); height: calc(84 * var(--u)); margin: calc(-42 * var(--u)) 0 0 calc(-42 * var(--u)); border-radius: 50%; z-index: 2; opacity: 0; background: var(--fonte, radial-gradient(circle at 38% 32%, #3D3D42 0, #232327 30%, #141416 62%, #0B0B0C 72%)); background-size: cover;
+  box-shadow: inset 0 0 0 calc(2.6 * var(--u)) #2C2C31, inset 0 0 0 calc(3.2 * var(--u)) #0A0A0B, inset 0 calc(2 * var(--u)) calc(6 * var(--u)) rgba(0, 0, 0, .8), 0 0 0 calc(.5 * var(--u)) #48484E, 0 calc(4 * var(--u)) calc(10 * var(--u)) rgba(0, 0, 0, .8); }
+.bt-poele::after { content: ""; position: absolute; left: 50%; top: 99%; width: calc(9 * var(--u)); height: calc(34 * var(--u)); margin-left: calc(-4.5 * var(--u)); border-radius: 0 0 calc(4 * var(--u)) calc(4 * var(--u)); background: linear-gradient(90deg, #121214, #3A3A3F 45%, #141416); box-shadow: 0 calc(2 * var(--u)) calc(5 * var(--u)) rgba(0, 0, 0, .7); }
+.bt-ondef { position: absolute; left: 50%; top: 50%; width: calc(34 * var(--u)); height: calc(34 * var(--u)); margin: calc(-17 * var(--u)) 0 0 calc(-17 * var(--u)); border-radius: 50%; border: calc(.45 * var(--u)) solid rgba(244, 180, 0, .85); box-shadow: 0 0 calc(3 * var(--u)) rgba(244, 180, 0, .5); opacity: 0; z-index: 4; }
+.bt-flash { position: absolute; inset: 0; background: #FFF; opacity: 0; z-index: 9; pointer-events: none; }
 .bt-sticker { position: absolute; left: 50%; top: 50%; max-width: min(62vw, 330px); background: #F4F1E8; color: #0E1B26; border: 2px solid #0E1B26; box-shadow: 5px 5px 0 rgba(0, 0, 0, .6); padding: 10px 14px 9px; font-family: var(--f-display); font-weight: 900; text-transform: uppercase; font-size: clamp(18px, 4.4vw, 30px); line-height: 1.05; text-align: center; }
 .bt-sticker b { display: block; color: #F4B400; -webkit-text-stroke: 1px #0E1B26; letter-spacing: .12em; font-size: .8em; margin-bottom: 4px; }
 .bt-sticker small { display: block; font-family: var(--f-mono); font-weight: 500; font-size: .45em; letter-spacing: .14em; color: #55626B; margin-top: 6px; }
@@ -1994,8 +2015,19 @@ window.lancerIntro = (opts = {}) => {
   const ctx = () => { if (!son) return null; try { AC = AC || window.bawssAC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === 'suspended') AC.resume(); return AC; } catch (e) { return null; } };
   const bruit = (a, dur) => { const b = a.createBuffer(1, a.sampleRate * dur, a.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; const s = a.createBufferSource(); s.buffer = b; return s; };
   const env = (g, t, at, peak, d) => { g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + at); g.gain.exponentialRampToValueAtTime(.0001, t + at + d); };
+  const tons = (a, t, list, type = 'sine') => list.forEach(([fr, v, d]) => { const o = a.createOscillator(), g = a.createGain(); o.type = type; o.frequency.setValueAtTime(fr, t); env(g, t, .002, v, d); o.connect(g).connect(a.destination); o.start(t); o.stop(t + d + .1); });
   const S = {
     rien() {},
+    sub(v = .9, d = 1.4) { const a = ctx(); if (!a) return; const t = a.currentTime, o = a.createOscillator(), g = a.createGain(); o.frequency.setValueAtTime(64, t); o.frequency.exponentialRampToValueAtTime(30, t + 1.1); env(g, t, .01, v, d); o.connect(g).connect(a.destination); o.start(t); o.stop(t + d + .2); },
+    tsss() { const a = ctx(); if (!a) return; const t = a.currentTime, s = bruit(a, 1.3), f = a.createBiquadFilter(), g = a.createGain(); f.type = 'highpass'; f.frequency.value = 4500; g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.22, t + .05); g.gain.exponentialRampToValueAtTime(.0001, t + 1.2); s.connect(f).connect(g).connect(a.destination); s.start(t); },
+    affute(sens = 1, v = .5) { const a = ctx(); if (!a) return; const t = a.currentTime, d = .2, s = bruit(a, d + .05), f = a.createBiquadFilter(), g = a.createGain(); f.type = 'bandpass'; f.Q.value = 4; f.frequency.setValueAtTime(sens > 0 ? 3400 : 6800, t); f.frequency.exponentialRampToValueAtTime(sens > 0 ? 6800 : 3400, t + d); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(v, t + d * .45); g.gain.exponentialRampToValueAtTime(.0001, t + d); s.connect(f).connect(g).connect(a.destination); s.start(t); tons(a, t + d * .8, [[3730, .025 * v, .25], [5590, .015 * v, .18]]); },
+    schwing() { const a = ctx(); if (!a) return; const t = a.currentTime, s = bruit(a, .35), f = a.createBiquadFilter(), g = a.createGain(); f.type = 'bandpass'; f.Q.value = 3; f.frequency.setValueAtTime(1800, t); f.frequency.exponentialRampToValueAtTime(11000, t + .14); env(g, t, .02, 1.1, .22); s.connect(f).connect(g).connect(a.destination); s.start(t);
+      tons(a, t + .1, [[2793, .16, 2.4], [2799, .12, 2.6], [4180, .1, 1.8], [5920, .07, 1.3], [8440, .04, .9]]); S.sub(.9, 1.3); S.caisse(.3); },
+    tok(v = .6) { const a = ctx(); if (!a) return; const t = a.currentTime; tons(a, t, [[340, .4 * v, .07], [1130, .22 * v, .09], [2210, .08 * v, .05]], 'triangle'); const s = bruit(a, .03), f = a.createBiquadFilter(), g = a.createGain(); f.type = 'bandpass'; f.frequency.value = 2600; env(g, t, .001, .3 * v, .02); s.connect(f).connect(g).connect(a.destination); s.start(t); },
+    clang() { const a = ctx(); if (!a) return; const t = a.currentTime;
+      [[96, .5, 4.2], [97.3, .35, 4.2], [233, .32, 3.6], [235.5, .25, 3.6], [411, .2, 2.9], [688, .14, 2.2], [1043, .1, 1.6], [1497, .07, 1.2], [2131, .05, .8]].forEach(([fr, v, d]) => { const o = a.createOscillator(), g = a.createGain(); o.frequency.setValueAtTime(fr * 1.025, t); o.frequency.exponentialRampToValueAtTime(fr, t + .3); env(g, t, .003, v, d); o.connect(g).connect(a.destination); o.start(t); o.stop(t + d + .2); });
+      const s = bruit(a, .12), f = a.createBiquadFilter(), g = a.createGain(); f.type = 'highpass'; f.frequency.value = 2000; env(g, t, .001, .7, .07); s.connect(f).connect(g).connect(a.destination); s.start(t); S.sub(.9, 1.2); },
+    carillon() { const a = ctx(); if (a) tons(a, a.currentTime, [[1568, .05, 1.4], [2349, .035, 1.1]]); },
     caisse(v = .45) { const a = ctx(); if (!a) return; const t = a.currentTime, s = bruit(a, .2), f = a.createBiquadFilter(), g = a.createGain(); f.type = 'highpass'; f.frequency.value = 1500; env(g, t, .002, v, .12); s.connect(f).connect(g).connect(a.destination); s.start(t); },
     grosse() { const a = ctx(); if (!a) return; const t = a.currentTime, o = a.createOscillator(), g = a.createGain(); o.frequency.setValueAtTime(130, t); o.frequency.exponentialRampToValueAtTime(42, t + .25); env(g, t, .004, .9, .35); o.connect(g).connect(a.destination); o.start(t); o.stop(t + .45); },
     whoosh() { const a = ctx(); if (!a) return; const t = a.currentTime, s = bruit(a, .7), f = a.createBiquadFilter(), g = a.createGain(); f.type = 'bandpass'; f.Q.value = 1.2; f.frequency.setValueAtTime(400, t); f.frequency.exponentialRampToValueAtTime(4000, t + .5); env(g, t, .3, .4, .35); s.connect(f).connect(g).connect(a.destination); s.start(t); },
@@ -2052,8 +2084,23 @@ window.lancerIntro = (opts = {}) => {
     .to(boss, { scaleX: 1, scaleY: 1, duration: .6, ease: 'elastic.out(1.1, .35)' });
 
   /* ===== 1. La bande-annonce ===== */
+  const COUTEAU_SVG = `<svg class="bt-couteau" viewBox="0 0 400 70" aria-hidden="true"><defs><linearGradient id="bt-acier" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F4F8FB"/><stop offset=".35" stop-color="#B9C3CB"/><stop offset=".62" stop-color="#8C969F"/><stop offset=".7" stop-color="#FFFFFF"/><stop offset="1" stop-color="#C4CDD4"/></linearGradient><linearGradient id="bt-bois" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5A3523"/><stop offset=".5" stop-color="#2E1A10"/><stop offset="1" stop-color="#170C07"/></linearGradient></defs><path d="M134 14 H352 Q386 16 400 22 Q373 51 322 58 H134 Z" fill="url(#bt-acier)"/><path d="M134 47 H330 Q372 44 397 25" fill="none" stroke="#FFFFFF" stroke-width="1.6" opacity=".9"/><rect x="118" y="11" width="20" height="49" rx="4" fill="#9AA5AE"/><rect x="4" y="17" width="118" height="38" rx="14" fill="url(#bt-bois)"/><circle cx="34" cy="36" r="4.5" fill="#D5DADF"/><circle cx="66" cy="36" r="4.5" fill="#D5DADF"/><circle cx="98" cy="36" r="4.5" fill="#D5DADF"/></svg>`;
+  /* texture de fonte culottée pour la poêle (grain, reflets d'huile) */
+  const fonte = () => { try {
+    const N = 512, cv = document.createElement('canvas'); cv.width = cv.height = N; const x = cv.getContext('2d');
+    const g = x.createRadialGradient(N * .4, N * .36, N * .02, N * .5, N * .5, N * .5);
+    g.addColorStop(0, '#3B3B40'); g.addColorStop(.45, '#1E1E22'); g.addColorStop(.85, '#111113'); g.addColorStop(1, '#0A0A0B');
+    x.fillStyle = g; x.fillRect(0, 0, N, N);
+    for (let i = 0; i < 60; i++) { const r = N * (.03 + Math.random() * .12); x.fillStyle = `rgba(0,0,0,${.08 + Math.random() * .14})`; x.beginPath(); x.ellipse(Math.random() * N, Math.random() * N, r, r * (.5 + Math.random() * .6), Math.random() * 3, 0, 6.3); x.fill(); }
+    const im = x.getImageData(0, 0, N, N), d = im.data; for (let i = 0; i < d.length; i += 4) { const n = (Math.random() - .5) * 26; d[i] += n; d[i + 1] += n; d[i + 2] += n * 1.05; } x.putImageData(im, 0, 0);
+    x.globalCompositeOperation = 'screen';
+    [[.36, .3, .16, .05, -.6, .16], [.62, .62, .1, .03, .5, .1], [.45, .7, .07, .025, -.2, .08], [.7, .35, .05, .02, .9, .1]].forEach(([cx, cy, rx, ry, a, al]) => { x.save(); x.filter = 'blur(6px)'; x.translate(cx * N, cy * N); x.rotate(a); x.fillStyle = `rgba(255,236,200,${al})`; x.beginPath(); x.ellipse(0, 0, rx * N, ry * N, 0, 0, 6.3); x.fill(); x.restore(); });
+    x.save(); x.filter = 'blur(3px)'; x.strokeStyle = 'rgba(255,255,255,.14)'; x.lineWidth = N * .012; x.beginPath(); x.arc(N / 2, N / 2, N * .42, Math.PI * 1.05, Math.PI * 1.45); x.stroke(); x.restore();
+    return `url(${cv.toDataURL('image/jpeg', .85)})`;
+  } catch (e) { return ''; } };
+
   function trailer() {
-    const cine = add(`<div class="lb haut"></div><div class="lb bas"></div><div class="bt-carton"></div><div class="bt-onde"></div><div class="bt-streak"></div><div class="bt-gros">bawss</div><div class="bt-critiques"></div>`, 'bt-cine');
+    const cine = add(`<div class="lb haut"></div><div class="lb bas"></div><div class="bt-carton"></div><div class="bt-onde"></div><div class="bt-streak"></div><div class="bt-scene"><img class="bt-fige" alt=""><div class="bt-moitie a"><img alt=""></div><div class="bt-moitie b"><img alt=""></div><div class="bt-poele"></div><i class="bt-ondef"></i><i class="bt-ondef"></i><i class="bt-ondef"></i><canvas class="bt-fx"></canvas><div class="bt-avant">bawss</div><div class="bt-gros">bawss</div><div class="bt-lame"></div><div class="bt-eclat"></div>${COUTEAU_SVG}</div><div class="bt-flash"></div><svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="bt-chaleur" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence class="bt-turb" type="fractalNoise" baseFrequency="0.012 0.035" numOctaves="2" seed="3" result="n"/><feDisplacementMap class="bt-disp" in="SourceGraphic" in2="n" scale="0" xChannelSelector="R" yChannelSelector="G"/></filter></svg><div class="bt-critiques"></div>`, 'bt-cine');
     const c = s => cine.querySelector(s);
     const carton = c('.bt-carton'), gros = c('.bt-gros'), onde = c('.bt-onde'), streak = c('.bt-streak'), crit = c('.bt-critiques');
     const cartes = [
@@ -2074,8 +2121,10 @@ window.lancerIntro = (opts = {}) => {
     const img = document.createElement('img'); img.className = 'bt-coupe'; img.alt = ''; cine.insertBefore(img, cine.firstChild);
     cartes.forEach(([t]) => { if (t[0] === '@') { const r = BY_ID[t.slice(1)]; if (r && r.photo) { const i = new Image(); i.src = r.photo; } } });
     tl = gsap.timeline({ delay: START }).to(cine, { opacity: 1, duration: .25 }).addLabel('debut');
+    let reperePhotos = false;
     cartes.forEach(([txt, style, d, s]) => {
       if (txt[0] === '@') {
+        if (!reperePhotos) { reperePhotos = true; tl.addLabel('photos', '+=.02'); }
         const r = BY_ID[txt.slice(1)]; if (!r || !r.photo) return;
         tl.add(() => { img.src = r.photo; S.caisse(style === 'lente' ? .2 : .35); }, '+=.02')
           .fromTo(img, { opacity: 1, scale: style === 'lente' ? 1.02 : 1.18 }, { scale: style === 'lente' ? 1.1 : 1.05, duration: d, ease: 'power2.out' }, '<')
@@ -2090,19 +2139,10 @@ window.lancerIntro = (opts = {}) => {
       else tl.fromTo(carton, { opacity: 1, scale: style === 'rafale' ? 1.6 : 1.35 }, { scale: 1, duration: .16, ease: 'power4.out' }, '<').to(carton, { opacity: 0, duration: .04 }, `+=${d}`);
     });
     tl.addLabel('silence');
-    const t0 = tl.labels.debut + .3, t1 = tl.labels.silence - .15;
+    const t0 = tl.labels.debut + .3, t1 = (tl.labels.photos ?? tl.labels.silence) - .12;
     for (let t = t0; t < t1;) { tl.add(S.coeur, t); t += 1.05 - .72 * (t - t0) / (t1 - t0); }
-    tl.addLabel('drop', 'silence+=.75')
-      .add(S.braam, 'drop')
-      .add(() => { cine.classList.remove('shake'); void cine.offsetWidth; cine.classList.add('shake'); }, 'drop')
-      .fromTo(onde, { opacity: .9, scale: 0 }, { scale: 5, opacity: 0, duration: 1.1, ease: 'power2.out' }, 'drop')
-      .fromTo(streak, { opacity: 1, scaleX: 0 }, { scaleX: 1, opacity: 0, duration: 1.2, ease: 'power2.out' }, 'drop')
-      .fromTo(c('.lb.haut'), { y: 0 }, { keyframes: { y: [0, 14, -4, 6, 0] }, duration: .6, ease: 'none' }, 'drop')
-      .fromTo(c('.lb.bas'), { y: 0 }, { keyframes: { y: [0, -14, 4, -6, 0] }, duration: .6, ease: 'none' }, 'drop')
-      .fromTo(gros, { opacity: 0, scale: 3, filter: 'blur(14px)' }, { opacity: 1, scale: 1, filter: 'blur(0px)', duration: .4, ease: 'power4.out' }, 'drop')
-      .fromTo(gros, { backgroundPosition: '120% 0' }, { backgroundPosition: '-20% 0', duration: 1.1, ease: 'power2.inOut' }, 'drop+=.45')
-      .to(gros, { scale: 1.07, duration: 1.8, ease: 'none' }, 'drop+=.4')
-      .to(gros, { opacity: 0, scale: 1.2, duration: .25 }, '>-.1');
+    tl.addLabel('drop', 'silence+=.75');
+    finCuisine(cine, c, gros, cartes);
     const critiques = [['« Parfaite maîtrise de l’olive. »', 'Léonard F'], ['« Gourmand as fuck. »', 'William F'], ['« Manque du ketchup. »', 'Jules P'], ['« Passe nickel avec une roteuse. »', 'Brendan G']];
     const places = [[-.18, -.24, -7], [.16, -.08, 5], [-.14, .09, 4], [.12, .25, -6]];
     critiques.forEach(([txt, who], i) => {
@@ -2121,6 +2161,121 @@ window.lancerIntro = (opts = {}) => {
       .to(cine, { opacity: 0, duration: .5 })
       .add(() => { S.grosse(); gsap.timeline().fromTo(boss, { opacity: 1, y: -H, rotation: -20 }, { y: 0, rotation: -2.5, duration: .45, ease: 'power3.in' }).add(atterrit()); }, '-=.2')
       .add(finir, '+=1.5');
+  }
+
+  /* ===== Fins cuisine de la bande-annonce : le couteau et la poêle, en alternance ===== */
+  function finCuisine(cine, c, gros, cartes) {
+    let quelle = 'couteau';
+    try { quelle = localStorage.getItem('bt-fin') === 'couteau' ? 'poele' : 'couteau'; localStorage.setItem('bt-fin', quelle); } catch (e) { quelle = Math.random() < .5 ? 'couteau' : 'poele'; }
+    const scene = c('.bt-scene'), flash = c('.bt-flash'), avant = c('.bt-avant'), cv = c('.bt-fx'), g2 = cv.getContext('2d');
+    const dpr = Math.min(2, devicePixelRatio || 1); cv.width = W * dpr; cv.height = H * dpr;
+    /* particules : miettes, poussière d'or, vapeur */
+    let P = [], emitPous = 0, emitVap = 0, raf = 0, last = 0, actif = true;
+    const boucle = ts => {
+      if (fini || !actif) { raf = 0; return; }
+      const dt = Math.min(.05, (ts - (last || ts)) / 1000); last = ts; const CW = cv.width, CH = cv.height;
+      if (emitVap > 0 && Math.random() < .5 * emitVap) P.push({ k: 'vapeur', x: CW * (.5 + (Math.random() - .5) * .55 * Math.min(1, H * .5625 / W)), y: CH * (.47 + (Math.random() - .5) * .2), vx: (Math.random() - .5) * CW * .03, vy: -CH * (.04 + Math.random() * .05), l: 0, m: 2.2 + Math.random() * 1.4, s: Math.min(CW, CH * .5625) * (.08 + Math.random() * .08), ph: Math.random() * 6 });
+      if (emitPous > 0 && Math.random() < .45 * emitPous) P.push({ k: 'or', x: CW * Math.random(), y: CH * (.35 + Math.random() * .5), vx: (Math.random() - .5) * CW * .03, vy: -CH * (.015 + Math.random() * .03), l: 0, m: 2.5 + Math.random() * 2, s: Math.min(CW, CH * .5625) * (.003 + Math.random() * .004), ph: Math.random() * 6 });
+      P = P.filter(p => (p.l += dt) < p.m);
+      g2.globalCompositeOperation = 'source-over'; g2.clearRect(0, 0, CW, CH);
+      for (const p of P) {
+        const u = p.l / p.m; p.x += p.vx * dt; p.y += p.vy * dt;
+        if (p.k === 'miette') { p.vy += CH * .8 * dt; p.vx *= .985; p.r += p.vr * dt; g2.save(); g2.translate(p.x, p.y); g2.rotate(p.r); g2.fillStyle = `rgba(${p.c[0]},${p.c[1]},${p.c[2]},${1 - u * u})`; g2.fillRect(-p.s, -p.s * .7, p.s * 2, p.s * 1.4); g2.restore(); }
+      }
+      g2.globalCompositeOperation = 'lighter';
+      for (const p of P) {
+        if (p.k === 'miette') continue;
+        const u = p.l / p.m; let col, al, s = p.s;
+        if (p.k === 'or') { p.x += Math.sin(p.l * 5 + p.ph) * CW * .002; col = '255,214,120'; al = .7 * Math.sin(Math.PI * u) * (.6 + .4 * Math.sin(p.l * 20 + p.ph)); }
+        else { p.x += Math.sin(p.l * 1.6 + p.ph) * CW * .0015; col = '225,228,235'; al = .07 * Math.sin(Math.PI * u); s *= 1 + u * 1.4; }
+        const gr = g2.createRadialGradient(p.x, p.y, 0, p.x, p.y, s); gr.addColorStop(0, `rgba(${col},${al})`); gr.addColorStop(1, `rgba(${col},0)`);
+        g2.fillStyle = gr; g2.beginPath(); g2.arc(p.x, p.y, s, 0, 6.283); g2.fill();
+      }
+      raf = requestAnimationFrame(boucle);
+    };
+    const anime = () => { if (!raf) { last = 0; raf = requestAnimationFrame(boucle); } };
+    const emet = (cle, de, a, duree, pos) => tl.to({ v: de }, { v: a, duration: duree, onUpdate() { const v = this.targets()[0].v; if (cle === 'or') emitPous = v; else emitVap = v; } }, pos);
+
+    /* caméra : léger zoom pendant le silence, recul sec au drop, flash blanc sur le coup */
+    tl.fromTo(scene, { scale: 1 }, { scale: 1.07, duration: .75, ease: 'power1.in', immediateRender: false }, 'silence')
+      .fromTo(scene, { scale: .92 }, { scale: 1, duration: .7, ease: 'power3.out', immediateRender: false }, 'drop')
+      .fromTo(flash, { opacity: .9 }, { opacity: 0, duration: .22, ease: 'power2.out', immediateRender: false }, quelle === 'couteau' ? 'drop+=.04' : 'drop')
+      .add(() => { cine.classList.remove('shake'); void cine.offsetWidth; cine.classList.add('shake'); try { navigator.vibrate && navigator.vibrate([40, 30, 80]); } catch (e) {} }, quelle === 'couteau' ? 'drop+=.04' : 'drop');
+
+    if (quelle === 'couteau') {
+      /* la dernière photo reste figée dans le silence, puis la lame la tranche */
+      const ids = cartes.filter(([t]) => t[0] === '@').map(([t]) => BY_ID[t.slice(1)]).filter(r => r && r.photo);
+      const photo = ids.length ? ids[ids.length - 1].photo : '';
+      const fige = c('.bt-fige'), mA = c('.bt-moitie.a'), mB = c('.bt-moitie.b'), knife = c('.bt-couteau'), lame = c('.bt-lame'), eclat = c('.bt-eclat');
+      if (photo) { fige.src = photo; mA.querySelector('img').src = photo; mB.querySelector('img').src = photo; }
+      avant.className = 'bt-avant acier';
+      const pente = .32 * H / W, ang = -Math.atan(pente) * 180 / Math.PI, surLigne = fx => ({ x: fx * W, y: H * .66 - pente * fx * W });
+      const kw = Math.min(W, H * .5625) * .78, kh = kw * 70 / 400; knife.style.width = kw + 'px';
+      const k0 = surLigne(-.6), k1 = surLigne(1.7), l0 = surLigne(-.2);
+      gsap.set(lame, { x: l0.x, y: l0.y, width: Math.hypot(W, H) * 1.6, rotation: ang, scaleX: 0 });
+      const miettes = () => { const cols = [[214, 150, 70], [170, 98, 40], [238, 200, 120], [120, 70, 34], [250, 236, 210]], a = Math.atan2(-pente, 1), nx = -Math.sin(a), ny = Math.cos(a), u = Math.min(W, H * .5625) * dpr;
+        for (let i = 0; i < 90; i++) { const fx = Math.random(), pt = surLigne(fx), cote = Math.random() < .5 ? -1 : 1, v = u * (.15 + Math.random() * .6);
+          P.push({ k: 'miette', x: pt.x * dpr, y: pt.y * dpr, vx: Math.cos(a) * u * .5 + cote * nx * v, vy: Math.sin(a) * u * .5 + cote * ny * v, l: 0, m: .7 + Math.random() * .6, s: u * (.006 + Math.random() * .012), r: Math.random() * 6, vr: (Math.random() - .5) * 20, c: cols[i % cols.length] }); } };
+      tl.fromTo(fige, { opacity: 1, scale: 1.05 }, { scale: 1.12, duration: .75, ease: 'none', immediateRender: false }, 'silence')
+        .add(() => S.affute(1, .85), 'silence+=.46')
+        .add(() => S.schwing(), 'drop-=.1')
+        .fromTo(knife, { opacity: 1, x: k0.x - kw / 2, y: k0.y - kh / 2, rotation: ang }, { x: k1.x - kw / 2, y: k1.y - kh / 2, duration: .14, ease: 'power2.in', immediateRender: false }, 'drop-=.1')
+        .set(knife, { opacity: 0 }, 'drop+=.05')
+        .fromTo(lame, { opacity: 1, scaleX: 0 }, { scaleX: 1, duration: .14, ease: 'power2.in', immediateRender: false }, 'drop-=.1')
+        .set(fige, { opacity: 0 }, 'drop+=.04')
+        .set(mA, { opacity: 1, x: -W * .012, y: -W * .008 }, 'drop+=.04')
+        .set(mB, { opacity: 1, x: W * .012, y: W * .008 }, 'drop+=.04')
+        .add(() => { anime(); miettes(); }, 'drop+=.04')
+        .to(lame, { opacity: 0, duration: .35, ease: 'power2.out' }, 'drop+=.08')
+        .to(mA, { xPercent: -16, yPercent: -38, rotation: -5, duration: .85, ease: 'expo.out' }, 'drop+=.18')
+        .to(mB, { xPercent: 16, yPercent: 38, rotation: 5, duration: .85, ease: 'expo.out' }, 'drop+=.18')
+        .to([mA, mB], { opacity: 0, duration: .45 }, 'drop+=.55')
+        .fromTo(avant, { opacity: 0, scale: 1.25, filter: 'blur(6px)' }, { opacity: 1, scale: 1, filter: 'blur(0px)', duration: .35, ease: 'power3.out', immediateRender: false }, 'drop+=.2')
+        .fromTo(avant, { backgroundPosition: '120% 0' }, { backgroundPosition: '-20% 0', duration: .7, ease: 'power2.inOut', immediateRender: false }, 'drop+=.35')
+        .add(() => { const r = avant.getBoundingClientRect(); gsap.set(eclat, { left: r.right - r.width * .12 - 80, top: r.top + r.height * .12 - 80 }); }, 'drop+=.9')
+        .fromTo(eclat, { opacity: 0, scale: .2, rotation: 0 }, { opacity: 1, scale: 1, rotation: 90, duration: .22, ease: 'power2.out', immediateRender: false }, 'drop+=.95')
+        .to(eclat, { opacity: 0, scale: .4, duration: .3 }, 'drop+=1.17')
+        .add(() => S.tsss(), 'drop+=1.25')
+        .fromTo(gros, { opacity: 0 }, { opacity: 1, duration: .8, immediateRender: false }, 'drop+=1.3')
+        .to(avant, { opacity: 0, duration: .8 }, 'drop+=1.3')
+        .fromTo(gros, { backgroundPosition: '120% 0' }, { backgroundPosition: '-20% 0', duration: 1.1, ease: 'power2.inOut', immediateRender: false }, 'drop+=1.55')
+        .fromTo([gros, avant], { scale: 1 }, { scale: 1.05, duration: 2.5, ease: 'none', immediateRender: false }, 'drop+=.2');
+      emet('or', 0, 1, 1, 'drop+=.9');
+    } else {
+      /* la poêle : un coup de spatule, le gong, la chaleur, l'or qui coule dans la gravure */
+      const pe = c('.bt-poele'), ondes = [...cine.querySelectorAll('.bt-ondef')], disp = c('.bt-disp'), turb = c('.bt-turb');
+      const tex = fonte(); if (tex) pe.style.setProperty('--fonte', tex);
+      const u = Math.min(W, H * .5625), taille = 19 * u / 100 + 'px';
+      avant.className = 'bt-avant grave'; gsap.set([avant, gros], { fontSize: taille, y: -H * .03 });
+      gsap.set(gros, { opacity: 0 });
+      const decal = [[-.03, .02], [.035, -.025], [-.015, -.035]];
+      tl.add(() => S.tok(1), 'silence+=.5')
+        .add(() => S.clang(), 'drop')
+        .fromTo(pe, { opacity: 0, scale: 1.5 }, { opacity: 1, scale: 1, duration: .07, ease: 'power4.out', immediateRender: false }, 'drop')
+        .fromTo(avant, { opacity: 0 }, { opacity: 1, duration: .07, immediateRender: false }, 'drop')
+        .to([pe, avant], { keyframes: { scale: [1, .955, 1.03, .985, 1.012, .996, 1], rotation: [0, -2.4, 1.8, -1.1, .6, -.2, 0] }, duration: 1.3, ease: 'none' }, 'drop+=.07');
+      ondes.forEach((o, i) => tl.fromTo(o, { opacity: 1, scale: 1.25, x: decal[i][0] * u, y: decal[i][1] * u }, { scale: 5 + i * 1.3, x: decal[i][0] * u * 3, y: decal[i][1] * u * 3, opacity: 0, duration: 1.1 + i * .3, ease: 'power2.out', immediateRender: false }, `drop+=${.02 + i * .11}`));
+      tl.add(() => { scene.style.filter = 'url(#bt-chaleur)'; }, 'drop')
+        .fromTo(disp, { attr: { scale: 26 } }, { attr: { scale: 0 }, duration: 1.1, ease: 'power2.out', immediateRender: false }, 'drop')
+        .fromTo(turb, { attr: { baseFrequency: '0.012 0.035' } }, { attr: { baseFrequency: '0.02 0.06' }, duration: 1.1, ease: 'none', immediateRender: false }, 'drop')
+        .add(() => { scene.style.filter = ''; }, 'drop+=1.12');
+      const niveau = { v: 0 };
+      const vague = () => { const v = niveau.v, t = performance.now() / 1000, amp = 5 * Math.sin(Math.PI * v), pts = ['0% 110%', '100% 110%'];
+        for (let x = 100; x >= 0; x -= 5) pts.push(`${x}% ${((1 - v) * 104 - 2 + amp * Math.sin(x * .13 + t * 9)).toFixed(2)}%`);
+        gros.style.clipPath = `polygon(${pts.join(',')})`; };
+      tl.add(() => S.carillon(), 'drop+=.7')
+        .set(gros, { opacity: 1 }, 'drop+=.7')
+        .add(vague, 'drop+=.7')
+        .to(niveau, { v: 1, duration: 1.05, ease: 'power1.inOut', onUpdate: vague, onComplete() { gros.style.clipPath = ''; } }, 'drop+=.7')
+        .to(avant, { opacity: 0, duration: .3 }, 'drop+=1.6')
+        .fromTo(gros, { backgroundPosition: '120% 0' }, { backgroundPosition: '-20% 0', duration: 1.1, ease: 'power2.inOut', immediateRender: false }, 'drop+=1.6')
+        .add(() => anime(), 'drop+=.5')
+        .to(pe, { filter: 'brightness(.8)', duration: 1.2 }, 'drop+=1.4');
+      emet('vap', 0, 1, .8, 'drop+=.5');
+    }
+    /* on referme la scène avant les critiques */
+    tl.to([scene, cv], { opacity: 0, duration: .25 }, 'drop+=2.7')
+      .add(() => { emitPous = emitVap = 0; actif = false; }, 'drop+=2.95');
   }
 
   /* ===== 2. Le phare ===== */
