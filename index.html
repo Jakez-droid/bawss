@@ -717,6 +717,11 @@ body { background-image: radial-gradient(color-mix(in srgb, var(--ink) 7%, trans
 .bt-ui .son { background: var(--cire); border-color: var(--cire); color: var(--cire-ink); animation: appel 1.2s ease-in-out infinite; }
 .bt-ui .son.on { animation: none; background: rgba(0, 0, 0, .35); border-color: #FFFFFF; color: #FFFFFF; }
 @keyframes appel { 50% { transform: scale(1.08); } }
+
+/* bande-annonce : texture film */
+.bt-plus::after { opacity: .16; animation-duration: .12s; }
+.bt-plus .bt-leak { position: absolute; inset: -20%; z-index: 6; pointer-events: none; mix-blend-mode: screen; opacity: 0; background: radial-gradient(40% 35% at 15% 20%, rgba(255, 120, 30, .55), transparent 70%), radial-gradient(35% 40% at 85% 75%, rgba(255, 40, 90, .4), transparent 70%), radial-gradient(30% 30% at 70% 15%, rgba(255, 200, 80, .35), transparent 70%); background-size: 160% 160%; }
+.bt-plus .bt-vig { position: absolute; inset: 0; z-index: 6; pointer-events: none; box-shadow: inset 0 0 18vmin 6vmin rgba(0, 0, 0, .85); }
 /* phare et bandit manchot */
 .bt-nuit { position: absolute; inset: 0; z-index: 20; background: radial-gradient(ellipse at 50% 120%, #0E2233 0%, #04080E 70%); --a: -60deg; --w: 9deg; --x: 16%; --y: 88%;
   -webkit-mask: conic-gradient(from calc(var(--a) - var(--w)) at var(--x) var(--y), transparent 0deg calc(var(--w) * 2), #000 calc(var(--w) * 2 + 3deg) 357deg, transparent 360deg);
@@ -2104,18 +2109,21 @@ window.lancerIntro = (opts = {}) => {
   } catch (e) { return ''; } };
 
   function trailer() {
-    const cine = add(`<div class="lb haut"></div><div class="lb bas"></div><div class="bt-carton"></div><div class="bt-onde"></div><div class="bt-streak"></div><div class="bt-noir"></div><div class="bt-scene"><img class="bt-fige" alt=""><div class="bt-moitie a"><img alt=""></div><div class="bt-moitie b"><img alt=""></div><div class="bt-poele"></div><i class="bt-ondef"></i><i class="bt-ondef"></i><i class="bt-ondef"></i><canvas class="bt-fx"></canvas><div class="bt-avant">bawss</div><div class="bt-gros">bawss</div><div class="bt-lame"></div><div class="bt-eclat"></div>${COUTEAU_SVG}</div><div class="bt-flash"></div><svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="bt-chaleur" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence class="bt-turb" type="fractalNoise" baseFrequency="0.012 0.035" numOctaves="2" seed="3" result="n"/><feDisplacementMap class="bt-disp" in="SourceGraphic" in2="n" scale="0" xChannelSelector="R" yChannelSelector="G"/></filter></svg><div class="bt-critiques"></div>`, 'bt-cine');
+    const vib = p => { try { navigator.vibrate && navigator.vibrate(p); } catch (e) {} };
+    const cine = add(`<div class="bt-leak"></div><div class="bt-vig"></div><div class="lb haut"></div><div class="lb bas"></div><div class="bt-carton"></div><div class="bt-onde"></div><div class="bt-streak"></div><div class="bt-noir"></div><div class="bt-scene"><img class="bt-fige" alt=""><div class="bt-moitie a"><img alt=""></div><div class="bt-moitie b"><img alt=""></div><div class="bt-poele"></div><i class="bt-ondef"></i><i class="bt-ondef"></i><i class="bt-ondef"></i><canvas class="bt-fx"></canvas><div class="bt-avant">bawss</div><div class="bt-gros">bawss</div><div class="bt-lame"></div><div class="bt-eclat"></div>${COUTEAU_SVG}</div><div class="bt-flash"></div><svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="bt-chaleur" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence class="bt-turb" type="fractalNoise" baseFrequency="0.012 0.035" numOctaves="2" seed="3" result="n"/><feDisplacementMap class="bt-disp" in="SourceGraphic" in2="n" scale="0" xChannelSelector="R" yChannelSelector="G"/></filter></svg><div class="bt-critiques"></div>`, 'bt-cine');
     const c = s => cine.querySelector(s);
     const carton = c('.bt-carton'), gros = c('.bt-gros'), onde = c('.bt-onde'), streak = c('.bt-streak'), crit = c('.bt-critiques');
+    /* texture film : lueurs qui dérivent, bords assombris, grain plus vivant */
+    cine.classList.add('bt-plus'); extra.push(gsap.to(c('.bt-leak'), { keyframes: { opacity: [.12, .3, .08, .25, .12], backgroundPosition: ['0% 0%', '40% 20%', '80% 60%', '30% 90%', '0% 0%'] }, duration: 9, ease: 'sine.inOut', repeat: -1 }));
     const cartes = [
-      ['Dans un monde…', 'lent', 1.7, 'rien'],
-      ['Où le matcha a envahi nos campagnes…', 'lent', 1.6, 'rien'],
-      ['Où le tacos français existe…', 'lent', 1.3, 'rien'],
-      ['Où le beurre…', 'normal', .85, 'rien'],
-      ['… peut être doux.', 'menace', 1.4, 'gong'],
-      ['Toi seul…', 'claque', .7, 'rien'],
-      ['Peut tous nous sauver…', 'normal', .75, 'rien'],
-      ['À condition…', 'normal', .5, 'rien'],
+      ['Dans un monde…', 'lent', 1.05, 'rien'],
+      ['Où le matcha a envahi nos campagnes…', 'lent', 1.2, 'rien'],
+      ['Où le tacos français existe…', 'lent', .95, 'rien'],
+      ['Où le beurre…', 'normal', .55, 'rien'],
+      ['… peut être doux.', 'menace', 1.1, 'gong'],
+      ['Toi seul…', 'claque', .55, 'rien'],
+      ['Peut tous nous sauver…', 'normal', .6, 'rien'],
+      ['À condition…', 'normal', .4, 'rien'],
       ['De…', 'rafale', .3, 'hit'],
       ['cuisiner…', 'rafale', .3, 'hit'],
       ['Comme…', 'rafale', .3, 'hit'],
@@ -2142,13 +2150,13 @@ window.lancerIntro = (opts = {}) => {
       if (txt[0] === '@') {
         if (!reperePhotos) { reperePhotos = true; tl.addLabel('photos', '+=.02'); }
         const r = BY_ID[txt.slice(1)]; if (!r || !r.photo) return;
-        tl.add(() => { img.src = r.photo; S.caisse(style === 'lente' ? .2 : .35); }, '+=.02')
+        tl.add(() => { img.src = r.photo; S.caisse(style === 'lente' ? .2 : .35); vib(25); }, '+=.02')
           .fromTo(img, { opacity: 1, scale: style === 'lente' ? 1.02 : 1.18 }, { scale: style === 'lente' ? 1.1 : 1.05, duration: d, ease: 'power2.out' }, '<')
           .set(img, { opacity: 0 });
         return;
       }
       const vite = style === 'rafale' || style === 'claque';
-      tl.add(() => { carton.innerHTML = txt; carton.className = 'bt-carton ' + style; }, vite ? '+=.04' : '+=.14').add(S[s], '<');
+      tl.add(() => { carton.innerHTML = txt; carton.className = 'bt-carton ' + style; if (style === 'menace') vib(120); if (style === 'rafale') vib(40); }, vite ? '+=.04' : '+=.12').add(S[s], '<');
       if (style === 'lent') tl.fromTo(carton, { opacity: 0, scale: .92, letterSpacing: '.28em' }, { opacity: 1, scale: 1.04, letterSpacing: '.14em', duration: d + .5, ease: 'power1.out' }, '<').to(carton, { opacity: 0, duration: .35 }, '>-.3');
       else if (style === 'normal') tl.fromTo(carton, { opacity: 0, scale: 1.12 }, { opacity: 1, scale: 1, duration: .35, ease: 'power2.out' }, '<').to(carton, { opacity: 0, duration: .2 }, `+=${d}`);
       else if (style === 'menace') tl.fromTo(carton, { opacity: 0, scale: 1.5 }, { opacity: 1, scale: 1, duration: .25, ease: 'power3.out' }, '<').to(carton, { keyframes: { x: [0, -3, 3, -2, 3, -3, 2, -2, 0] }, duration: d, ease: 'none' }).to(carton, { opacity: 0, duration: .2 });
@@ -2190,7 +2198,8 @@ window.lancerIntro = (opts = {}) => {
   /* ===== Fins cuisine de la bande-annonce : le couteau et la poêle, en alternance ===== */
   function finCuisine(cine, c, gros, cartes) {
     let quelle = 'couteau';
-    try { quelle = localStorage.getItem('bt-fin') === 'couteau' ? 'poele' : 'couteau'; localStorage.setItem('bt-fin', quelle); } catch (e) { quelle = Math.random() < .5 ? 'couteau' : 'poele'; }
+    /* premier lancement : le couteau ; ensuite on alterne couteau / poêle */
+    try { quelle = localStorage.getItem('bt-fin') === 'couteau' ? 'poele' : 'couteau'; localStorage.setItem('bt-fin', quelle); } catch (e) { quelle = 'couteau'; }
     const scene = c('.bt-scene'), flash = c('.bt-flash'), avant = c('.bt-avant'), cv = c('.bt-fx'), g2 = cv.getContext('2d');
     const dpr = Math.min(2, devicePixelRatio || 1); cv.width = W * dpr; cv.height = H * dpr;
     /* particules : miettes, poussière d'or, vapeur */
