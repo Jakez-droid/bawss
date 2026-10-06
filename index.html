@@ -874,12 +874,18 @@ body { background-image: radial-gradient(color-mix(in srgb, var(--ink) 7%, trans
 @media (max-width: 680px) {
   .brand { order: 0; }
   .cart-btn { order: 1; margin-left: auto; width: 38px; height: 38px; }
-  .search { order: 2; }
+  .brand { flex: 0 0 100%; }
+  .brand:has(+ .me-btn) { flex-basis: calc(100% - 46px); }
+  .search { order: 2; flex: 1 1 0; }
+  /* téléphone : ligne 1 = titre (+ compte), ligne 2 = recherche, caddy, aide */
+  #cart-btn { order: 3; margin-left: 0; }
+  .aide-btn { order: 4; margin-left: 0; }
 }
+@media (max-width: 360px) { .brand, .top.scrolled .brand { font-size: 18px; } }
 @keyframes heart { 40% { transform: scale(1.18) rotate(-6deg); } }
 .aide-btn { font: 900 21px/1 var(--f-display); }
-.cart-btn + .aide-btn { margin-left: 8px; }
 .tuto-bulle.aide-bulle h3 { margin-top: 0; }
+.ing .ing-det { display: block; font-size: 12.5px; color: var(--muted); margin-top: 2px; }
 .btn.bump { animation: heart .45s cubic-bezier(.3, 2, .5, 1); }
 
 .fin-bawss { appearance: none; border: 0; background: none; font: inherit; cursor: pointer; width: 100%; display: grid; justify-items: center; gap: 6px; margin: 34px 0 calc(env(safe-area-inset-bottom, 0px) + 40px); text-align: center; }
@@ -915,7 +921,8 @@ body { background-image: radial-gradient(color-mix(in srgb, var(--ink) 7%, trans
 /* FAQ */
 .ing-cart { display: flex; align-items: center; gap: 10px; width: 100%; margin: 14px 0 10px; border: 0; border-radius: 14px; background: var(--ink); color: var(--paper); padding: 13px 16px; font: 800 16px var(--f-body); text-align: left; cursor: pointer; box-shadow: 3px 3px 0 var(--cire); transition: transform .15s ease, background-color .15s ease; }
 .ing-cart svg { width: 24px; height: 24px; flex: none; }
-.ing-cart span, .ing-cart em { white-space: nowrap; }
+.ing-cart em { white-space: nowrap; }
+.ing-cart span { min-width: 0; line-height: 1.2; }
 .ing-cart em { margin-left: auto; font: 600 13px var(--f-body); font-style: normal; opacity: .7; }
 .ing-cart[aria-pressed="true"] { background: var(--cire); color: var(--cire-ink); box-shadow: 3px 3px 0 var(--ink); }
 .ing-cart:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--cire); }
@@ -1133,9 +1140,9 @@ const dejaDe = id => (cart.deja && Array.isArray(cart.deja[id])) ? cart.deja[id]
 document.addEventListener('change', e => {
   const c = e.target.closest('.ing input[data-k]'); if (!c) return;
   const sec = c.closest('section.recipe'); if (!sec) return;
-  const id = sec.id.replace(/^r-/, ''), k = Number(c.dataset.k);
+  const id = sec.id.replace(/^r-/, ''), ks = String(c.dataset.k).split(',').map(Number);
   cart.deja = cart.deja && typeof cart.deja === 'object' ? cart.deja : {};
-  const l = new Set(dejaDe(id)); c.checked ? l.add(k) : l.delete(k);
+  const l = new Set(dejaDe(id)); ks.forEach(k => (c.checked ? l.add(k) : l.delete(k)));
   if (l.size) cart.deja[id] = [...l]; else delete cart.deja[id];
   saveCart(); renderCartBadge();
   const b = $('[data-cart]', sec), r = BY_ID[id]; if (b && r) b.innerHTML = cartBtnHTML(r);
@@ -1434,10 +1441,36 @@ const ICON = {
   back: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg>'
 };
 function renderIngr(r) {
-  const f = serves[r.id] / baseServes(r); let n = 0;
-  return `<p class="ing-deja">Coche ce que tu as déjà : c’est barré, et seuls les ingrédients qui manquent partent dans ton caddy.</p>` + r.ingr.map(g => `
+  const f = serves[r.id] / baseServes(r), lines = flatLines(r), deja = new Set(dejaDe(r.id));
+  /* un ingrédient utilisé à plusieurs étapes (ex. huile d'olive) : une seule ligne, quantité totale, comme dans la liste de courses */
+  const refs = new Map(), fusion = new Map(), caches = new Set(), groupeDe = [];
+  r.ingr.forEach(g => g.items.forEach(() => groupeDe.push(g.group || '')));
+  (r.courses || []).forEach(([, , ix]) => ix.forEach(k => refs.set(k, (refs.get(k) || 0) + 1)));
+  (r.courses || []).forEach(([a, , ix]) => {
+    if (ix.length < 2 || ix.some(k => refs.get(k) !== 1)) return;
+    if (ix.some(k => /version|variante|option/i.test(groupeDe[k]))) return;   // deux versions au choix : on n'additionne pas
+    const t = [...ix].sort((x, y) => x - y);
+    fusion.set(t[0], { a, ix: t }); t.slice(1).forEach(k => caches.add(k));
+  });
+  const minus = t => t ? t.charAt(0).toLowerCase() + t.slice(1) : '';
+  let n = 0;
+  return `<p class="ing-deja">Coche ce que tu as déjà : c’est barré, et seuls les ingrédients qui manquent partent dans ton caddy.</p>` + r.ingr.map(g => {
+    const lis = g.items.map((it, i) => {
+      const k = n++; if (caches.has(k)) return '';
+      const fu = fusion.get(k), ks = fu ? fu.ix : [k];
+      let txt = scaleLine(it, f);
+      if (fu) {
+        const qs = fu.ix.map(j => qtyOf(scaleText(lines[j], f)));
+        const gr = fu.ix.some(j => groupeDe[j]);
+        const det = fu.ix.map((j, x) => gr ? (qs[x] || '') + (groupeDe[j] ? ' (' + minus(groupeDe[j]) + ')' : '') : scaleText(lines[j], f)).join(' · ');
+        txt = `${esc(fu.a)} <span class="q">${esc(totalQ(qs.filter(Boolean)))}</span><small class="ing-det">${esc(det)}</small>`;
+      }
+      return `<li><label><input type="checkbox" data-k="${ks.join(',')}" ${ks.every(j => deja.has(j)) ? 'checked' : ''} id="c-${r.id}-${esc(g.group || 'x').replace(/\W/g,'')}-${i}"><span>${txt}</span></label></li>`;
+    }).join('');
+    return lis ? `
     ${g.group ? `<div class="group">${esc(g.group)}</div>` : ''}
-    <ul class="ing">${g.items.map((it, i) => { const k = n++; return `<li><label><input type="checkbox" data-k="${k}" ${dejaDe(r.id).includes(k) ? 'checked' : ''} id="c-${r.id}-${esc(g.group || 'x').replace(/\W/g,'')}-${i}"><span>${scaleLine(it, f)}</span></label></li>`; }).join('')}</ul>`).join('');
+    <ul class="ing">${lis}</ul>` : '';
+  }).join('');
 }
 function stepSize(r) { const b = baseServes(r); return b >= 12 ? Math.round(b / 5) : b >= 1 ? 1 : b; }
 function renderServes(r) {
