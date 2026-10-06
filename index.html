@@ -677,7 +677,7 @@ body { background-image: radial-gradient(color-mix(in srgb, var(--ink) 7%, trans
 .bt-carton.lent { color: #ECECEC; font-weight: 800; }
 .bt-carton.menace { color: #E4322B; font-size: clamp(54px, 15vw, 120px); font-weight: 900; letter-spacing: .04em; text-shadow: 0 0 24px rgba(228, 50, 43, .55); }
 .bt-carton.claque { font-size: clamp(44px, 12vw, 104px); font-weight: 900; letter-spacing: .03em; color: #FFFFFF; }
-.bt-carton.rafale { font-size: clamp(64px, 19vw, 200px); font-weight: 900; letter-spacing: 0; line-height: .9; color: #FFFFFF; }
+.bt-carton.rafale { font-size: clamp(50px, 14vw, 180px); font-weight: 900; letter-spacing: 0; line-height: .9; color: #FFFFFF; }
 .bt-carton small { display: block; font-size: .42em; letter-spacing: .3em; color: #A8A8A8; margin-top: 12px; }
 .bt-gros { position: absolute; z-index: 4; font-family: var(--f-display); font-weight: 900; text-transform: uppercase; font-size: clamp(90px, 26vw, 300px); line-height: .8; color: transparent; background: linear-gradient(100deg, #D99A00 0 38%, #FFF6C8 48%, #FFFFFF 50%, #FFF6C8 52%, #F4B400 62% 100%); background-size: 300% 100%; background-position: 120% 0; -webkit-background-clip: text; background-clip: text; filter: drop-shadow(0 0 30px rgba(244, 180, 0, .55)); opacity: 0; }
 .bt-onde { position: absolute; z-index: 3; width: 34vmin; height: 34vmin; border-radius: 50%; border: 6px solid rgba(244, 180, 0, .85); box-shadow: 0 0 30px rgba(244, 180, 0, .6), inset 0 0 30px rgba(244, 180, 0, .5); opacity: 0; }
@@ -2116,15 +2116,16 @@ window.lancerIntro = (opts = {}) => {
       ['Toi seul…', 'claque', .7, 'rien'],
       ['Peut tous nous sauver…', 'normal', .75, 'rien'],
       ['À condition…', 'normal', .5, 'rien'],
-      ['De cuisiner…', 'rafale', .34, 'hit'],
+      ['De…', 'rafale', .3, 'hit'],
+      ['cuisiner…', 'rafale', .3, 'hit'],
       ['Comme…', 'rafale', .3, 'hit'],
       ['Un…', 'rafale', .3, 'hit'],
       ['@karaage', 'coupe', .1], ['@chou-farci', 'coupe', .1], ['@curry-japonais', 'coupe', .1], ['@krapao', 'coupe', .1], ['@tatin-d-aubergine', 'coupe', .1], ['@tartiflette', 'coupe', .1], ['@poulet-roti', 'coupe', .1], ['@lasagnes-a-la-bolognaise', 'coupe', .1]
     ];
-    /* le défilement : 26 plats sur une pulsation qui accélère (chaque photo tombe sur un coup), la lasagne en dernier */
+    /* le défilement : 26 plats sur une pulsation qui accélère (chaque photo tombe sur un coup), le curry japonais en dernier */
     {
       const texte = cartes.filter(([t]) => t[0] !== '@');
-      const premiers = ['karaage', 'chou-farci', 'curry-japonais', 'krapao', 'tatin-d-aubergine', 'tartiflette', 'poulet-roti'], dernier = 'lasagnes-a-la-bolognaise';
+      const premiers = ['karaage', 'chou-farci', 'krapao', 'tatin-d-aubergine', 'tartiflette', 'poulet-roti', 'lasagnes-a-la-bolognaise'], dernier = 'curry-japonais';
       const avecPhoto = id => BY_ID[id] && BY_ID[id].photo;
       const autres = RECIPES.map(r => r.id).filter(id => !premiers.includes(id) && id !== dernier);
       let plans = [...premiers, ...autres].filter(avecPhoto).slice(0, avecPhoto(dernier) ? 25 : 26);
