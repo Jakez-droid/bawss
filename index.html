@@ -1946,7 +1946,7 @@ window.lancerIntro = (opts = {}) => {
   }
   try { localStorage.setItem('bawss-seance', '1'); } catch (e) {}
   /* à chaque ouverture, l'intro suivante (mémorisé dans ce navigateur seulement) */
-  const INTROS = ['trailer', 'phare', 'bandit', 'bilig', 'festnoz', 'microondes'];
+  const INTROS = ['trailer'];
   let n = 0;
   try { const v = parseInt(localStorage.getItem('bt-intro'), 10); n = isNaN(v) ? 0 : (v + 1) % INTROS.length; localStorage.setItem('bt-intro', n); } catch (e) { n = Math.floor(Math.random() * INTROS.length); }
   const quelle = opts.quelle && INTROS.includes(opts.quelle) ? opts.quelle : INTROS[n];
@@ -2674,7 +2674,7 @@ window.lancerIntro = (opts = {}) => {
   const b = document.getElementById('fin-bawss');
   if (b) b.addEventListener('click', () => { if (typeof window.lancerIntro !== 'function') return; window.scrollTo(0, 0); /* on enchaîne les intros à chaque toucher ; quand vient le tour du cinéma, c'est la séance complète (Monte le son, BangBawss Films, bande-annonce) */
     let v = -1; try { v = parseInt(localStorage.getItem('bt-intro'), 10); } catch (e) {}
-    const prochaine = isNaN(v) ? 0 : (v + 1) % 6;
+    const prochaine = 0;
     if (prochaine === 0) { try { localStorage.setItem('bt-intro', '0'); } catch (e) {} }
     requestAnimationFrame(() => window.lancerIntro(prochaine === 0 ? { seance: true } : { son: true })); });
 })();
