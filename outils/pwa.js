@@ -461,11 +461,9 @@
   const CLINS = { nus2velours: 'Prends un macdo mon nus2velz' };
   function ecranLabour(phrase) {
     const ex = (typeof EXPRESSIONS !== 'undefined' ? EXPRESSIONS : []).find(e => /labour/i.test(e.br)) || { br: 'Labour arzul labour nul', fr: '« Qui travaille le dimanche, travaille mal »' };
-    const el = ouvrir(logo + '<button type="button" class="bw-labour" data-trad aria-expanded="false"><h1><span>' + esc2(ex.br) + '</span></h1><small>Touche pour la traduction</small></button>'
-      + '<p class="bw-labour-fr" hidden>' + esc2(ex.fr) + '</p>'
+    const el = ouvrir(logo + '<h1 class="bw-labour"><span>' + esc2(ex.br) + '</span></h1>'
       + '<p class="bw-labour-msg">' + esc2(phrase) + '</p>'
       + '<button type="button" class="bw-go" data-ok>Bien reçu</button>');
-    el.querySelector('[data-trad]').addEventListener('click', e => { const fr = el.querySelector('.bw-labour-fr'), b = e.currentTarget; fr.hidden = !fr.hidden; b.setAttribute('aria-expanded', String(!fr.hidden)); b.querySelector('small').textContent = fr.hidden ? 'Touche pour la traduction' : 'Touche pour cacher'; });
     el.querySelector('[data-ok]').addEventListener('click', fermer);
   }
   let clinFait = false;
