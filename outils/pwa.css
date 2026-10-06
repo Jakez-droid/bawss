@@ -170,3 +170,10 @@
 .bw-code b { font-size: 16px; }
 .bw-code code { font: 700 16px var(--f-mono, monospace); background: var(--cire); color: var(--cire-ink); padding: 1px 8px; border-radius: 6px; }
 .bw-code small { opacity: .75; font-size: 13px; }
+
+/* clin d'œil « Labour arzul labour nul » */
+.bw-labour { appearance: none; border: 0; background: none; color: inherit; padding: 0; text-align: left; cursor: pointer; display: grid; gap: 8px; }
+.bw .bw-labour h1 { font-size: 46px; }
+.bw-labour small { font: 500 12px var(--f-mono); letter-spacing: .12em; text-transform: uppercase; opacity: .65; }
+.bw .bw-labour-fr { margin: 0; font-size: 19px; font-weight: 700; color: var(--cire); }
+.bw .bw-labour-msg { margin: 6px 0 0; font: 900 30px/1.05 var(--f-display); text-transform: uppercase; }

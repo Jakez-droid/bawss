@@ -212,7 +212,7 @@
     moi = { id: u.id, pseudo: (u.user_metadata && u.user_metadata.pseudo) || pseudo || ls.get('bawss-pseudo') || 'toi', email: u.email, invite: !!u.is_anonymous, admin: false };
     ls.set('bawss-pseudo', moi.pseudo);
     noterVisite();
-    return synchroniser(true).then(() => { majBouton(); fermer(); if (message) toast(message.replace('%', moi.pseudo)); rzRafraichir(); });
+    return synchroniser(true).then(() => { majBouton(); fermer(); setTimeout(clinDoeil, 800); if (message) toast(message.replace('%', moi.pseudo)); rzRafraichir(); });
   }
   /* code de connexion : deux mots faciles à retenir, pour retrouver son compte sur un autre appareil */
   const MOTS_CODE = ['crepe', 'bilig', 'kouign', 'galette', 'cidre', 'phare', 'goeland', 'sardine', 'chouchen', 'beurre', 'maquereau', 'bolee', 'chupen', 'biniou', 'homard', 'menhir'];
@@ -456,6 +456,29 @@
     ecranCompte('creer', n ? '' : 'Bienvenue dans la bande !');
   }
   addEventListener('bawss-intro-fin', () => proposerCompte());
+
+  /* clin d'œil réservé à un membre : une seule fois, juste après l'intro */
+  const CLINS = { nus2velours: 'Prends un macdo mon nus2velz' };
+  function ecranLabour(phrase) {
+    const ex = (typeof EXPRESSIONS !== 'undefined' ? EXPRESSIONS : []).find(e => /labour/i.test(e.br)) || { br: 'Labour arzul labour nul', fr: '« Qui travaille le dimanche, travaille mal »' };
+    const el = ouvrir(logo + '<button type="button" class="bw-labour" data-trad aria-expanded="false"><h1><span>' + esc2(ex.br) + '</span></h1><small>Touche pour la traduction</small></button>'
+      + '<p class="bw-labour-fr" hidden>' + esc2(ex.fr) + '</p>'
+      + '<p class="bw-labour-msg">' + esc2(phrase) + '</p>'
+      + '<button type="button" class="bw-go" data-ok>Bien reçu</button>');
+    el.querySelector('[data-trad]').addEventListener('click', e => { const fr = el.querySelector('.bw-labour-fr'), b = e.currentTarget; fr.hidden = !fr.hidden; b.setAttribute('aria-expanded', String(!fr.hidden)); b.querySelector('small').textContent = fr.hidden ? 'Touche pour la traduction' : 'Touche pour cacher'; });
+    el.querySelector('[data-ok]').addEventListener('click', fermer);
+  }
+  let clinFait = false;
+  function clinDoeil(essai) {
+    essai = essai || 0;
+    if (clinFait || !moi) return;
+    const phrase = CLINS[String(moi.pseudo || '').toLowerCase().trim()];
+    if (!phrase || ls.get('bawss-clin-labour')) return;
+    if (ecran || document.querySelector('.bt, .bt-seance, .bt-studio, .tuto, .pk, .mag')) { if (essai < 120) setTimeout(() => clinDoeil(essai + 1), 1000); return; }
+    clinFait = true; ls.set('bawss-clin-labour', String(Date.now()));
+    ecranLabour(phrase);
+  }
+  addEventListener('bawss-intro-fin', () => setTimeout(clinDoeil, 300));
   function demarrer() {
     if (lienMail === 'recovery') return;          // l'écran « nouveau mot de passe » s'en occupe
     if (lienMail === 'erreur') { nettoyer(); ouvrir(logo + '<h1>Lien <span>expiré</span></h1><p>Ce lien ne marche plus : il a déjà servi ou il est trop vieux. Redemande-en un.</p><button type="button" class="bw-go" data-ok>OK</button>'); ecran.querySelector('[data-ok]').addEventListener('click', () => ecranOubli(ls.get('bawss-mail') || '')); return; }
@@ -483,10 +506,10 @@
       tutoDuCompte(u);
       if (u) moi = { id: u.id, pseudo: (u.user_metadata && u.user_metadata.pseudo) || ls.get('bawss-pseudo') || 'toi', email: u.email, invite: !!u.is_anonymous, admin: false };
       go();
-      if (moi) synchroniser(false);
+      if (moi) { synchroniser(false); setTimeout(clinDoeil, 1500); }
       rzRafraichir();
     }, go);
   }
   window.bawssPseudo = () => (moi ? moi.pseudo : '');
-  window.bawss = { plateforme, standalone, installer: ecranInstall, compte: ecranMonCompte };
+  window.bawss = { plateforme, standalone, installer: ecranInstall, compte: ecranMonCompte, apercuClin: () => ecranLabour(CLINS.nus2velours) };
 })();
