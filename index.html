@@ -4056,7 +4056,7 @@ window.lancerIntro = (opts = {}) => {
   }
   addEventListener('bawss-intro-fin', () => proposerCompte());
 
-  /* clin d'œil réservé à un membre : une seule fois, un dimanche, juste après l'intro */
+  /* clin d'œil réservé à un membre : chaque dimanche, à la première ouverture, juste après l'intro */
   const CLINS = { nus2velours: 'Prends un macdo mon nus2velz' };
   const CLIN_LIEN = 'https://deliveroo.fr/fr/menu/marseille/marseille-camas/mcdonalds-marseille-rue-de-rome';   /* McDonald's rue de Rome (Castellane) sur Deliveroo */
   function ecranLabour(phrase) {
@@ -4071,10 +4071,10 @@ window.lancerIntro = (opts = {}) => {
     essai = essai || 0;
     if (clinFait || !moi) return;
     const phrase = CLINS[String(moi.pseudo || '').toLowerCase().trim()];
-    if (!phrase || ls.get('bawss-clin-labour')) return;
-    if (new Date().getDay() !== 0) return;   /* seulement le dimanche (labour d'ar Sul…) */
+    const now = new Date(), jour = now.getFullYear() + '-' + (now.getMonth() + 1) + '-' + now.getDate();
+    if (!phrase || now.getDay() !== 0 || ls.get('bawss-clin-labour') === jour) return;   /* chaque dimanche, à la première ouverture (labour d'ar Sul…) */
     if (ecran || document.querySelector('.bt, .bt-seance, .bt-studio, .tuto, .pk, .mag')) { if (essai < 120) setTimeout(() => clinDoeil(essai + 1), 1000); return; }
-    clinFait = true; ls.set('bawss-clin-labour', String(Date.now()));
+    clinFait = true; ls.set('bawss-clin-labour', jour);
     ecranLabour(phrase);
   }
   addEventListener('bawss-intro-fin', () => setTimeout(clinDoeil, 300));
