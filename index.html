@@ -1398,7 +1398,7 @@ function renderGrid() {
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { ajusterGrille(); if (current) ajusterTitres(document.querySelectorAll('#r-' + current + ' .r-head h1')); });
 let resizeT = null;
 addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(() => { ajusterGrille(); if (current) ajusterTitres(document.querySelectorAll('#r-' + current + ' .r-head h1')); }, 150); });
-$('#lede').textContent = `Enlève ton choupen, mets ton tablier et va dans ta cuisine. ${RECIPES.length} recettes testées sur des humains encore en vie aujourd’hui. Cherche un plat ou un ingrédient, ajuste les portions, et passe en mode cuisine une fois aux fourneaux. Si tu paniques, demande à ton Jakez. Fais-le à la mamm gozh et casse-toi manger avant que ça refroidisse, strouillou !`;
+$('#lede').textContent = `${RECIPES.length} recettes testées sur des humains encore en vie.`;
 
 $('#types').addEventListener('click', e => {
   const b = e.target.closest('[data-type]'); if (!b) return;
