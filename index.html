@@ -2154,7 +2154,7 @@ window.lancerIntro = (opts = {}) => {
       else tl.fromTo(carton, { opacity: 1, scale: style === 'rafale' ? 1.6 : 1.35 }, { scale: 1, duration: .16, ease: 'power4.out' }, '<').to(carton, { opacity: 0, duration: .04 }, `+=${d}`);
     });
     tl.addLabel('silence');
-    const t0 = tl.labels.debut + .3, t1 = (tl.labels.photos ?? tl.labels.silence) - .12;
+    const t0 = tl.labels.debut + .3, t1 = (tl.labels.photos ?? tl.labels.silence) - .5;   /* le dernier battement (≈ .4 s) se termine avant la 1re photo */
     for (let t = t0; t < t1;) { tl.add(S.coeur, t); t += 1.05 - .72 * (t - t0) / (t1 - t0); }
     tl.addLabel('drop', 'silence+=.75');
     finCuisine(cine, c, gros, cartes);
