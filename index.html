@@ -4058,12 +4058,13 @@ window.lancerIntro = (opts = {}) => {
 
   /* clin d'œil réservé à un membre : une seule fois, juste après l'intro */
   const CLINS = { nus2velours: 'Prends un macdo mon nus2velz' };
+  const CLIN_LIEN = 'https://www.ubereats.com/fr/brand-city/marseille-pac/mcdonalds';   /* McDonald's Marseille sur Uber Eats (à remplacer par la fiche exacte de Castellane) */
   function ecranLabour(phrase) {
     const ex = (typeof EXPRESSIONS !== 'undefined' ? EXPRESSIONS : []).find(e => /labour/i.test(e.br)) || { br: 'Labour arzul labour nul', fr: '« Qui travaille le dimanche, travaille mal »' };
     const el = ouvrir(logo + '<h1 class="bw-labour"><span>' + esc2(ex.br) + '</span></h1>'
       + '<p class="bw-labour-msg">' + esc2(phrase) + '</p>'
       + '<button type="button" class="bw-go" data-ok>Bien reçu</button>');
-    el.querySelector('[data-ok]').addEventListener('click', fermer);
+    el.querySelector('[data-ok]').addEventListener('click', () => { fermer(); const w = window.open(CLIN_LIEN, '_blank'); if (w) { try { w.opener = null; } catch (e) {} } else location.href = CLIN_LIEN; });
   }
   let clinFait = false;
   function clinDoeil(essai) {
