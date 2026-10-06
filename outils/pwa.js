@@ -41,6 +41,16 @@
     const s = p.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
     return s ? s + '@bawss.app' : '';
   };
+  /* compteur anonyme : un identifiant au hasard par appareil, une ligne par jour dans « visites » */
+  const appareil = (() => {
+    let a = ls.get('bawss-appareil');
+    if (!a) {
+      try { a = crypto.randomUUID(); } catch (e) { a = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 3 | 8)).toString(16); }); }
+      ls.set('bawss-appareil', a);
+    }
+    return a;
+  })();
+  const noterVisite = () => { if (sb) sb.rpc('noter_visite', { p_appareil: appareil, p_plateforme: plateforme, p_installee: standalone, p_invite_par: invitePar() || null }).then(() => {}, () => {}); };
   const marque = () => ls.set('bawss-maj', new Date().toISOString());
   const majLocale = () => ls.get('bawss-maj') || '1970-01-01T00:00:00Z';
   const panierVide = c => !c || ((!c.recipes || !Object.keys(c.recipes).length) && !(Array.isArray(c.libres) && c.libres.length));
@@ -181,7 +191,7 @@
     const m = String((err && (err.message || err.error_description || err.msg)) || err || '');
     if (/pseudo pris/i.test(m)) return 'Ce pseudo est déjà pris. Ajoute un chiffre, par exemple.';
     if (/already registered|already exists|already been registered|duplicate|unique/i.test(m)) return 'Ce pseudo est déjà pris. Ajoute un chiffre, par exemple. Si c\'est le tien, touche « J\'ai déjà un compte ».';
-    if (/invalid login|invalid credentials|invalid grant/i.test(m)) return 'Pseudo ou code incorrect.';
+    if (/invalid login|invalid credentials|invalid grant/i.test(m)) return 'Pseudo ou mot de passe incorrect.';
     if (/password.*(6|characters|short|weak)/i.test(m)) return 'Mot de passe trop court : 6 caractères minimum.';
     if (/same.*password|different from the old/i.test(m)) return 'Choisis un mot de passe différent de l\'ancien.';
     if (/invalid.*email|email.*invalid|valid email/i.test(m)) return 'Ce mail n\'a pas l\'air valide.';
@@ -201,6 +211,7 @@
     tutoDuCompte(u);
     moi = { id: u.id, pseudo: (u.user_metadata && u.user_metadata.pseudo) || pseudo || ls.get('bawss-pseudo') || 'toi', email: u.email, invite: !!u.is_anonymous, admin: false };
     ls.set('bawss-pseudo', moi.pseudo);
+    noterVisite();
     return synchroniser(true).then(() => { majBouton(); fermer(); if (message) toast(message.replace('%', moi.pseudo)); rzRafraichir(); });
   }
   /* code de connexion : deux mots faciles à retenir, pour retrouver son compte sur un autre appareil */
@@ -211,17 +222,18 @@
   function ecranCompte(mode, raison) {
     const creer = mode !== 'connexion';
     const el = ouvrir((creer ? bandeauInvite2() : '') + logo
-      + (creer ? '<h1>Choisis ton <span>pseudo</span></h1><p>' + (raison ? esc2(raison) + ' ' : '') + 'C\'est tout : pas de mail, pas de mot de passe à inventer.</p>'
-               : '<h1>Re-<span>salut</span></h1><p>Ton pseudo et ton code (tu le trouves dans « Mon compte » sur ton autre appareil).</p>')
+      + (creer ? '<h1>Choisis ton <span>pseudo</span></h1><p>' + (raison ? esc2(raison) + ' ' : '') + 'Un pseudo et un mot de passe, c\'est tout : pas de mail. Tes favoris et ta liste de courses te suivent sur tous tes appareils.</p>'
+               : '<h1>Re-<span>salut</span></h1><p>Ton pseudo et ton mot de passe.</p>')
       + '<form data-compte style="display:grid;gap:12px" novalidate>'
-      + (creer ? '<label for="bw-pseudo">Pseudo</label><input id="bw-pseudo" type="text" autocomplete="nickname" autocapitalize="words" maxlength="24" enterkeyhint="go" required>'
+      + (creer ? '<label for="bw-pseudo">Pseudo</label><input id="bw-pseudo" type="text" autocomplete="username" autocapitalize="words" maxlength="24" enterkeyhint="next" required>' + champMdp('bw-mdp', 'new-password', 'Mot de passe <small>(6 caractères minimum)</small>')
                : '<label for="bw-mail">Pseudo</label><input id="bw-mail" type="text" autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false" required>'
-                 + champMdp('bw-mdp', 'current-password', 'Code'))
+                 + champMdp('bw-mdp', 'current-password'))
       + '<p class="bw-err" role="alert" hidden></p>'
       + '<button type="submit" class="bw-go">' + (creer ? 'C\'est parti' : 'Me connecter') + '</button></form>'
       + '<button type="button" class="bw-later" data-bascule>' + (creer ? 'J\'ai déjà un compte' : 'Pas de compte ? J\'en crée un') + '</button>'
-      + (creer ? '' : '<p class="bw-note">Inscrit avant avec ton mail ? Mets ton mail à la place du pseudo, et ton mot de passe à la place du code.</p>')
-      + '<button type="button" class="bw-later bw-sans" data-sans>Pas maintenant</button>');
+      + (creer ? '<p class="bw-note">Mot de passe oublié ? Demande à ton Jakez, il te le remet à zéro.</p>'
+               : '<p class="bw-note">Ton compte a un code du genre « galette-4821 » ? C\'est lui, ton mot de passe. Inscrit avec ton mail ? Mets ton mail à la place du pseudo.</p>')
+      + '<button type="button" class="bw-later bw-sans" data-sans>Plus tard</button>');
     const f = el.querySelector('[data-compte]'), ml = el.querySelector('#bw-mail'), ps = el.querySelector('#bw-pseudo'), md = el.querySelector('#bw-mdp'), go = el.querySelector('.bw-go'), er = el.querySelector('.bw-err');
     if (ml) { const dernier = ls.get('bawss-pseudo') && !/^toi$/.test(ls.get('bawss-pseudo')) ? ls.get('bawss-pseudo') : ls.get('bawss-mail'); if (dernier) ml.value = dernier; }
     brancherVoir(el);
@@ -236,15 +248,16 @@
         if (creer) {
           const pseudo = ps.value.trim().replace(/\s+/g, ' ');
           if (pseudo.length < 2 || !pseudoMail(pseudo)) throw new Error('Choisis un pseudo d\'au moins 2 lettres ou chiffres.');
+          const mdpN = md.value;
+          if (mdpN.length < 6) throw new Error('Choisis un mot de passe d\'au moins 6 caractères.');
           const libre = await sb.rpc('pseudo_libre', { p: pseudo }).then(x => (x.error ? null : x.data), () => null);
           if (libre === false) throw new Error('pseudo pris');
-          // 1) compte pseudo + code (marche sur tous les appareils)
-          const code = nouveauCode();
-          let r = await sb.auth.signUp({ email: pseudoMail(pseudo), password: code, options: { data: { pseudo } } }).then(x => x, x => ({ error: x }));
+          // 1) compte pseudo + mot de passe (marche sur tous les appareils)
+          let r = await sb.auth.signUp({ email: pseudoMail(pseudo), password: mdpN, options: { data: { pseudo } } }).then(x => x, x => ({ error: x }));
           if (!r.error && r.data && r.data.user && Array.isArray(r.data.user.identities) && !r.data.user.identities.length) throw new Error('pseudo pris');
           if (r.error && /already|registered|exists|duplicate/i.test(r.error.message || '')) throw new Error('pseudo pris');
           if (!r.error && r.data && r.data.session) {
-            ls.set('bawss-code', code);
+            ls.del('bawss-code');
             await finir(r.data.user, pseudo, 'Bienvenue % !');
             return;
           }
@@ -255,11 +268,12 @@
         } else {
           const id = ml.value.trim(), mdp = md.value.trim();
           if (!id) throw new Error('Mets ton pseudo.');
-          if (!mdp) throw new Error('Mets ton code.');
+          if (!mdp) throw new Error('Mets ton mot de passe.');
           const mail = id.includes('@') ? id.toLowerCase() : pseudoMail(id);
           const r = await sb.auth.signInWithPassword({ email: mail, password: mdp });
           if (r.error) throw r.error;
-          if (mail.endsWith('@bawss.app')) ls.set('bawss-code', mdp); else ls.set('bawss-mail', mail);
+          if (!mail.endsWith('@bawss.app')) ls.set('bawss-mail', mail);
+          if (mail.endsWith('@bawss.app') && /^[a-z]+-\d{4}$/.test(mdp)) ls.set('bawss-code', mdp); else ls.del('bawss-code');   // seuls les anciens codes générés s'affichent
           await finir(r.data.user, '', 'Re-salut % !');
         }
       } catch (err) {
@@ -324,7 +338,7 @@
     if (compteCode()) {
       const c = codeLocal();
       return '<div class="bw-code"><b>Pour te connecter sur un autre appareil</b><span>Pseudo : <code>' + esc2(moi.pseudo) + '</code></span>'
-        + (c ? '<span>Code : <code>' + esc2(c) + '</code></span>' : '<span>Code : le mot de passe que tu avais choisi.</span>')
+        + (c ? '<span>Code : <code>' + esc2(c) + '</code></span>' : '<span>Mot de passe : celui que tu as choisi en créant ton compte.</span>')
         + '<small>Touche « J\'ai déjà un compte » sur l\'autre appareil. Fais une capture d\'écran pour ne pas l\'oublier.</small></div>';
     }
     return '<p class="bw-note">Connecté avec ' + esc2(moi.email || '') + '</p>';
@@ -394,12 +408,16 @@
   }
   async function membres(box) {
     box.innerHTML = '<p>Chargement des membres…</p>';
+    const vis = sb.rpc('stats_visites').then(x => (x.error ? null : (x.data || [])[0]), () => null);
     let r = await sb.rpc('membres').then(x => x, e => ({ error: e }));
     if (r.error) r = await sb.from('profils').select('pseudo,plateforme,installee,cree_le,vu_le').order('cree_le', { ascending: false }).then(x => x, e => ({ error: e }));
     if (r.error) { box.innerHTML = '<p>Impossible de charger les membres pour l\'instant.</p>'; return; }
     const L = r.data || [], j = d => new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
     const semaine = L.filter(m => Date.now() - new Date(m.vu_le) < 7 * 864e5).length;
-    box.innerHTML = '<div class="bw-stats"><div><b>' + L.length + '</b><span>membres</span></div><div><b>' + L.filter(m => m.installee).length + '</b><span>appli installée</span></div><div><b>' + semaine + '</b><span>venus cette semaine</span></div></div>'
+    const v = await vis;
+    box.innerHTML = (v ? '<p class="bw-note">Visiteurs, avec ou sans compte (un téléphone = un visiteur)</p><div class="bw-stats"><div><b>' + v.appareils + '</b><span>visiteurs</span></div><div><b>' + v.semaine + '</b><span>cette semaine</span></div><div><b>' + v.sans_compte + '</b><span>sans compte</span></div></div>'
+      + '<div class="bw-stats"><div><b>' + v.aujourdhui + '</b><span>aujourd\'hui</span></div><div><b>' + v.nouveaux_semaine + '</b><span>nouveaux (7 j)</span></div><div><b>' + v.installes + '</b><span>appli installée</span></div></div><p class="bw-note">Comptes</p>' : '')
+      + '<div class="bw-stats"><div><b>' + L.length + '</b><span>membres</span></div><div><b>' + L.filter(m => m.installee).length + '</b><span>appli installée</span></div><div><b>' + semaine + '</b><span>venus cette semaine</span></div></div>'
       + '<ul class="bw-membres">' + L.map(m => '<li' + (NOUVEAUX.some(n => n.pseudo === m.pseudo) ? ' class="neuf"' : '') + '><b>' + (NOUVEAUX.some(n => n.pseudo === m.pseudo) ? '🆕 ' : '') + esc2(m.pseudo) + '</b><span>' + (m.email && !/@bawss\.app$/.test(m.email) ? esc2(m.email) + ' · ' : '') + esc2(m.plateforme || '') + (m.installee ? ' · installée' : '') + (m.invite_par ? ' · invité par ' + esc2(m.invite_par) : '') + ' · inscrit le ' + j(m.cree_le) + ' · vu le ' + j(m.vu_le) + '</span></li>').join('') + '</ul>';
     /* vus : on remet le compteur à zéro */
     ls.set('bawss-membres-vus', new Date().toISOString()); NOUVEAUX = []; pastilleMembres(0);
@@ -426,12 +444,25 @@
     b.querySelector('.bw-inv-go').addEventListener('click', () => { b.remove(); ecranInstall(); });
     b.querySelector('.bw-inv-x').addEventListener('click', () => { b.remove(); ls.set('bawss-bandeau-non', String(Date.now())); });
   }
+  /* nouveau venu : on propose le pseudo juste après l'intro (avant le tour du proprio), puis une 2e fois à la 3e visite */
+  let propose = false;
+  function proposerCompte(essai) {
+    essai = essai || 0;
+    if (propose || !sb || moi || lienMail || arrivee) return;
+    const n = parseInt(ls.get('bawss-compte-propose') || '0', 10), v = parseInt(ls.get('bawss-visites') || '0', 10);
+    if (n >= 2 || (n === 1 && v < 3)) return;
+    if (ecran || document.querySelector('.bt, .bt-seance, .bt-studio, .tuto, .pk, .mag, .bw-invite')) { if (essai < 90) setTimeout(() => proposerCompte(essai + 1), 1000); return; }
+    propose = true; ls.set('bawss-compte-propose', String(n + 1));
+    ecranCompte('creer', n ? '' : 'Bienvenue dans la bande !');
+  }
+  addEventListener('bawss-intro-fin', () => proposerCompte());
   function demarrer() {
     if (lienMail === 'recovery') return;          // l'écran « nouveau mot de passe » s'en occupe
     if (lienMail === 'erreur') { nettoyer(); ouvrir(logo + '<h1>Lien <span>expiré</span></h1><p>Ce lien ne marche plus : il a déjà servi ou il est trop vieux. Redemande-en un.</p><button type="button" class="bw-go" data-ok>OK</button>'); ecran.querySelector('[data-ok]').addEventListener('click', () => ecranOubli(ls.get('bawss-mail') || '')); return; }
     if (lienMail === 'mail') { nettoyer(); toast('Ton mail est confirmé'); }
     if (lienMail) return;
-    if (!arrivee) lancer();
+    noterVisite();
+    if (!arrivee) { lancer(); setTimeout(proposerCompte, 4000); }
     // l'installation est proposée à partir de la 2e visite, sans bloquer
     const jour = new Date().toISOString().slice(0, 10);
     if (ls.get('bawss-jour') !== jour) { ls.set('bawss-jour', jour); ls.set('bawss-visites', String(parseInt(ls.get('bawss-visites') || '0', 10) + 1)); }
