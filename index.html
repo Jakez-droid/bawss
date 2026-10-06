@@ -877,6 +877,9 @@ body { background-image: radial-gradient(color-mix(in srgb, var(--ink) 7%, trans
   .search { order: 2; }
 }
 @keyframes heart { 40% { transform: scale(1.18) rotate(-6deg); } }
+.aide-btn { font: 900 21px/1 var(--f-display); }
+.cart-btn + .aide-btn { margin-left: 8px; }
+.tuto-bulle.aide-bulle h3 { margin-top: 0; }
 .btn.bump { animation: heart .45s cubic-bezier(.3, 2, .5, 1); }
 
 .fin-bawss { appearance: none; border: 0; background: none; font: inherit; cursor: pointer; width: 100%; display: grid; justify-items: center; gap: 6px; margin: 34px 0 calc(env(safe-area-inset-bottom, 0px) + 40px); text-align: center; }
@@ -954,6 +957,7 @@ body { background-image: radial-gradient(color-mix(in srgb, var(--ink) 7%, trans
   <div class="wrap">
     <a class="brand" href="#" id="home-link">Les recettes <em>2 Jakez</em></a>
     <button class="cart-btn me-btn" id="me-btn" type="button" aria-label="Me connecter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20c1.2-3.6 4-5.4 7.5-5.4s6.3 1.8 7.5 5.4"/></svg><span class="me-i"></span></button><button class="cart-btn" id="cart-btn" type="button" aria-label="Ma liste de courses"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2.2l2.1 10.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.5L20.5 8H6.1"/><circle cx="10" cy="19.5" r="1.3"/><circle cx="17" cy="19.5" r="1.3"/></svg><span class="cart-n" id="cart-n" hidden>0</span></button>
+    <button class="cart-btn aide-btn" id="aide-btn" type="button" aria-label="Aide : le tour de l’appli">?</button>
     <label class="search" for="q">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
       <input id="q" type="search" placeholder="Un plat, un ingrédient…" autocomplete="off" aria-label="Rechercher une recette">
@@ -2642,13 +2646,31 @@ window.lancerIntro = (opts = {}) => {
   window.lancerTuto = () => { fermer(); backToList(); invitation(); };
   window.revoirTuto = () => { fermer(); backToList(); effacerRecherche(); invitation(); };
   $('#tuto-again').addEventListener('click', () => window.revoirTuto());
+  $('#aide-btn').addEventListener('click', () => { fermer(); backToList(); effacerRecherche(); demarrer(); });
+  /* première visite : une seule bulle qui montre le bouton ?, le tour reste au choix */
+  function bulleAide() {
+    const c = $('#aide-btn'); if (!c || !c.getClientRects().length) return;
+    ov = document.createElement('div'); ov.className = 'tuto on tour'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-label', 'Aide');
+    ov.innerHTML = '<div class="tuto-spot"></div><div class="tuto-bulle aide-bulle" role="status"><h3>Bienvenue, mon gars</h3><p>Les recettes sont juste en dessous, sers-toi. Besoin d’un coup de main ? Touche le <b>?</b> quand tu veux : je te fais le tour de l’appli.</p><div class="tuto-bts"><button type="button" class="tuto-non" data-a-tour>Faire le tour</button><button type="button" class="tuto-go" data-a-ok>C’est ok</button></div></div>';
+    document.body.appendChild(ov);
+    const r = c.getBoundingClientRect(), m = 6, spot = ov.querySelector('.tuto-spot'), b = ov.querySelector('.tuto-bulle');
+    Object.assign(spot.style, { top: (r.top - m) + 'px', left: (r.left - m) + 'px', width: (r.width + 2 * m) + 'px', height: (r.height + 2 * m) + 'px' });
+    const W = innerWidth, bw = Math.min(340, W - 32);
+    b.style.width = bw + 'px';
+    b.style.left = Math.max(16, Math.min(r.left + r.width / 2 - bw / 2, W - bw - 16)) + 'px';
+    b.style.top = (r.bottom + m + 14) + 'px';
+    b.classList.add('pop');
+    ov.querySelector('[data-a-ok]').addEventListener('click', () => { note('aide'); fermer(); });
+    ov.querySelector('[data-a-tour]').addEventListener('click', () => { note('aide'); demarrer(); });
+    ov.querySelector('[data-a-ok]').focus({ preventScroll: true });
+  }
   /* première visite : après l'intro, quand plus aucun écran d'accueil n'est ouvert, et pas si on arrive par un lien de recette */
   if (lu() || location.hash) return;
   let lance = false;
   const tenter = () => {
     if (lance || lu()) return;
     if (document.querySelector('.bt, .bw, .pk, .mag, .bt-seance, .bt-studio') || location.hash) { setTimeout(tenter, 900); return; }
-    lance = true; invitation();
+    lance = true; scrollTo(0, 0); bulleAide();
   };
   addEventListener('bawss-intro-fin', () => setTimeout(tenter, 500));
   setTimeout(tenter, 2500);
