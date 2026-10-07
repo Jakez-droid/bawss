@@ -69,6 +69,10 @@ def main():
                 r['intro'] = old.get('intro', '')
             if old.get('photo') and not r.get('photo'):
                 r['photo'] = old['photo']
+            # temps total (minutes) et repos : propriétés « Temps (min) » et « Repos » de Notion ; sinon on garde ceux de l'app
+            for k in ('temps', 'repos'):
+                if k not in r and old.get(k):
+                    r[k] = old[k]
             if 'courses' not in r:
                 if old.get('courses'):
                     r['courses'] = [c[:2] for c in old['courses']]
