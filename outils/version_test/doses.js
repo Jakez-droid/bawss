@@ -45,3 +45,15 @@ function dosesDe(r) {
   });
   return (DOSES[r.id] = out.map(s => [...s].sort((a, b) => a - b)));
 }
+/* on ne montre que les ingrédients qui entrent en jeu pour la première fois, et seulement quand l'étape assemble quelque chose :
+   au moins deux nouveaux, ou un seul si l'étape mélange, enrobe, ajoute… (rien pour « couper », « cuire », « servir ») */
+const ASSEMBLE = /\b(melang\w*|enrob\w*|ajout\w*|verse\w*|incorpor\w*|assaisonn\w*|marin\w*|fouett\w*|delay\w*|saupoudr\w*|arros\w*|badigeonn\w*|parsem\w*|garni\w*|farci\w*|napp\w*|lier|monter|laquer)\b/;
+const DOSES_ETAPE = {};
+function dosesEtape(r) {
+  if (DOSES_ETAPE[r.id]) return DOSES_ETAPE[r.id];
+  const vu = new Set();
+  return (DOSES_ETAPE[r.id] = dosesDe(r).map((ks, i) => {
+    const neufs = ks.filter(k => !vu.has(k)); ks.forEach(k => vu.add(k));
+    return neufs.length >= 2 || (neufs.length === 1 && ASSEMBLE.test(norm(r.steps[i].replace(/\*\*/g, '')))) ? neufs : [];
+  }));
+}

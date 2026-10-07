@@ -64,7 +64,7 @@
     CHAT.fil.scrollTop = CHAT.fil.scrollHeight;
   }
   /* la conversation : pour un membre, avec ton Jakez ; pour Jakez, avec le membre choisi */
-  async function ecranChat(cible, pseudoCible, recette, etape, brouillon) {
+  async function ecranChat(cible, pseudoCible, recette, etape) {
     if (!sb) return;
     if (!moi) { ecranCompte('creer', 'Pour écrire à ton Jakez, il te faut juste un pseudo.'); return; }
     CHAT.cible = moi.admin ? cible : moi.id; CHAT.recette = recette || null;
@@ -82,7 +82,6 @@
     el.querySelector('[data-chat-retour]').addEventListener('click', () => { CHAT.fil = null; if (moi.admin) boiteReception(); else fermer(); });
     const sans = el.querySelector('[data-chat-sans]'); if (sans) sans.addEventListener('click', () => { CHAT.recette = null; sans.parentElement.remove(); });
     const ta = el.querySelector('textarea'), form = el.querySelector('[data-chat-form]');
-    if (brouillon) { ta.value = brouillon; setTimeout(() => { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 140) + 'px'; }, 0); }
     if (etape) { ta.value = 'Étape ' + etape + ' : '; setTimeout(() => { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 140) + 'px'; }, 0); }
     ta.addEventListener('input', () => { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 140) + 'px'; });
     ta.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey && matchMedia('(pointer: fine)').matches) { e.preventDefault(); form.requestSubmit(); } });
@@ -148,7 +147,7 @@
     e.preventDefault(); e.stopPropagation();
     if (moi && moi.admin) { boiteReception(); return; }
     const sec = b.closest('section.recipe');
-    ecranChat(null, null, b.dataset.rec || (sec ? sec.id.replace(/^r-/, '') : null), b.dataset.etape, b.dataset.demande ? 'Salut ! Tu pourrais ajouter une recette de ' + b.dataset.demande + ' ? 🙏' : '');
+    ecranChat(null, null, b.dataset.rec || (sec ? sec.id.replace(/^r-/, '') : null), b.dataset.etape);
   }, true);
   boutonsBoss();
   addEventListener('keydown', e => {

@@ -160,7 +160,7 @@
       if (r && r.error && invitePar()) await sb.from('profils').insert(ligne).then(() => {}, () => {});   // colonne pas encore créée
       return;
     }
-    moi.admin = !!p.admin; moi.pseudo = p.pseudo || moi.pseudo; majBouton(); chatDemarrer(); if (moi.admin) nouveauxMembres();
+    moi.admin = !!p.admin; moi.pseudo = p.pseudo || moi.pseudo; majBouton(); chatDemarrer(); if (moi.admin) { nouveauxMembres(); compterDemandes(); }
     const distant = p.maj_le || '1970-01-01T00:00:00Z';
     let f, c;
     if (fusion) {
@@ -415,6 +415,10 @@
       + '<button type="button" class="bw-later" data-faq>Questions fréquentes</button>'
       + '<button type="button" class="bw-later" data-deco>Me déconnecter</button>');
     const bx = el.querySelector('[data-boite]'); if (bx) bx.addEventListener('click', boiteReception);
+    if (moi.admin) {
+      bx.insertAdjacentHTML('afterend', '<button type="button" class="bw-choix" data-demandes><b>📝 Demandes de recettes' + (DEMANDES.nouvelles ? ' · ' + DEMANDES.nouvelles : '') + '</b><span>Ce que la bande voudrait voir dans Bawss</span></button>');
+      el.querySelector('[data-demandes]').addEventListener('click', ecranDemandes);
+    }
     const ms = el.querySelector('[data-messages]'); if (ms) ms.addEventListener('click', () => ecranChat());
     el.querySelector('[data-inviter]').addEventListener('click', () => { if (window.inviterPote) window.inviterPote(); });
     el.querySelector('[data-tuto]').addEventListener('click', () => { fermer(); if (window.revoirTuto) window.revoirTuto(); });
@@ -523,6 +527,86 @@
                    : chiffre(inscrits, 'nouveaux inscrits', inscritsAv, vs) + chiffre(venus, 'membres venus'))
       + '</div>';
     zone.innerHTML = h;
+  }
+
+  /* ---------- demander une recette (avec ou sans compte) ; Jakez les retrouve dans Mon compte ---------- */
+  const DEMANDES = { nouvelles: 0 };
+  function ecranDemande(terme) {
+    const el = ouvrir('<button type="button" class="bw-later bw-haut" data-retour>‹ Retour</button><h1>Demande une <span>recette</span></h1>'
+      + '<p>Ton Jakez la teste. Si elle passe, elle arrive dans Bawss.</p>'
+      + '<form data-dem style="display:grid;gap:12px" novalidate>'
+      + '<label for="bw-dem-t">Quel plat ?</label><input id="bw-dem-t" type="text" maxlength="60" autocomplete="off" enterkeyhint="next" value="' + esc2(terme || '') + '" placeholder="Ex. : pizza, ramen, gratin dauphinois">'
+      + '<label for="bw-dem-p">Une précision ? <small>(facultatif)</small></label><textarea id="bw-dem-p" class="rz-com" rows="3" maxlength="200" placeholder="Ex. : la napolitaine de chez Gennaro, sans four à pizza"></textarea>'
+      + '<p class="bw-err" role="alert" hidden></p>'
+      + '<button type="submit" class="bw-go">Envoyer</button></form>'
+      + (moi ? '' : '<p class="bw-note">Pas besoin de compte. Avec un pseudo, ton Jakez sait qui a demandé.</p>'));
+    el.querySelector('[data-retour]').addEventListener('click', fermer);
+    const f = el.querySelector('[data-dem]'), t = el.querySelector('#bw-dem-t'), pr = el.querySelector('#bw-dem-p'), go = el.querySelector('.bw-go'), er = el.querySelector('.bw-err');
+    f.addEventListener('submit', async e => {
+      e.preventDefault();
+      const terme2 = t.value.trim().replace(/\s+/g, ' ');
+      if (terme2.length < 2) { er.textContent = 'Dis-moi quel plat tu veux.'; er.hidden = false; t.focus(); return; }
+      er.hidden = true; go.disabled = true; go.textContent = '…';
+      const r = sb ? await sb.rpc('demander_recette', { p_appareil: appareil, p_terme: terme2, p_precision: pr.value.trim() || null }).then(x => x, x => ({ error: x })) : { error: true };
+      if (r.error || r.data === false) {
+        er.textContent = r.data === false ? 'Tu as déjà envoyé beaucoup de demandes aujourd’hui. Réessaie demain.' : (navigator.onLine === false ? 'Pas de réseau : ta demande n’est pas partie.' : 'Ta demande n’est pas partie, réessaie dans un moment.');
+        er.hidden = false; go.disabled = false; go.textContent = 'Envoyer'; return;
+      }
+      const ok = ouvrir(logo + '<h1>C’est <span>noté</span></h1><p>Ton Jakez a reçu ta demande pour <b>« ' + esc2(terme2) + ' »</b>. Elle arrivera ici si elle passe le test.</p><button type="button" class="bw-go" data-ok>Retour aux recettes</button>');
+      ok.querySelector('[data-ok]').addEventListener('click', fermer);
+    });
+    if (!ios) setTimeout(() => (terme ? pr : t).focus(), 250);
+  }
+  /* bouton « Je veux cette recette » (recherche sans résultat) */
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-demande]'); if (!b) return;
+    e.preventDefault(); e.stopPropagation(); ecranDemande(b.dataset.demande || '');
+  }, true);
+  /* pour Jakez : la pastille des nouvelles demandes sur Moi, et la liste */
+  function pastilleDemandes(n) {
+    DEMANDES.nouvelles = n;
+    if (!bouton) return;
+    let d = bouton.querySelector('.dm-dot');
+    if (n > 0) { if (!d) { d = document.createElement('span'); d.className = 'dm-dot'; bouton.appendChild(d); } d.textContent = n > 9 ? '9+' : n; }
+    else if (d) d.remove();
+  }
+  async function compterDemandes() {
+    if (!sb || !moi || !moi.admin) return;
+    const r = await sb.rpc('demandes_liste').then(x => x, () => ({ error: true }));
+    if (r.error || !Array.isArray(r.data)) return;
+    const vu = ls.get('bawss-demandes-vues') || '1970-01-01T00:00:00Z';
+    pastilleDemandes(r.data.filter(d => !d.faite && d.quand > vu).length);
+  }
+  async function ecranDemandes(voirFaites) {
+    const el = ouvrir('<button type="button" class="bw-later bw-haut" data-retour>‹ Mon compte</button><h1>Les <span>demandes</span></h1><div data-dl><p>Chargement…</p></div>');
+    el.querySelector('[data-retour]').addEventListener('click', ecranMonCompte);
+    const box = el.querySelector('[data-dl]');
+    const r = await sb.rpc('demandes_liste').then(x => x, e => ({ error: e }));
+    if (ecran !== el) return;
+    if (r.error || !Array.isArray(r.data)) { box.innerHTML = '<div class="bw-alert">Les demandes ne sont pas encore branchées : il faut lancer une fois <b>outils/supabase_demandes.sql</b> dans Supabase (SQL Editor &gt; Run).</div>'; return; }
+    const vu = ls.get('bawss-demandes-vues') || '1970-01-01T00:00:00Z';
+    ls.set('bawss-demandes-vues', new Date().toISOString()); pastilleDemandes(0);
+    const cle = t => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim().replace(/s\b/g, '');
+    const G = new Map();
+    r.data.forEach(d => {
+      const k = cle(d.terme); if (!G.has(k)) G.set(k, { terme: d.terme, L: [] });
+      G.get(k).L.push(d);
+    });
+    const groupes = [...G.values()].map(g => ({ ...g, faite: g.L.every(d => d.faite), dernier: g.L.reduce((a, d) => d.quand > a ? d.quand : a, ''), neuf: g.L.some(d => !d.faite && d.quand > vu) }));
+    const ouverts = groupes.filter(g => !g.faite).sort((a, b) => b.L.length - a.L.length || (b.dernier > a.dernier ? 1 : -1)), faits = groupes.filter(g => g.faite);
+    const jour = d => new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+    const qui = L => { const ps = [...new Set(L.map(d => d.pseudo).filter(Boolean))], sans = new Set(L.filter(d => !d.pseudo).map(d => d.appareil)).size; return ps.map(esc2).join(', ') + (ps.length && sans ? ' + ' : '') + (sans ? sans + ' sans compte' : ''); };
+    const carte = g => '<li' + (g.neuf ? ' class="neuf"' : '') + '><div><b>' + (g.neuf ? '🆕 ' : '') + esc2(g.terme) + '</b><span>' + qui(g.L) + ' · ' + jour(g.dernier) + '</span>'
+      + g.L.filter(d => d.detail).map(d => '<q>' + esc2(d.detail) + '</q>').join('') + '</div><strong>' + g.L.length + '</strong>'
+      + (g.faite ? '' : '<button type="button" data-faite="' + g.L.map(d => d.id).join(',') + '">C’est fait</button>') + '</li>';
+    box.innerHTML = (ouverts.length ? '<p class="bw-note">Regroupées par plat, les plus demandées en premier</p><ul class="bw-dem">' + ouverts.map(carte).join('') + '</ul>' : '<p>Aucune demande en attente. La bande a tout ce qu’il lui faut.</p>')
+      + (faits.length ? '<details class="bw-plus"' + (voirFaites ? ' open' : '') + '><summary>Déjà faites (' + faits.length + ')</summary><ul class="bw-dem">' + faits.map(carte).join('') + '</ul></details>' : '');
+    box.querySelectorAll('[data-faite]').forEach(b => b.addEventListener('click', async () => {
+      b.disabled = true; b.textContent = '…';
+      const x = await sb.rpc('demande_faite', { p_ids: b.dataset.faite.split(',').map(Number) }).then(y => y, y => ({ error: y }));
+      if (x.error) { b.disabled = false; b.textContent = 'C’est fait'; toast('Pas enregistré, réessaie'); return; }
+      ecranDemandes(true);
+    }));
   }
 
   /* ---------- pour Jakez : les statistiques détaillées ---------- */
@@ -653,20 +737,22 @@
     box.innerHTML = moi
       ? '<button type="button" data-mc="compte"><b>👤 ' + esc2(moi.pseudo) + '</b><span>' + (moi.admin ? 'Mon compte : tableau de bord, stats, la bande' : 'Mon compte : ton code pour tes autres appareils') + '</span></button>'
         + (moi.admin ? '<button type="button" data-mc="boite"><b>📥 Boîte de réception</b><span>Les messages de la bande</span>' + nl + '</button>'
+          + '<button type="button" data-mc="demandes"><b>📝 Demandes de recettes</b><span>Ce que la bande voudrait voir dans Bawss</span>' + (DEMANDES.nouvelles ? '<i class="moi-n">' + DEMANDES.nouvelles + '</i>' : '') + '</button>'
                      : '<button type="button" data-mc="chat"><b>💬 Demande à ton Jakez</b><span>Une question, un plat raté, une idée</span>' + nl + '</button>')
       : '<button type="button" data-mc="creer" class="moi-cta"><b>Crée ton pseudo</b><span>Tes favoris et ta liste sur tous tes appareils, et le chat avec ton Jakez. Pas de mail.</span></button>'
         + '<button type="button" data-mc="connexion" class="moi-lien"><b>J’ai déjà un compte</b></button>';
+    if (!moi || !moi.admin) box.insertAdjacentHTML('beforeend', '<button type="button" data-mc="demander"><b>📝 Demander une recette</b><span>Un plat qui manque ? Ton Jakez le teste</span></button>');
     if (!standalone) box.insertAdjacentHTML('beforeend', '<button type="button" data-mc="installer"><b>📲 Installer l’appli</b><span>Sur ton écran d’accueil, comme une vraie</span></button>');
     box.addEventListener('click', ev => {
       const b = ev.target.closest('[data-mc]'); if (!b) return;
       if (window.fermerMoi) window.fermerMoi();
-      ({ compte: ecranMonCompte, boite: boiteReception, chat: () => ecranChat(null, null, null), creer: () => ecranCompte('creer'), connexion: () => ecranCompte('connexion'), installer: ecranInstall })[b.dataset.mc]();
+      ({ compte: ecranMonCompte, boite: boiteReception, demandes: () => ecranDemandes(), demander: () => ecranDemande(''), chat: () => ecranChat(null, null, null), creer: () => ecranCompte('creer'), connexion: () => ecranCompte('connexion'), installer: ecranInstall })[b.dataset.mc]();
     });
   });
   (() => {
     const t = document.querySelector('#tabs [data-tab="moi"]'); if (!t || !bouton) return;
     const n = t.querySelector('.tab-n');
-    const copie = () => { const d = bouton.querySelector('.chat-dot') || bouton.querySelector('.mb-dot'); n.textContent = d ? d.textContent : ''; n.hidden = !d; };
+    const copie = () => { const d = bouton.querySelector('.chat-dot') || bouton.querySelector('.dm-dot') || bouton.querySelector('.mb-dot'); n.textContent = d ? d.textContent : ''; n.hidden = !d; };
     new MutationObserver(copie).observe(bouton, { childList: true, subtree: true, characterData: true }); copie();
   })();
 
@@ -690,13 +776,13 @@
     b.querySelector('.bw-inv-go').addEventListener('click', () => { b.remove(); ecranInstall(); });
     b.querySelector('.bw-inv-x').addEventListener('click', () => { b.remove(); ls.set('bawss-bandeau-non', String(Date.now())); });
   }
-  /* nouveau venu : on propose le pseudo juste après l'intro (avant le tour du proprio), une seule fois ; ensuite à chaque nouveau favori */
+  /* nouveau venu : on propose le pseudo juste après l'intro (avant le tour du proprio), puis une 2e fois à la 3e visite ; et à chaque nouveau favori */
   let propose = false;
   function proposerCompte(essai) {
     essai = essai || 0;
     if (propose || !sb || moi || lienMail || arrivee) return;
-    const n = parseInt(ls.get('bawss-compte-propose') || '0', 10);
-    if (n >= 1) return;
+    const n = parseInt(ls.get('bawss-compte-propose') || '0', 10), v = parseInt(ls.get('bawss-visites') || '0', 10);
+    if (n >= 2 || (n === 1 && v < 3)) return;
     if (ecran || document.querySelector('.bt, .bt-seance, .bt-studio, .tuto, .pk, .mag, .bw-invite')) { if (essai < 90) setTimeout(() => proposerCompte(essai + 1), 1000); return; }
     propose = true; ls.set('bawss-compte-propose', String(n + 1));
     ecranCompte('creer', n ? '' : 'Bienvenue dans la bande !');

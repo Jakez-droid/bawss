@@ -33,7 +33,7 @@
       if (nom === 'profils') {
         const P = profils();
         if (op === 'insert' || op === 'upsert' || op === 'update') {
-          const id = (ligne && ligne.id) || (moi && moi.id); if (id) { P[id] = Object.assign({ id, admin: false, cree_le: new Date().toISOString(), vu_le: new Date().toISOString() }, P[id] || {}, ligne || {}); ecrire('bawss-test-profils', P); }
+          const id = (ligne && ligne.id) || (moi && moi.id); if (id) { P[id] = Object.assign({ id, admin: /^jakez$/i.test(String((ligne && ligne.pseudo) || (moi && moi.user_metadata && moi.user_metadata.pseudo) || '')), cree_le: new Date().toISOString(), vu_le: new Date().toISOString() }, P[id] || {}, ligne || {}); ecrire('bawss-test-profils', P); }
           return ok(un ? P[id] : [P[id]]);
         }
         if (un) return ok(moi ? P[filtres.id || moi.id] || null : null);
@@ -68,6 +68,8 @@
         if (C[email]) return Promise.resolve({ data: { user: { identities: [] } }, error: null });
         const user = { id: uid(), email, user_metadata: (options && options.data) || {}, identities: [{}] };
         C[email] = user; ecrire('bawss-test-comptes', C);
+        /* version test : le pseudo « Jakez » a tes droits (demandes, stats) dès la création */
+        if (/^jakez$/i.test(String(user.user_metadata.pseudo || ''))) { const P = profils(); P[user.id] = { id: user.id, pseudo: user.user_metadata.pseudo, admin: true, favs: [], panier: null, cree_le: new Date().toISOString(), vu_le: new Date().toISOString() }; ecrire('bawss-test-profils', P); }
         return Promise.resolve(connecter(user));
       },
       signInWithPassword: ({ email }) => {
@@ -81,7 +83,16 @@
       resetPasswordForEmail: () => ok(null)
     },
     from: table,
-    rpc: (nom) => ok(nom === 'pseudo_libre' ? true : nom === 'membres' ? Object.values(profils()) : null),
+    rpc: (nom, a) => {
+      const D = lire('bawss-test-demandes', []), s = session(), moi = s && s.user, P = profils();
+      if (nom === 'demander_recette') {
+        D.push({ id: D.length + 1, quand: new Date().toISOString(), terme: a.p_terme, detail: a.p_precision || null, pseudo: moi && P[moi.id] ? P[moi.id].pseudo : null, appareil: a.p_appareil, faite: false });
+        ecrire('bawss-test-demandes', D); return ok(true);
+      }
+      if (nom === 'demandes_liste') return ok(moi && P[moi.id] && P[moi.id].admin ? D.slice().reverse() : []);
+      if (nom === 'demande_faite') { D.forEach(d => { if (a.p_ids.includes(d.id)) d.faite = true; }); ecrire('bawss-test-demandes', D); return ok(null); }
+      return ok(nom === 'pseudo_libre' ? true : nom === 'membres' ? Object.values(P) : null);
+    },
     channel() { const c = { on: () => c, subscribe: () => c, unsubscribe() {} }; return c; },
     removeChannel() {},
     storage: { from: () => ({ upload: () => ok({ path: 'test' }), getPublicUrl: () => ({ data: { publicUrl: '' } }), remove: () => ok(null) }) }

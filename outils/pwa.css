@@ -234,3 +234,15 @@
 .bw-fav div { display: flex; gap: 8px; align-items: center; }
 .bw-fav-go { border: 0; border-radius: 999px; background: var(--cire); color: var(--cire-ink); font: 800 15px var(--f-body); padding: 10px 16px; cursor: pointer; }
 .bw-fav-x { border: 0; background: none; color: inherit; opacity: .75; font: 600 14px var(--f-body); text-decoration: underline; text-underline-offset: 3px; padding: 8px; cursor: pointer; }
+
+/* demandes de recettes */
+.bw-dem { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; border-radius: 12px; overflow: hidden; }
+.bw-dem li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 12px; align-items: center; padding: 12px 14px; background: color-mix(in srgb, var(--on-slate) 7%, transparent); }
+.bw-dem li.neuf { background: color-mix(in srgb, var(--cire) 18%, transparent); }
+.bw-dem li > div { display: grid; gap: 3px; min-width: 0; }
+.bw-dem b { font-size: 17px; }
+.bw-dem span { font-size: 13px; color: color-mix(in srgb, var(--on-slate) 70%, transparent); }
+.bw-dem q { display: block; font-size: 14px; font-style: italic; color: color-mix(in srgb, var(--on-slate) 85%, transparent); }
+.bw-dem strong { font-family: var(--f-display); font-weight: 900; font-size: 28px; color: var(--cire); }
+.bw-dem button { grid-column: 1 / -1; justify-self: start; border: 1.5px solid currentColor; background: none; color: var(--on-slate); border-radius: 999px; padding: 6px 14px; font: 600 13.5px var(--f-body); cursor: pointer; }
+.dm-dot { position: absolute; top: -4px; right: -4px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 999px; background: var(--cire); color: var(--cire-ink); font: 700 11px/20px var(--f-body); }

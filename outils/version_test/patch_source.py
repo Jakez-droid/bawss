@@ -57,6 +57,7 @@ R('''    <a class="feature" id="feature" hidden></a>
     <div class="filters">''')
 R('''    <div class="grid" id="grid"></div>
     <p class="tuto-again-p">''', '''    <div class="grid" id="grid"></div>
+    <div id="bases" hidden></div>
     <div class="empty" id="empty" hidden></div>
     <p class="tuto-again-p">''')
 R('''    <div class="empty" id="empty" hidden>
@@ -107,16 +108,23 @@ R('''function renderGrid() {
       </div>
     </a>`;
 /* accueil : « Tes favoris » et « Ce soir, vite fait » au-dessus de la grille (cachées dès qu'on filtre ou cherche) */
-const RAPIDE = ['Plat', 'Sandwich & snack', 'Entrée'];
+/* « Ce soir, vite fait » : les plats express les plus simples (le moins d'ingrédients et d'étapes), 8 au plus */
+const RAPIDE = ['Plat', 'Sandwich & snack'];
+const PAS_CE_SOIR = ['croissant-aplati-grille-au-miel'];   /* sucré : c'est un goûter, pas un dîner */
+const simplicite = r => r.ingr.reduce((n, g) => n + g.items.length, 0) + r.steps.length;
+/* les bases (béchamel, bouillon…) ont leur rangée sous la grille ; focaccia et ragù restent avec les recettes */
+const DANS_LA_GRILLE = ['focaccia', 'ragu-a-la-bolognaise'];
+const aPart = r => r.type === 'Base' && !DANS_LA_GRILLE.includes(r.id);
 function renderRangs() {
   const el = $('#rangs'); if (!el) return;
   if (filtrage()) { el.innerHTML = ''; el.hidden = true; return; }
   const tri = (a, b) => rang(a) - rang(b);
   const fav = RECIPES.filter(r => favs.has(r.id)).sort(tri);
-  const vite = RECIPES.filter(r => r.temps && r.temps <= 30 && RAPIDE.includes(r.type) && !r.prank).sort(tri);
+  const vite = RECIPES.filter(r => r.effort === '⚡ Express' && RAPIDE.includes(r.type) && !r.prank && !PAS_CE_SOIR.includes(r.id))
+    .sort((a, b) => simplicite(a) - simplicite(b) || tri(a, b)).slice(0, 8);
   const bloc = (t, s, L, plus) => L.length ? `<section class="rang"><div class="rang-h"><h2>${t}</h2>${plus ? `<button type="button" class="rang-plus" data-rang="${plus}">Tout voir</button>` : ''}</div>${s ? `<p class="rang-s">${s}</p>` : ''}<div class="rang-l">${L.map(carteHTML).join('')}</div></section>` : '';
   el.innerHTML = bloc('Tes <span>favoris</span>', '', fav, fav.length > 3 ? 'favs' : '')
-    + bloc('Ce soir, <span>vite fait</span>', '30 minutes max, vaisselle non comprise.', vite, 'vite');
+    + bloc('Ce soir, <span>vite fait</span>', 'Les plus simples de la maison : peu d’ingrédients, peu d’étapes.', vite, '');
   el.hidden = !el.innerHTML;
 }
 /* recherche sans résultat : des idées proches, et on demande la recette à Jakez */
@@ -135,7 +143,7 @@ function renderVide(list) {
   if (state.q) {
     const sg = suggestions(state.q);
     el.innerHTML = `<p class="vide-t"><b>Pas encore de « ${esc(state.q)} » chez Bawss.</b>Ton Jakez n’a pas de recette testée pour ça… pour l’instant.</p>`
-      + `<div class="vide-bts"><button class="btn primary" type="button" data-boss data-demande="${esc(state.q)}">${window.bawss ? '💬 Demande-la à ton Jakez' : '📞 Demande-la au bawss'}</button><button class="btn" type="button" data-reset>Effacer la recherche</button></div>`
+      + `<div class="vide-bts"><button class="btn primary" type="button" data-demande="${esc(state.q)}">${window.bawss ? '📝 Je veux cette recette' : '📞 Demande-la au bawss'}</button><button class="btn" type="button" data-reset>Effacer la recherche</button></div>`
       + (sg.length ? `<p class="vide-s">En attendant, ça peut le faire :</p><div class="rang-l">${sg.map(carteHTML).join('')}</div>` : '');
   } else if (state.favs && !favs.size && nbFiltres() === 1) {
     el.innerHTML = `<p class="vide-t"><b>Pas encore de favori.</b>Touche le ♥ sur une recette qui te fait de l’œil : elle t’attendra ici.</p><div class="vide-bts"><button class="btn" type="button" data-reset>Voir toutes les recettes</button></div>`;
@@ -144,21 +152,27 @@ function renderVide(list) {
   }
 }
 function renderGrid() {
-  const list = RECIPES.filter(matches).sort((a, b) => rang(a) - rang(b));
-  const big = !filtrage();
+  const tout = RECIPES.filter(matches).sort((a, b) => rang(a) - rang(b));
+  const big = !filtrage(), list = big ? tout.filter(r => !aPart(r)) : tout;
   $('#grid').innerHTML = list.map(carteHTML).join('');
+  const bases = big ? tout.filter(aPart) : [], bx = $('#bases');
+  bx.hidden = !bases.length;
+  bx.innerHTML = bases.length ? `<section class="rang rang-bases"><div class="rang-h"><h2>Les <span>bases</span></h2></div><p class="rang-s">Les briques qui servent dans les autres recettes.</p><div class="rang-l">${bases.map(carteHTML).join('')}</div></section>` : '';
   $('#grid').hidden = !list.length;
   renderRangs(); renderVide(list);
   $('#toutes-t').innerHTML = state.favs && nbFiltres() === 1 && !state.q ? 'Tes <span>favoris</span>' : state.q ? 'Résultats' : 'Toutes les recettes';''')
 R('''      <div class="meta">${effortHTML(f.effort)}<span>${esc(f.type)}</span></div>''', '''      <div class="meta">${tempsHTML(f)}<span>${esc(f.type)}</span></div>''')
 R('''  $('#empty').hidden = list.length > 0;
 ''', '')
+R('''  $('#count').textContent = list.length === RECIPES.length ? '' : `${list.length} sur ${RECIPES.length} recettes`;
+  $('#count').hidden = list.length === RECIPES.length;''', '''  $('#count').textContent = big ? '' : `${tout.length} sur ${RECIPES.length} recettes`;
+  $('#count').hidden = big;''')
 R("""const ajusterGrille = () => requestAnimationFrame(() => ajusterTitres(document.querySelectorAll('#grid .card h3, #feature h2')));""",
-  """const ajusterGrille = () => requestAnimationFrame(() => ajusterTitres(document.querySelectorAll('#grid .card h3, #rangs .card h3, #empty .card h3, #feature h2')));""")
+  """const ajusterGrille = () => requestAnimationFrame(() => ajusterTitres(document.querySelectorAll('#grid .card h3, #rangs .card h3, #bases .card h3, #empty .card h3, #feature h2')));""")
 R("""$('#reset').addEventListener('click', () => { toutEffacer(); state.q = ''; $('#q').value = ''; renderChips(); renderGrid(); });""",
   """$('#empty').addEventListener('click', e => {
   if (e.target.closest('[data-reset]')) { toutEffacer(); state.q = ''; $('#q').value = ''; renderChips(); renderGrid(); if (window.majOngletsBas) window.majOngletsBas(); return; }
-  if (e.target.closest('[data-boss]')) callBoss();
+  if (e.target.closest('[data-demande]')) callBoss();   /* sur Bawss, la demande est interceptée et enregistrée */
 });
 $('#rangs').addEventListener('click', e => {
   const b = e.target.closest('[data-rang]'); if (!b) return;
@@ -170,7 +184,7 @@ $('#rangs').addEventListener('click', e => {
 # ---------- mode cuisine : les doses de l'étape ----------
 R('/* ---------- cook mode ---------- */', open(os.path.join(here, 'doses.js'), encoding='utf-8').read() + '\n/* ---------- cook mode ---------- */')
 R('''  const ct = $('#cook-text'); ct.classList.remove('in'); void ct.offsetWidth; ct.classList.add('in');''', '''  const ct = $('#cook-text'); ct.classList.remove('in'); void ct.offsetWidth; ct.classList.add('in');
-  const di = dosesDe(r)[i] || [], L = flatLines(r), f = serves[r.id] / baseServes(r), ci = $('#cook-ing');
+  const di = dosesEtape(r)[i] || [], L = flatLines(r), f = serves[r.id] / baseServes(r), ci = $('#cook-ing');
   ci.hidden = !di.length;
   ci.innerHTML = di.length ? `<p class="cook-ing-t">Pour cette étape · pour ${servesLabel(r, serves[r.id])}</p><ul>${di.map(k => { const t = scaleText(L[k], f), q = t.match(UNIT); return `<li>${q && q[0].trim() ? `<b>${esc(q[0].trim())}</b>${esc(t.slice(q[0].length))}` : esc(t)}</li>`; }).join('')}</ul>` : '';''')
 
@@ -255,7 +269,7 @@ R('une <b>pastille rouge</b> t’attend sur le bouton de ton compte à ta procha
 R('en bas d’une recette, ou dans <b>Mon compte</b>. C’est une conversation privée', 'en bas d’une recette, ou dans l’onglet <b>Moi</b>. C’est une conversation privée')
 R('Touche <b>« 👋 Inviter un pote »</b> en bas de la liste ou dans Mon compte.', 'Touche <b>« 👋 Inviter un pote »</b> dans l’onglet <b>Moi</b>, en bas.')
 R("""      + Q('C’est quoi le mode cuisine ?', '<p>Une étape à la fois, en gros, et l’écran reste allumé.""",
-  """      + Q('C’est quoi le mode cuisine ?', '<p>Une étape à la fois, en gros, avec les ingrédients de l’étape et leurs doses juste en dessous. L’écran reste allumé.""")
+  """      + Q('C’est quoi le mode cuisine ?', '<p>Une étape à la fois, en gros. Quand une étape assemble des ingrédients (une sauce, une marinade, une garniture), leurs doses s’affichent juste en dessous. L’écran reste allumé.""")
 
 # ---------- styles ----------
 CSS = r'''
@@ -278,6 +292,7 @@ CSS = r'''
 .rang-l .card { flex: 0 0 calc((100% - 30px) / 4.4); scroll-snap-align: start; animation: none; }
 @media (max-width: 680px) { .rang-l { margin-inline: -16px; padding-inline: 16px; scroll-padding-inline: 16px; } .rang-l .card { flex-basis: calc((100% - 10px) / 2.25); } }
 .toutes-t { margin-top: 44px; }
+#bases { margin: 6px 0 40px; }
 /* recherche sans résultat */
 .empty { text-align: left; padding: 22px 0 36px; color: var(--ink); }
 .vide-t { margin: 0; font-size: 16.5px; color: var(--muted); max-width: 46ch; }
