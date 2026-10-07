@@ -214,3 +214,23 @@
 .bw-tdb .bw-seg { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .bw-tdb .bw-seg button { padding: 8px 4px; font-size: 13px; line-height: 1.15; }
 .bw-plus summary { cursor: pointer; font-size: 14.5px; color: var(--cire); padding: 4px 0 10px; }
+
+/* ---------- règle clair / sombre : clair pour choisir et lire (compte, pseudo, stats, chat), sombre pour agir (cuisine, magasin) ---------- */
+.bw:not(.bw-sheet):not(:has(.rz-grande)) { --slate: var(--paper); --on-slate: var(--ink); }
+.bw:not(.bw-sheet):not(:has(.rz-grande)) :is(.bw-steps b, .bw-st h2, .bw-classement strong, .rz-note button, .rz-actions button) { color: var(--ink); }
+.bw:not(.bw-sheet):not(:has(.rz-grande)) :is(input[type=text], input[type=password], textarea) { border-color: var(--line); }
+.bw:not(.bw-sheet):not(:has(.rz-grande)) :is(input[type=text], input[type=password], textarea):focus { border-color: var(--cire); }
+.bw:not(.bw-sheet):not(:has(.rz-grande)) .bw-logo { box-shadow: 0 8px 22px rgba(0, 0, 0, .18); }
+.bw:not(.bw-sheet):not(:has(.rz-grande)) .bw-go { box-shadow: 5px 5px 0 var(--ink); }
+.bw:not(.bw-sheet):not(:has(.rz-grande)) .chat-saisie textarea { box-shadow: inset 0 0 0 1px var(--line); }
+/* onglets en bas : le bandeau « installer » et les notifications passent au-dessus */
+.a-onglets .bw-invite { bottom: calc(env(safe-area-inset-bottom, 0px) + 80px); }
+/* carte « garde tes favoris partout » */
+.bw-fav { position: fixed; left: 12px; right: 12px; bottom: calc(env(safe-area-inset-bottom, 0px) + 80px); z-index: 150; max-width: 520px; margin: 0 auto; background: var(--ink); color: var(--paper); border-radius: 16px; padding: 14px 16px; display: grid; gap: 10px; box-shadow: 0 12px 30px rgba(0, 0, 0, .3); transform: translateY(16px); opacity: 0; transition: transform .25s cubic-bezier(.2, 1.3, .4, 1), opacity .2s ease; }
+.bw-fav.on { transform: none; opacity: 1; }
+.bw-fav p { margin: 0; display: grid; gap: 3px; }
+.bw-fav p b { font-size: 16px; }
+.bw-fav p span { font-size: 14px; opacity: .8; }
+.bw-fav div { display: flex; gap: 8px; align-items: center; }
+.bw-fav-go { border: 0; border-radius: 999px; background: var(--cire); color: var(--cire-ink); font: 800 15px var(--f-body); padding: 10px 16px; cursor: pointer; }
+.bw-fav-x { border: 0; background: none; color: inherit; opacity: .75; font: 600 14px var(--f-body); text-decoration: underline; text-underline-offset: 3px; padding: 8px; cursor: pointer; }

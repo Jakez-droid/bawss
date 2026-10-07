@@ -647,6 +647,28 @@
     }));
   }
   if (bouton) bouton.addEventListener('click', ecranMonCompte);
+  addEventListener('bawss-moi', e => {
+    const box = e.detail; if (!box) return;
+    const nl = CHAT.non_lus ? '<i class="moi-n">' + CHAT.non_lus + '</i>' : '';
+    box.innerHTML = moi
+      ? '<button type="button" data-mc="compte"><b>👤 ' + esc2(moi.pseudo) + '</b><span>' + (moi.admin ? 'Mon compte : tableau de bord, stats, la bande' : 'Mon compte : ton code pour tes autres appareils') + '</span></button>'
+        + (moi.admin ? '<button type="button" data-mc="boite"><b>📥 Boîte de réception</b><span>Les messages de la bande</span>' + nl + '</button>'
+                     : '<button type="button" data-mc="chat"><b>💬 Demande à ton Jakez</b><span>Une question, un plat raté, une idée</span>' + nl + '</button>')
+      : '<button type="button" data-mc="creer" class="moi-cta"><b>Crée ton pseudo</b><span>Tes favoris et ta liste sur tous tes appareils, et le chat avec ton Jakez. Pas de mail.</span></button>'
+        + '<button type="button" data-mc="connexion" class="moi-lien"><b>J’ai déjà un compte</b></button>';
+    if (!standalone) box.insertAdjacentHTML('beforeend', '<button type="button" data-mc="installer"><b>📲 Installer l’appli</b><span>Sur ton écran d’accueil, comme une vraie</span></button>');
+    box.addEventListener('click', ev => {
+      const b = ev.target.closest('[data-mc]'); if (!b) return;
+      if (window.fermerMoi) window.fermerMoi();
+      ({ compte: ecranMonCompte, boite: boiteReception, chat: () => ecranChat(null, null, null), creer: () => ecranCompte('creer'), connexion: () => ecranCompte('connexion'), installer: ecranInstall })[b.dataset.mc]();
+    });
+  });
+  (() => {
+    const t = document.querySelector('#tabs [data-tab="moi"]'); if (!t || !bouton) return;
+    const n = t.querySelector('.tab-n');
+    const copie = () => { const d = bouton.querySelector('.chat-dot') || bouton.querySelector('.mb-dot'); n.textContent = d ? d.textContent : ''; n.hidden = !d; };
+    new MutationObserver(copie).observe(bouton, { childList: true, subtree: true, characterData: true }); copie();
+  })();
 
 /*@REALISATIONS@*/
 
@@ -668,18 +690,43 @@
     b.querySelector('.bw-inv-go').addEventListener('click', () => { b.remove(); ecranInstall(); });
     b.querySelector('.bw-inv-x').addEventListener('click', () => { b.remove(); ls.set('bawss-bandeau-non', String(Date.now())); });
   }
-  /* nouveau venu : on propose le pseudo juste après l'intro (avant le tour du proprio), puis une 2e fois à la 3e visite */
+  /* nouveau venu : on propose le pseudo juste après l'intro (avant le tour du proprio), une seule fois ; ensuite à chaque nouveau favori */
   let propose = false;
   function proposerCompte(essai) {
     essai = essai || 0;
     if (propose || !sb || moi || lienMail || arrivee) return;
-    const n = parseInt(ls.get('bawss-compte-propose') || '0', 10), v = parseInt(ls.get('bawss-visites') || '0', 10);
-    if (n >= 2 || (n === 1 && v < 3)) return;
+    const n = parseInt(ls.get('bawss-compte-propose') || '0', 10);
+    if (n >= 1) return;
     if (ecran || document.querySelector('.bt, .bt-seance, .bt-studio, .tuto, .pk, .mag, .bw-invite')) { if (essai < 90) setTimeout(() => proposerCompte(essai + 1), 1000); return; }
     propose = true; ls.set('bawss-compte-propose', String(n + 1));
     ecranCompte('creer', n ? '' : 'Bienvenue dans la bande !');
   }
   addEventListener('bawss-intro-fin', () => proposerCompte());
+  /* un cœur touché sans compte : petite carte en bas, « garde tes favoris partout » */
+  function carteFavori() {
+    if (moi || !sb) return;
+    const old = document.querySelector('.bw-fav'); if (old) old.remove();
+    const c = document.createElement('div'); c.className = 'bw-fav'; c.setAttribute('role', 'status');
+    c.innerHTML = '<p><b>♥ Gardée sur ce téléphone</b><span>Crée ton pseudo pour retrouver tes favoris sur tous tes appareils. Pas de mail.</span></p>'
+      + '<div><button type="button" class="bw-fav-go">Créer mon pseudo</button><button type="button" class="bw-fav-x">Plus tard</button></div>';
+    document.body.appendChild(c);
+    requestAnimationFrame(() => c.classList.add('on'));
+    const partir = () => { c.classList.remove('on'); setTimeout(() => c.remove(), 250); };
+    c.querySelector('.bw-fav-go').addEventListener('click', () => { partir(); ecranCompte('creer', 'Tes favoris te suivront partout.'); });
+    c.querySelector('.bw-fav-x').addEventListener('click', partir);
+    const t = document.getElementById('toast'); if (t) t.hidden = true;   /* la carte dit déjà « gardée » */
+    /* elle s'en va au geste suivant (autre bouton, autre page, mode cuisine) ou au bout de 8 s */
+    setTimeout(() => {
+      const ailleurs = ev => { if (!c.contains(ev.target)) { partir(); document.removeEventListener('click', ailleurs, true); } };
+      document.addEventListener('click', ailleurs, true);
+      addEventListener('hashchange', partir, { once: true });
+    }, 0);
+    setTimeout(partir, 8000);
+  }
+  document.addEventListener('click', e => {   /* en capture : la fiche redessine le cœur juste après */
+    const b = e.target.closest('[data-fav]'); if (!b || moi) return;
+    setTimeout(() => { if (b.getAttribute('aria-pressed') === 'true') carteFavori(); }, 400);
+  }, true);
 
   /* clin d'œil réservé à un membre : chaque dimanche, à la première ouverture, juste après l'intro */
   const CLINS = { nus2velours: 'Prends un macdo mon nus2velz' };
@@ -712,7 +759,8 @@
     noterVisite();
     if (arrivee && nouvelAppareil) evt('entree', arrivee.id);
     suivreVue();
-    if (!arrivee) { lancer(); setTimeout(proposerCompte, 4000); }
+    if (!arrivee && !ls.get('bawss-intro-vue') && !ls.get('bawss-seance')) { ls.set('bawss-intro-vue', '1'); lancer(); }
+    if (!arrivee) setTimeout(proposerCompte, 4000);
     // l'installation est proposée à partir de la 2e visite, sans bloquer
     const jour = new Date().toISOString().slice(0, 10);
     if (ls.get('bawss-jour') !== jour) { ls.set('bawss-jour', jour); ls.set('bawss-visites', String(parseInt(ls.get('bawss-visites') || '0', 10) + 1)); }
