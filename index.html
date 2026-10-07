@@ -175,6 +175,39 @@
 /* clin d'œil « Labour arzul labour nul » */
 .bw h1.bw-labour { font-size: 46px; }
 .bw .bw-labour-msg { margin: 6px 0 0; font: 900 30px/1.05 var(--f-display); text-transform: uppercase; }
+
+/* ---------- statistiques détaillées (Jakez) ---------- */
+.bw-haut { align-self: flex-start; padding-left: 0; margin-bottom: -10px; }
+.bw-st { display: grid; gap: 12px; padding-top: 18px; border-top: 1px solid color-mix(in srgb, var(--on-slate) 16%, transparent); }
+.bw-st h2 { margin: 0; font-family: var(--f-display); font-weight: 900; text-transform: uppercase; font-size: 30px; line-height: 1; color: #fff; }
+.bw-st h3 { margin: 8px 0 -4px; font-family: var(--f-mono); font-size: 12.5px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--cire); }
+.bw-st .bw-stats b { font-size: 30px; }
+.bw-seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.bw-seg button { appearance: none; border: 0; border-radius: 999px; padding: 8px 13px; font: 600 14px var(--f-body); background: color-mix(in srgb, var(--on-slate) 12%, transparent); color: var(--on-slate); cursor: pointer; }
+.bw-seg button[aria-pressed="true"] { background: var(--cire); color: var(--cire-ink); }
+.bw-barres { overflow: hidden; display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: 2px; align-items: end; height: 120px; padding-bottom: 18px; position: relative; }
+.bw-barre { height: 100%; display: flex; flex-direction: column; justify-content: flex-end; position: relative; cursor: default; }
+.bw-barre i { display: block; background: color-mix(in srgb, var(--cire) 55%, transparent); border-radius: 4px 4px 0 0; min-height: 0; }
+.bw-barre.fort i { background: var(--cire); }
+.bw-barre:hover i { background: #fff; }
+.bw-barre span { position: absolute; top: 100%; left: 0; margin-top: 4px; font-family: var(--f-mono); font-size: 10.5px; white-space: nowrap; color: color-mix(in srgb, var(--on-slate) 70%, transparent); }
+.bw-barres::after { content: ''; position: absolute; left: 0; right: 0; bottom: 18px; height: 1px; background: color-mix(in srgb, var(--on-slate) 25%, transparent); }
+.bw-classement { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; border-radius: 12px; overflow: hidden; }
+.bw-classement li { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 10px 14px 10px 10px; background: color-mix(in srgb, var(--on-slate) 7%, transparent); }
+.bw-classement li:nth-child(-n+3) { background: color-mix(in srgb, var(--cire) 16%, transparent); }
+.bw-classement em { font-style: normal; font-family: var(--f-display); font-weight: 900; font-size: 22px; text-align: center; color: var(--cire); }
+.bw-classement div { display: grid; gap: 2px; min-width: 0; }
+.bw-classement div b { font-size: 15.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bw-classement div span { font-size: 12.5px; color: color-mix(in srgb, var(--on-slate) 70%, transparent); }
+.bw-classement strong { font-family: var(--f-display); font-weight: 900; font-size: 24px; color: #fff; }
+.bw-puces { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.bw-puces li { font-size: 14px; padding: 6px 10px; border-radius: 10px; background: color-mix(in srgb, var(--on-slate) 10%, transparent); }
+.bw-mots { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.bw-mots li { font-size: 14.5px; padding: 6px 11px; border-radius: 999px; background: color-mix(in srgb, var(--on-slate) 12%, transparent); }
+.bw-mots li b { font-family: var(--f-mono); font-size: 12px; margin-left: 4px; color: var(--cire); }
+.bw-mots li.vide { background: color-mix(in srgb, #E4322B 30%, transparent); }
+.bw-st .bw-stats div { align-content: start; }
+.bw-plus summary { cursor: pointer; font-size: 14.5px; color: var(--cire); padding: 4px 0 10px; }
 </style></head><body>
 <style>
 /* tuto */
@@ -3093,15 +3126,71 @@ window.lancerIntro = (opts = {}) => {
     return s ? s + '@bawss.app' : '';
   };
   /* compteur anonyme : un identifiant au hasard par appareil, une ligne par jour dans « visites » */
+  let nouvelAppareil = false;
   const appareil = (() => {
     let a = ls.get('bawss-appareil');
     if (!a) {
+      nouvelAppareil = true;
       try { a = crypto.randomUUID(); } catch (e) { a = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 3 | 8)).toString(16); }); }
       ls.set('bawss-appareil', a);
     }
     return a;
   })();
   const noterVisite = () => { if (sb) sb.rpc('noter_visite', { p_appareil: appareil, p_plateforme: plateforme, p_installee: standalone, p_invite_par: invitePar() || null }).then(() => {}, () => {}); };
+  /* ---------- statistiques détaillées : chaque geste, anonyme, par appareil (table « evenements ») ---------- */
+  const evt = (type, recette, detail, nb) => {
+    if (!sb) return;
+    try { sb.rpc('noter_evt', { p_appareil: appareil, p_type: type, p_recette: recette || null, p_detail: detail == null ? null : String(detail), p_nb: nb == null ? null : nb }).then(() => {}, () => {}); } catch (e) {}
+  };
+  const recetteDe = el => { const sec = el && el.closest && el.closest('section.recipe'); return sec ? sec.id.replace(/^r-/, '') : ''; };
+  let derniereVue = '', finVue = null;
+  function suivreVue() {
+    const id = location.hash.slice(1);
+    if (!BY_ID[id]) { derniereVue = ''; return; }
+    if (id === derniereVue) return;
+    derniereVue = id;
+    if (document.querySelector('.tuto')) return;   /* le tour du proprio ouvre le curry tout seul : on ne compte pas */
+    evt('vue', id);
+    /* « lue jusqu'au bout » : le bouton « J'ai fini » arrive à l'écran */
+    if (finVue) finVue.disconnect();
+    const fin = document.querySelector('#r-' + CSS.escape(id) + ' .finish');
+    if (fin && 'IntersectionObserver' in window) {
+      let vu = false;
+      finVue = new IntersectionObserver(es => { if (!vu && es.some(x => x.isIntersecting)) { vu = true; evt('bout', id); finVue.disconnect(); } }, { threshold: .6 });
+      setTimeout(() => { if (derniereVue === id && finVue) finVue.observe(fin); }, 1200);
+    }
+  }
+  addEventListener('hashchange', suivreVue);
+  let introFin = '';
+  document.addEventListener('click', e => {
+    const t = e.target; if (!t || !t.closest) return;
+    if (document.querySelector('.tuto') || !e.isTrusted) return;
+    if (t.closest('.bs-sans')) { introFin = 'sans'; return; }
+    if (t.closest('.bt .passer, .passer')) { introFin = introFin || 'coupee'; return; }
+    const rid = recetteDe(t);
+    let b;
+    if ((b = t.closest('[data-fav]')) && rid) { if (b.getAttribute('aria-pressed') !== 'true') evt('fav', rid); return; }
+    if ((b = t.closest('[data-cart]')) && rid) { if (b.getAttribute('aria-pressed') !== 'true') evt('panier', rid); return; }
+    if ((b = t.closest('[data-share]'))) { const r = b.dataset.share || rid; if (r) evt('partage', r); return; }
+    if (t.closest('[data-cook]') && rid) { evt('cuisine', rid); return; }
+    if (t.closest('[data-done]') && rid) { evt('fini', rid); return; }
+    if (t.closest('#cook-next')) { try { if (cook && cook.i >= cook.r.steps.length - 1) evt('fini', cook.r.id); } catch (er) {} return; }
+    if (t.closest('[data-boss]')) { let r = rid; try { if (!r && cook) r = cook.r.id; } catch (er) {} evt('boss', r); }
+  }, true);
+  addEventListener('bawss-intro-fin', () => { evt('intro', null, introFin || 'entiere'); introFin = ''; });
+  if (typeof window.inviterPote === 'function') { const inv = window.inviterPote; window.inviterPote = (...a) => { evt('invite'); return inv(...a); }; }
+  (() => {
+    const q = document.getElementById('q'); if (!q) return;
+    let tq = null, dernier = '';
+    const noter = () => {
+      const terme = q.value.trim().toLowerCase().replace(/\s+/g, ' ');
+      if (terme.length < 3 || terme === dernier || document.querySelector('.tuto, [class^="tt-"]')) return;
+      dernier = terme;
+      evt('recherche', null, terme.slice(0, 40), document.querySelectorAll('#grid a.card').length);
+    };
+    q.addEventListener('input', () => { clearTimeout(tq); tq = setTimeout(noter, 1800); });
+    q.addEventListener('blur', () => { clearTimeout(tq); noter(); });
+  })();
   const marque = () => ls.set('bawss-maj', new Date().toISOString());
   const majLocale = () => ls.get('bawss-maj') || '1970-01-01T00:00:00Z';
   const panierVide = c => !c || ((!c.recipes || !Object.keys(c.recipes).length) && !(Array.isArray(c.libres) && c.libres.length));
@@ -3466,12 +3555,136 @@ window.lancerIntro = (opts = {}) => {
     const L = r.data || [], j = d => new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
     const semaine = L.filter(m => Date.now() - new Date(m.vu_le) < 7 * 864e5).length;
     const v = await vis;
-    box.innerHTML = (v ? '<p class="bw-note">Visiteurs, avec ou sans compte (un téléphone = un visiteur)</p><div class="bw-stats"><div><b>' + v.appareils + '</b><span>visiteurs</span></div><div><b>' + v.semaine + '</b><span>cette semaine</span></div><div><b>' + v.sans_compte + '</b><span>sans compte</span></div></div>'
+    box.innerHTML = '<button type="button" class="bw-choix" data-stats><b>📊 Statistiques</b><span>Classement des recettes, recherches, diffusion, moments : tout le détail</span></button>'
+      + (v ? '<p class="bw-note">Visiteurs, avec ou sans compte (un téléphone = un visiteur)</p><div class="bw-stats"><div><b>' + v.appareils + '</b><span>visiteurs</span></div><div><b>' + v.semaine + '</b><span>cette semaine</span></div><div><b>' + v.sans_compte + '</b><span>sans compte</span></div></div>'
       + '<div class="bw-stats"><div><b>' + v.aujourdhui + '</b><span>aujourd\'hui</span></div><div><b>' + v.nouveaux_semaine + '</b><span>nouveaux (7 j)</span></div><div><b>' + v.installes + '</b><span>appli installée</span></div></div><p class="bw-note">Comptes</p>' : '')
       + '<div class="bw-stats"><div><b>' + L.length + '</b><span>membres</span></div><div><b>' + L.filter(m => m.installee).length + '</b><span>appli installée</span></div><div><b>' + semaine + '</b><span>venus cette semaine</span></div></div>'
       + '<ul class="bw-membres">' + L.map(m => '<li' + (NOUVEAUX.some(n => n.pseudo === m.pseudo) ? ' class="neuf"' : '') + '><b>' + (NOUVEAUX.some(n => n.pseudo === m.pseudo) ? '🆕 ' : '') + esc2(m.pseudo) + '</b><span>' + (m.email && !/@bawss\.app$/.test(m.email) ? esc2(m.email) + ' · ' : '') + esc2(m.plateforme || '') + (m.installee ? ' · installée' : '') + (m.invite_par ? ' · invité par ' + esc2(m.invite_par) : '') + ' · inscrit le ' + j(m.cree_le) + ' · vu le ' + j(m.vu_le) + '</span></li>').join('') + '</ul>';
+    box.querySelector('[data-stats]').addEventListener('click', () => ecranStats(7));
     /* vus : on remet le compteur à zéro */
     ls.set('bawss-membres-vus', new Date().toISOString()); NOUVEAUX = []; pastilleMembres(0);
+  }
+
+  /* ---------- pour Jakez : les statistiques détaillées ---------- */
+  const TRIS = [
+    ['lecteurs', 'Ouvertes', 'personnes qui l’ont ouverte'],
+    ['fav', 'Favoris', 'mises en favori'],
+    ['panier', 'Courses', 'ajoutées à la liste de courses'],
+    ['partages', 'Partages', 'partages'],
+    ['bout', 'Lues en entier', 'lues jusqu’au bout'],
+    ['fini', 'Cuisinées', '« J’ai fini »'],
+    ['entrees', 'Portes d’entrée', 'nouveaux arrivés par cette recette']
+  ];
+  const PERIODES = [[7, '7 jours'], [30, '30 jours'], [null, 'Depuis le début']];
+  let statsTri = 'lecteurs'; let statsCache = null;
+  const nbf = n => Number(n || 0).toLocaleString('fr-FR');
+  const pct = (a, b) => (b ? Math.round(100 * a / b) + ' %' : '–');
+  function barres(vals, labels, titres, marque) {
+    const max = Math.max(1, ...vals);
+    return '<div class="bw-barres" style="--n:' + vals.length + '">' + vals.map((v, i) =>
+      '<div class="bw-barre' + (marque && marque(i) ? ' fort' : '') + '" title="' + esc2(titres[i] + ' : ' + nbf(v)) + '" aria-label="' + esc2(titres[i] + ' : ' + nbf(v)) + '"><i style="height:' + (v ? Math.max(4, Math.round(100 * v / max)) : 0) + '%"></i><span>' + labels[i] + '</span></div>').join('') + '</div>';
+  }
+  async function ecranStats(jours) {
+    const choixP = '<div class="bw-seg" role="group" aria-label="Période">' + PERIODES.map(([j, t]) => '<button type="button" data-p="' + j + '" aria-pressed="' + (j === jours) + '">' + t + '</button>').join('') + '</div>';
+    const el = ouvrir('<button type="button" class="bw-later bw-haut" data-retour>‹ Mon compte</button><h1>Les <span>stats</span></h1>' + choixP + '<div data-st><p>Chargement…</p></div><button type="button" class="bw-go" data-retour>Retour</button>');
+    el.querySelectorAll('[data-retour]').forEach(b => b.addEventListener('click', ecranMonCompte));
+    el.querySelectorAll('[data-p]').forEach(b => b.addEventListener('click', () => ecranStats(b.dataset.p === 'null' ? null : Number(b.dataset.p))));
+    const box = el.querySelector('[data-st]');
+    const cle = String(jours);
+    const r = statsCache && statsCache.cle === cle && Date.now() - statsCache.t < 120000 ? statsCache.r
+      : await sb.rpc('stats_detail', { p_jours: jours }).then(x => x, e => ({ error: e }));
+    if (!r.error && r.data) statsCache = { cle, r, t: Date.now() };
+    if (ecran !== el || !el.contains(box)) return;
+    if (r.error || !r.data) {
+      box.innerHTML = '<div class="bw-alert">Les stats ne sont pas encore branchées : il faut lancer une fois <b>outils/supabase_stats.sql</b> dans Supabase (SQL Editor &gt; Run).</div>';
+      return;
+    }
+    const d = r.data, per = jours ? 'sur ' + jours + ' jours' : 'depuis le début';
+    const R = d.recettes || [], parId = Object.fromEntries(R.map(x => [x.recette, x]));
+    const nom = id => BY_ID[id] ? BY_ID[id].emoji + ' ' + esc2(BY_ID[id].title) : esc2(id);
+    const g = d.gestes || {}, ret = d.retour || {};
+    let h = '';
+
+    /* 1. visiteurs par jour */
+    const jrs = [], vals = [], tit = [];
+    for (let i = 29; i >= 0; i--) {
+      const dt = new Date(Date.now() - i * 864e5), k = dt.toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris' });
+      jrs.push(i % 7 === 0 ? dt.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', timeZone: 'Europe/Paris' }) : '');
+      vals.push((d.par_jour || {})[k] || 0);
+      tit.push(dt.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'Europe/Paris' }));
+    }
+    h += '<section class="bw-st"><h2>Visiteurs par jour</h2><p class="bw-note">Les 30 derniers jours, un téléphone = un visiteur</p>' + barres(vals, jrs, tit, i => i === 29) + '</section>';
+
+    /* 2. ils reviennent ? */
+    h += '<section class="bw-st"><h2>Ils reviennent ?</h2><p class="bw-note">Depuis le début</p><div class="bw-stats">'
+      + '<div><b>' + nbf(ret.revenus) + '</b><span>sont revenus (sur ' + nbf(ret.appareils) + ' visiteurs)</span></div>'
+      + '<div><b>' + nbf(ret.fideles) + '</b><span>fidèles : 4 jours ou plus</span></div>'
+      + '<div><b>' + pct(ret.revenus_7j, ret.eligibles_7j) + '</b><span>reviennent dans les 7 jours</span></div></div></section>';
+
+    /* 3. classement des recettes */
+    const tri = TRIS.find(t => t[0] === statsTri) || TRIS[0];
+    const classes = R.filter(x => Number(x[tri[0]]) > 0).sort((a, b) => b[tri[0]] - a[tri[0]] || b.lecteurs - a.lecteurs);
+    h += '<section class="bw-st"><h2>Classement des recettes</h2><p class="bw-note">' + esc2(tri[2]) + ', ' + per + ' (une personne compte une fois par recette, sauf les partages)</p>'
+      + '<div class="bw-seg bw-seg-tri" role="group" aria-label="Classer par">' + TRIS.map(t => '<button type="button" data-tri="' + t[0] + '" aria-pressed="' + (t[0] === tri[0]) + '">' + t[1] + '</button>').join('') + '</div>'
+      + (classes.length ? '<ol class="bw-classement">' + classes.map((x, i) => '<li><em>' + (i + 1) + '</em><div><b>' + nom(x.recette) + '</b><span>'
+          + [['lecteurs', 'lecteur', 'lecteurs'], ['bout', 'en entier', 'en entier'], ['fini', 'l’a faite', 'l’ont faite'], ['fav', 'favori', 'favoris'], ['panier', 'en courses', 'en courses'], ['partages', 'partage', 'partages']]
+              .filter(([k]) => k !== tri[0] && Number(x[k]) > 0).map(([k, t1, t2]) => nbf(x[k]) + ' ' + (Number(x[k]) > 1 ? t2 : t1) + (k === 'bout' && x.lecteurs ? ' (' + pct(x.bout, x.lecteurs) + ')' : '')).join(' · ')
+          + '</span></div><strong>' + nbf(x[tri[0]]) + '</strong></li>').join('') + '</ol>'
+        : '<p>Rien pour l’instant ' + per + '.</p>')
+      + '</section>';
+
+    /* 4. jamais ouvertes */
+    const jamais = RECIPES.filter(x => !parId[x.id] || !Number(parId[x.id].lecteurs));
+    h += '<section class="bw-st"><h2>Jamais ouvertes</h2><p class="bw-note">' + nbf(jamais.length) + ' recette' + (jamais.length > 1 ? 's' : '') + ' que personne n’a ouverte' + (jamais.length > 1 ? 's' : '') + ' ' + per + ' : une photo ou un titre à revoir ?</p>'
+      + (jamais.length ? '<ul class="bw-puces">' + jamais.slice(0, 8).map(x => '<li>' + nom(x.id) + '</li>').join('') + '</ul>'
+          + (jamais.length > 8 ? '<details class="bw-plus"><summary>Voir les ' + (jamais.length - 8) + ' autres</summary><ul class="bw-puces">' + jamais.slice(8).map(x => '<li>' + nom(x.id) + '</li>').join('') + '</ul></details>' : '') : '<p>Toutes ont été ouvertes au moins une fois 🎉</p>') + '</section>';
+
+    /* 5. diffusion */
+    const inv = d.inviteurs || [];
+    const entrees = R.filter(x => Number(x.entrees) > 0).sort((a, b) => b.entrees - a.entrees).slice(0, 8);
+    h += '<section class="bw-st"><h2>La diffusion</h2><p class="bw-note">' + per + '</p><div class="bw-stats">'
+      + '<div><b>' + nbf(g.partages) + '</b><span>recettes partagées</span></div>'
+      + '<div><b>' + nbf(g.invite) + '</b><span>invitations envoyées</span></div>'
+      + '<div><b>' + nbf(inv.reduce((a, x) => a + Number(x.appareils), 0)) + '</b><span>arrivés par une invitation</span></div></div>'
+      + '<h3>Qui ramène du monde</h3>'
+      + (inv.length ? '<ol class="bw-classement">' + inv.map((x, i) => '<li><em>' + (i + 1) + '</em><div><b>' + esc2(x.pseudo) + '</b><span>' + nbf(x.avec_compte) + ' ont créé un compte</span></div><strong>' + nbf(x.appareils) + '</strong></li>').join('') + '</ol>'
+        : '<p>Personne n’est encore arrivé par un lien d’invitation ' + per + '.</p>')
+      + '<h3>Les recettes qui font venir les gens</h3><p class="bw-note">Nouveaux visiteurs arrivés directement sur une recette partagée</p>'
+      + (entrees.length ? '<ol class="bw-classement">' + entrees.map((x, i) => '<li><em>' + (i + 1) + '</em><div><b>' + nom(x.recette) + '</b></div><strong>' + nbf(x.entrees) + '</strong></li>').join('') + '</ol>'
+        : '<p>Pas encore d’arrivée par un lien de recette ' + per + '.</p>')
+      + '</section>';
+
+    /* 6. recherches */
+    const rq = d.recherches || [], vides = rq.filter(x => x.vide);
+    h += '<section class="bw-st"><h2>Ce qu’ils cherchent</h2><p class="bw-note">' + nbf(g.recherches) + ' recherche' + (g.recherches > 1 ? 's' : '') + ' ' + per + ' (nombre de personnes par mot)</p>'
+      + (rq.length ? '<ul class="bw-mots">' + rq.map(x => '<li' + (x.vide ? ' class="vide"' : '') + '>' + esc2(x.terme) + ' <b>' + nbf(x.n) + '</b></li>').join('') + '</ul>' : '<p>Aucune recherche ' + per + '.</p>')
+      + '<h3>Cherché, pas trouvé</h3><p class="bw-note">Des idées de prochaines recettes</p>'
+      + (vides.length ? '<ul class="bw-mots">' + vides.map(x => '<li class="vide">' + esc2(x.terme) + ' <b>' + nbf(x.n) + '</b></li>').join('') + '</ul>' : '<p>Rien : ils ont toujours trouvé quelque chose.</p>')
+      + '</section>';
+
+    /* 7. moments */
+    const H = d.heures || {}, J = d.jours || {};
+    const hv = Array.from({ length: 24 }, (_, i) => Number(H[i] || 0));
+    const jn = ['lun', 'mar', 'mer', 'jeu', 'ven', 'sam', 'dim'], jl = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'];
+    const jv = jn.map((_, i) => Number(J[i + 1] || 0));
+    const hMax = Math.max(...hv), jMax = Math.max(...jv);
+    h += '<section class="bw-st"><h2>Quand ils cuisinent</h2><p class="bw-note">Recettes ouvertes ' + per + (hMax ? ', pic à ' + hv.indexOf(hMax) + ' h, le ' + jl[jv.indexOf(jMax)] : '') + '</p>'
+      + '<h3>À quelle heure</h3>' + barres(hv, hv.map((_, i) => i % 6 === 0 ? i + 'h' : ''), hv.map((_, i) => i + ' h – ' + (i + 1) + ' h'), i => hMax && hv[i] === hMax)
+      + '<h3>Quel jour</h3>' + barres(jv, jn, jl, i => jMax && jv[i] === jMax)
+      + '</section>';
+
+    /* 8. le reste */
+    const intro = Number(g.intro_entiere) + Number(g.intro_coupee) + Number(g.intro_sans);
+    h += '<section class="bw-st"><h2>Et aussi</h2><p class="bw-note">' + per + '</p><div class="bw-stats">'
+      + '<div><b>' + pct(g.intro_entiere, intro) + '</b><span>regardent la bande-annonce en entier</span></div>'
+      + '<div><b>' + pct(Number(g.intro_coupee) + Number(g.intro_sans), intro) + '</b><span>la passent (' + nbf(g.intro_sans) + ' avant le début, ' + nbf(g.intro_coupee) + ' en cours)</span></div>'
+      + '<div><b>' + nbf(g.boss) + '</b><span>« Appelle le bawss »</span></div></div></section>';
+
+    box.innerHTML = h;
+    box.querySelectorAll('[data-tri]').forEach(b => b.addEventListener('click', () => {
+      statsTri = b.dataset.tri;
+      const y = ecran.scrollTop; ecranStats(jours).then(() => { if (ecran) ecran.scrollTop = y; });
+    }));
   }
   if (bouton) bouton.addEventListener('click', ecranMonCompte);
 
@@ -4085,6 +4298,8 @@ window.lancerIntro = (opts = {}) => {
     if (lienMail === 'mail') { nettoyer(); toast('Ton mail est confirmé'); }
     if (lienMail) return;
     noterVisite();
+    if (arrivee && nouvelAppareil) evt('entree', arrivee.id);
+    suivreVue();
     if (!arrivee) { lancer(); setTimeout(proposerCompte, 4000); }
     // l'installation est proposée à partir de la 2e visite, sans bloquer
     const jour = new Date().toISOString().slice(0, 10);
