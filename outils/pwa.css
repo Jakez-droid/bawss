@@ -206,4 +206,11 @@
 .bw-mots li b { font-family: var(--f-mono); font-size: 12px; margin-left: 4px; color: var(--cire); }
 .bw-mots li.vide { background: color-mix(in srgb, #E4322B 30%, transparent); }
 .bw-st .bw-stats div { align-content: start; }
+.bw-stats-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.bw-evo { font: 600 12px var(--f-mono); color: color-mix(in srgb, var(--on-slate) 60%, transparent); margin-top: 4px; }
+.bw-evo.up { color: #7BD88F; }
+.bw-evo.down { color: #FF8A80; }
+.bw-tdb { border-top: 0; padding-top: 4px; }
+.bw-tdb .bw-seg { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.bw-tdb .bw-seg button { padding: 8px 4px; font-size: 13px; line-height: 1.15; }
 .bw-plus summary { cursor: pointer; font-size: 14.5px; color: var(--cire); padding: 4px 0 10px; }

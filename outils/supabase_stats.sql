@@ -30,14 +30,17 @@ begin
 end $$;
 grant execute on function public.noter_evt(uuid, text, text, text, int) to anon, authenticated;
 
--- tous les chiffres d'un coup, visibles seulement par Jakez (admin) ; p_jours = 7, 30… ou null pour « depuis le début »
+-- tous les chiffres d'un coup, visibles seulement par Jakez (admin) ; p_jours = 0 (aujourd'hui), 7, 30… ou null pour « depuis le début »
 drop function if exists public.stats_detail(int);
 create function public.stats_detail(p_jours int default null)
 returns jsonb language plpgsql stable security definer set search_path = public as $$
 declare
-  depuis timestamptz := case when p_jours is null then '-infinity'::timestamptz else now() - make_interval(days => p_jours) end;
   j0 date := (now() at time zone 'Europe/Paris')::date;
-  d0 date := case when p_jours is null then '1900-01-01'::date else (now() at time zone 'Europe/Paris')::date - p_jours end;
+  -- p_jours = 0 : aujourd'hui depuis minuit (heure de Paris)
+  depuis timestamptz := case when p_jours is null then '-infinity'::timestamptz
+                             when p_jours = 0 then (j0::timestamp at time zone 'Europe/Paris')
+                             else now() - make_interval(days => p_jours) end;
+  d0 date := case when p_jours is null then '1900-01-01'::date else j0 - greatest(p_jours, 1) end;
   res jsonb;
 begin
   if not public.est_admin() then return null; end if;
@@ -95,3 +98,35 @@ begin
 end $$;
 revoke execute on function public.stats_detail(int) from anon;
 grant execute on function public.stats_detail(int) to authenticated;
+
+-- les chiffres clés de « Mon compte » pour une période, avec la période d'avant pour comparer
+-- p_jours = 0 (aujourd'hui), 7, 30 ou null (depuis le début). Jours calendaires, heure de Paris.
+drop function if exists public.stats_periode(int);
+create function public.stats_periode(p_jours int default 0)
+returns jsonb language plpgsql stable security definer set search_path = public as $$
+declare
+  j0 date := (now() at time zone 'Europe/Paris')::date;
+  n  int  := greatest(coalesce(p_jours, 1), 1);
+  debut date := case when p_jours is null then '1900-01-01'::date else j0 - n + 1 end;
+  res jsonb;
+begin
+  if not public.est_admin() then return null; end if;
+  with a as (select appareil, min(jour) premier, bool_or(compte is not null) a_compte from public.visites group by appareil),
+  p as (select appareil, bool_or(installee) inst from public.visites where jour >= debut group by appareil),
+  q as (select appareil, bool_or(installee) inst from public.visites where jour between debut - n and debut - 1 group by appareil)
+  select jsonb_build_object(
+    'visiteurs',   (select count(*) from p),
+    'nouveaux',    (select count(*) from a where premier >= debut),
+    'sans_compte', (select count(*) from p join a using (appareil) where not a.a_compte),
+    'installes',   (select count(*) from p where inst),
+    'total',       (select count(*) from a),
+    'avant', case when p_jours is null then null else jsonb_build_object(
+      'visiteurs',   (select count(*) from q),
+      'nouveaux',    (select count(*) from a where premier between debut - n and debut - 1),
+      'sans_compte', (select count(*) from q join a using (appareil) where not a.a_compte),
+      'installes',   (select count(*) from q where inst)) end
+  ) into res;
+  return res;
+end $$;
+revoke execute on function public.stats_periode(int) from anon;
+grant execute on function public.stats_periode(int) to authenticated;

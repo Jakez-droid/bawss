@@ -207,6 +207,13 @@
 .bw-mots li b { font-family: var(--f-mono); font-size: 12px; margin-left: 4px; color: var(--cire); }
 .bw-mots li.vide { background: color-mix(in srgb, #E4322B 30%, transparent); }
 .bw-st .bw-stats div { align-content: start; }
+.bw-stats-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.bw-evo { font: 600 12px var(--f-mono); color: color-mix(in srgb, var(--on-slate) 60%, transparent); margin-top: 4px; }
+.bw-evo.up { color: #7BD88F; }
+.bw-evo.down { color: #FF8A80; }
+.bw-tdb { border-top: 0; padding-top: 4px; }
+.bw-tdb .bw-seg { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.bw-tdb .bw-seg button { padding: 8px 4px; font-size: 13px; line-height: 1.15; }
 .bw-plus summary { cursor: pointer; font-size: 14.5px; color: var(--cire); padding: 4px 0 10px; }
 </style></head><body>
 <style>
@@ -3546,23 +3553,67 @@ window.lancerIntro = (opts = {}) => {
     const noms = NOUVEAUX.slice(0, 3).map(m => esc2(m.pseudo) + (m.invite_par ? ' (invité par ' + esc2(m.invite_par) + ')' : '')).join(', ') + (NOUVEAUX.length > 3 ? '…' : '');
     notif('<b>🎉 ' + NOUVEAUX.length + ' nouveau' + (NOUVEAUX.length > 1 ? 'x membres' : ' membre') + ' depuis ta dernière visite</b><span>' + noms + '</span>', ecranMonCompte, true);
   }
+  /* période choisie (0 = aujourd'hui, 7, 30, null = depuis le début), partagée avec l'écran des stats */
+  let periodeCompte = 0;
+  const PERIODES = [[0, 'Aujourd’hui', 'hier'], [7, '7 jours', '7 j d’avant'], [30, '30 jours', '30 j d’avant'], [null, 'Depuis le début', '']];
+  const jourParis = d => new Date(d).toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris' });
+  const ilYa = n => jourParis(Date.now() - n * 864e5);
+  function evo(now, avant, vs) {
+    if (avant == null) return '';
+    const d = Number(now || 0) - Number(avant || 0);
+    return '<small class="bw-evo ' + (d > 0 ? 'up' : d < 0 ? 'down' : '') + '">' + (d > 0 ? '▲ +' + d : d < 0 ? '▼ −' + (-d) : '= pareil') + ' vs ' + vs + '</small>';
+  }
+  const chiffre = (n, label, avant, vs) => '<div><b>' + Number(n || 0).toLocaleString('fr-FR') + '</b><span>' + label + '</span>' + evo(n, avant, vs) + '</div>';
   async function membres(box) {
-    box.innerHTML = '<p>Chargement des membres…</p>';
-    const vis = sb.rpc('stats_visites').then(x => (x.error ? null : (x.data || [])[0]), () => null);
+    box.innerHTML = '<p>Chargement des chiffres…</p>';
     let r = await sb.rpc('membres').then(x => x, e => ({ error: e }));
     if (r.error) r = await sb.from('profils').select('pseudo,plateforme,installee,cree_le,vu_le').order('cree_le', { ascending: false }).then(x => x, e => ({ error: e }));
     if (r.error) { box.innerHTML = '<p>Impossible de charger les membres pour l\'instant.</p>'; return; }
     const L = r.data || [], j = d => new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
-    const semaine = L.filter(m => Date.now() - new Date(m.vu_le) < 7 * 864e5).length;
-    const v = await vis;
-    box.innerHTML = '<button type="button" class="bw-choix" data-stats><b>📊 Statistiques</b><span>Classement des recettes, recherches, diffusion, moments : tout le détail</span></button>'
-      + (v ? '<p class="bw-note">Visiteurs, avec ou sans compte (un téléphone = un visiteur)</p><div class="bw-stats"><div><b>' + v.appareils + '</b><span>visiteurs</span></div><div><b>' + v.semaine + '</b><span>cette semaine</span></div><div><b>' + v.sans_compte + '</b><span>sans compte</span></div></div>'
-      + '<div class="bw-stats"><div><b>' + v.aujourdhui + '</b><span>aujourd\'hui</span></div><div><b>' + v.nouveaux_semaine + '</b><span>nouveaux (7 j)</span></div><div><b>' + v.installes + '</b><span>appli installée</span></div></div><p class="bw-note">Comptes</p>' : '')
-      + '<div class="bw-stats"><div><b>' + L.length + '</b><span>membres</span></div><div><b>' + L.filter(m => m.installee).length + '</b><span>appli installée</span></div><div><b>' + semaine + '</b><span>venus cette semaine</span></div></div>'
-      + '<ul class="bw-membres">' + L.map(m => '<li' + (NOUVEAUX.some(n => n.pseudo === m.pseudo) ? ' class="neuf"' : '') + '><b>' + (NOUVEAUX.some(n => n.pseudo === m.pseudo) ? '🆕 ' : '') + esc2(m.pseudo) + '</b><span>' + (m.email && !/@bawss\.app$/.test(m.email) ? esc2(m.email) + ' · ' : '') + esc2(m.plateforme || '') + (m.installee ? ' · installée' : '') + (m.invite_par ? ' · invité par ' + esc2(m.invite_par) : '') + ' · inscrit le ' + j(m.cree_le) + ' · vu le ' + j(m.vu_le) + '</span></li>').join('') + '</ul>';
-    box.querySelector('[data-stats]').addEventListener('click', () => ecranStats(7));
+    box.innerHTML = '<section class="bw-st bw-tdb"><h2>Le tableau de bord</h2>'
+      + '<div class="bw-seg" role="group" aria-label="Période">' + PERIODES.map(([p, t]) => '<button type="button" data-pc="' + p + '" aria-pressed="' + (p === periodeCompte) + '">' + t + '</button>').join('') + '</div>'
+      + '<div data-chiffres><p>Chargement…</p></div>'
+      + '<button type="button" class="bw-choix" data-stats><b>📊 Tout le détail</b><span>Classement des recettes, recherches, diffusion, moments, sur la même période</span></button></section>'
+      + '<section class="bw-st"><h2>La bande</h2><p class="bw-note">' + L.length + ' membre' + (L.length > 1 ? 's' : '') + ', les derniers inscrits en premier</p>'
+      + '<ul class="bw-membres">' + L.map(m => '<li' + (NOUVEAUX.some(n => n.pseudo === m.pseudo) ? ' class="neuf"' : '') + '><b>' + (NOUVEAUX.some(n => n.pseudo === m.pseudo) ? '🆕 ' : '') + esc2(m.pseudo) + '</b><span>' + (m.email && !/@bawss\.app$/.test(m.email) ? esc2(m.email) + ' · ' : '') + esc2(m.plateforme || '') + (m.installee ? ' · installée' : '') + (m.invite_par ? ' · invité par ' + esc2(m.invite_par) : '') + ' · inscrit le ' + j(m.cree_le) + ' · vu le ' + j(m.vu_le) + '</span></li>').join('') + '</ul></section>';
+    box.querySelector('[data-stats]').addEventListener('click', () => ecranStats(periodeCompte));
+    box.querySelectorAll('[data-pc]').forEach(b => b.addEventListener('click', () => {
+      periodeCompte = b.dataset.pc === 'null' ? null : Number(b.dataset.pc);
+      box.querySelectorAll('[data-pc]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+      chiffres(box.querySelector('[data-chiffres]'), L);
+    }));
+    chiffres(box.querySelector('[data-chiffres]'), L);
     /* vus : on remet le compteur à zéro */
     ls.set('bawss-membres-vus', new Date().toISOString()); NOUVEAUX = []; pastilleMembres(0);
+  }
+  async function chiffres(zone, L) {
+    const p = periodeCompte, per = PERIODES.find(x => x[0] === p), vs = per[2];
+    zone.innerHTML = '<p>Chargement…</p>';
+    const r = await sb.rpc('stats_periode', { p_jours: p }).then(x => x, e => ({ error: e }));
+    if (p !== periodeCompte || !zone.isConnected) return;
+    /* comptes : calculés ici, d'après les dates d'inscription et de dernière visite */
+    const n = p == null ? null : Math.max(p, 1), debut = p == null ? '' : ilYa(n - 1), avant = p == null ? '' : ilYa(2 * n - 1);
+    const dans = (d, a, b) => { const k = jourParis(d); return k >= a && (b == null || k < b); };
+    const inscrits = L.filter(m => dans(m.cree_le, debut)).length, venus = L.filter(m => dans(m.vu_le, debut)).length;
+    const inscritsAv = p == null ? null : L.filter(m => dans(m.cree_le, avant, debut)).length;
+    const titre = p === 0 ? 'aujourd’hui' : p == null ? 'depuis le début' : 'sur les ' + p + ' derniers jours';
+    let h = '<h3>Visiteurs ' + titre + '</h3><p class="bw-note">Avec ou sans compte : un téléphone = un visiteur</p>';
+    if (r.error || !r.data) {
+      h += '<div class="bw-alert">Ces chiffres ne sont pas encore branchés : relance une fois <b>outils/supabase_stats.sql</b> dans Supabase (SQL Editor &gt; Run).</div>';
+    } else {
+      const d = r.data, a = d.avant || {};
+      const av = k => (d.avant ? a[k] : null);
+      h += '<div class="bw-stats bw-stats-2">'
+        + chiffre(d.visiteurs, 'visiteurs', av('visiteurs'), vs)
+        + chiffre(d.nouveaux, 'nouveaux (1ʳᵉ visite)', av('nouveaux'), vs)
+        + chiffre(d.sans_compte, 'sans compte', av('sans_compte'), vs)
+        + chiffre(d.installes, 'avec l’appli installée', av('installes'), vs) + '</div>';
+    }
+    h += '<h3>Comptes ' + titre + '</h3><div class="bw-stats bw-stats-2">'
+      + (p == null ? chiffre(L.length, 'membres inscrits') + chiffre(L.filter(m => m.installee).length, 'avec l’appli installée')
+                   : chiffre(inscrits, 'nouveaux inscrits', inscritsAv, vs) + chiffre(venus, 'membres venus'))
+      + '</div>';
+    zone.innerHTML = h;
   }
 
   /* ---------- pour Jakez : les statistiques détaillées ---------- */
@@ -3575,7 +3626,6 @@ window.lancerIntro = (opts = {}) => {
     ['fini', 'Cuisinées', '« J’ai fini »'],
     ['entrees', 'Portes d’entrée', 'nouveaux arrivés par cette recette']
   ];
-  const PERIODES = [[7, '7 jours'], [30, '30 jours'], [null, 'Depuis le début']];
   let statsTri = 'lecteurs'; let statsCache = null;
   const nbf = n => Number(n || 0).toLocaleString('fr-FR');
   const pct = (a, b) => (b ? Math.round(100 * a / b) + ' %' : '–');
@@ -3585,6 +3635,7 @@ window.lancerIntro = (opts = {}) => {
       '<div class="bw-barre' + (marque && marque(i) ? ' fort' : '') + '" title="' + esc2(titres[i] + ' : ' + nbf(v)) + '" aria-label="' + esc2(titres[i] + ' : ' + nbf(v)) + '"><i style="height:' + (v ? Math.max(4, Math.round(100 * v / max)) : 0) + '%"></i><span>' + labels[i] + '</span></div>').join('') + '</div>';
   }
   async function ecranStats(jours) {
+    periodeCompte = jours;
     const choixP = '<div class="bw-seg" role="group" aria-label="Période">' + PERIODES.map(([j, t]) => '<button type="button" data-p="' + j + '" aria-pressed="' + (j === jours) + '">' + t + '</button>').join('') + '</div>';
     const el = ouvrir('<button type="button" class="bw-later bw-haut" data-retour>‹ Mon compte</button><h1>Les <span>stats</span></h1>' + choixP + '<div data-st><p>Chargement…</p></div><button type="button" class="bw-go" data-retour>Retour</button>');
     el.querySelectorAll('[data-retour]').forEach(b => b.addEventListener('click', ecranMonCompte));
@@ -3599,7 +3650,7 @@ window.lancerIntro = (opts = {}) => {
       box.innerHTML = '<div class="bw-alert">Les stats ne sont pas encore branchées : il faut lancer une fois <b>outils/supabase_stats.sql</b> dans Supabase (SQL Editor &gt; Run).</div>';
       return;
     }
-    const d = r.data, per = jours ? 'sur ' + jours + ' jours' : 'depuis le début';
+    const d = r.data, per = jours === 0 ? 'aujourd’hui' : jours ? 'sur ' + jours + ' jours' : 'depuis le début';
     const R = d.recettes || [], parId = Object.fromEntries(R.map(x => [x.recette, x]));
     const nom = id => BY_ID[id] ? BY_ID[id].emoji + ' ' + esc2(BY_ID[id].title) : esc2(id);
     const g = d.gestes || {}, ret = d.retour || {};
