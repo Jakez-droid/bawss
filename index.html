@@ -990,6 +990,17 @@ body { background-image: radial-gradient(color-mix(in srgb, var(--ink) 7%, trans
 @media (max-width: 360px) { .brand, .top.scrolled .brand { font-size: 18px; } }
 @keyframes heart { 40% { transform: scale(1.18) rotate(-6deg); } }
 .aide-btn { font: 900 21px/1 var(--f-display); }
+/* bouton « inviter un pote » : pastille jaune à droite du titre */
+.invite-top { display: none; }
+@media (max-width: 680px) {
+  .a-onglets .top .brand:has(+ .invite-top) { flex: 0 1 auto; min-width: 0; }
+  .a-onglets .top .search { flex: 0 0 100%; }
+  .invite-top { display: grid; place-items: center; order: 1; margin: -3px 0 -3px auto; flex: none; width: 38px; height: 38px; padding: 0; border: 0; border-radius: 50%; background: var(--cire); color: var(--cire-ink); box-shadow: 2px 2px 0 #000; cursor: pointer; animation: invite-hop 6s ease-in-out 3s infinite; }
+  .invite-top svg { width: 20px; height: 20px; }
+  .invite-top:active { transform: scale(.88); }
+  .a-onglets .top .search { order: 2; }
+}
+@keyframes invite-hop { 0%, 88%, 100% { transform: none; } 91% { transform: translateY(-5px); } 94% { transform: none; } 96% { transform: translateY(-2px); } }
 .tuto-bulle.aide-bulle h3 { margin-top: 0; }
 .ing .ing-det { display: block; font-size: 12.5px; color: var(--muted); margin-top: 2px; }
 .btn.bump { animation: heart .45s cubic-bezier(.3, 2, .5, 1); }
@@ -1139,6 +1150,7 @@ body { background-image: radial-gradient(color-mix(in srgb, var(--ink) 7%, trans
 <header class="top">
   <div class="wrap">
     <a class="brand" href="#" id="home-link">Les recettes <em>2 Jakez</em></a>
+    <button class="invite-top" id="invite-top" type="button" aria-label="Inviter un pote"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8l7.4-4.3M8.3 13.2l7.4 4.3"/></svg></button>
     <button class="cart-btn me-btn" id="me-btn" type="button" aria-label="Me connecter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20c1.2-3.6 4-5.4 7.5-5.4s6.3 1.8 7.5 5.4"/></svg><span class="me-i"></span></button><button class="cart-btn" id="cart-btn" type="button" aria-label="Ma liste de courses"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2.2l2.1 10.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.5L20.5 8H6.1"/><circle cx="10" cy="19.5" r="1.3"/><circle cx="17" cy="19.5" r="1.3"/></svg><span class="cart-n" id="cart-n" hidden>0</span></button>
     <button class="cart-btn aide-btn" id="aide-btn" type="button" aria-label="Aide : le tour de l’appli">?</button>
     <label class="search" for="q">
@@ -3208,6 +3220,7 @@ window.lancerIntro = (opts = {}) => {
     catch (e) { const o = document.createElement('div'); o.className = 'share-box'; o.innerHTML = '<div><p>Copie ce message et envoie-le à ton pote :</p><input type="text" readonly value="' + esc(texte + ' ' + url) + '"><button type="button" class="btn primary">OK</button></div>'; document.body.appendChild(o); const i = o.querySelector('input'); i.focus(); i.select(); o.addEventListener('click', ev => { if (ev.target === o || ev.target.closest('button')) o.remove(); }); }
   };
   $('#invite-btn').addEventListener('click', () => window.inviterPote());
+  $('#invite-top').addEventListener('click', () => window.inviterPote());
 })();
 
 /* ---------- onglets en bas : Recettes · Favoris · Courses · Moi ---------- */
@@ -3331,7 +3344,7 @@ window.ouvrirMoi = ouvrirMoi; window.fermerMoi = fermerMoi; window.majOngletsBas
       + `<p class="faq-cat">Partager</p>`
       + Q('Comment j’envoie une recette à un pote ?', '<p>Touche l’icône partage à côté du titre. Ton pote reçoit la photo du plat et un lien qui ouvre direct la recette.' + (B ? ' Tu peux aussi en faire une <b>story Insta</b>, avec une punchline.' : '') + '</p>')
       + (B ? Q('C’est quoi « Je l’ai bawssée » ?', '<p>Tu as réussi une recette ? Touche <b>« Je l’ai bawssée »</b> à côté du mode cuisine et poste la photo de ton plat, avec un commentaire si tu veux : elle apparaît sur la recette et dans « Ils l’ont fait comme des Bawss ». Les autres peuvent liker. Tu peux supprimer ta photo quand tu veux.</p>')
-        + Q('Comment j’invite un pote ?', '<p>Touche <b>« 👋 Inviter un pote »</b> dans l’onglet <b>Moi</b>, en bas. Il reçoit un lien avec ton nom dessus.</p>')
+        + Q('Comment j’invite un pote ?', '<p>Touche le bouton jaune de partage, en haut à droite à côté du titre (c’est aussi dans l’onglet <b>Moi</b>). Ton pote reçoit un lien avec ton nom dessus.</p>')
         + `<p class="faq-cat">Ton compte</p>`
         + Q('Il faut un compte ?', '<p>Non : toutes les recettes, le mode cuisine et la liste de courses marchent sans compte. Il en faut un seulement pour poster une photo, écrire à ton Jakez ou retrouver tes favoris sur un autre appareil. Et c’est juste un pseudo : pas de mail, pas de mot de passe à inventer.</p>') + Q('Comment je retrouve mon compte sur un autre téléphone ?', '<p>Dans l’onglet <b>Moi</b>, en bas, touche ton pseudo : tu as ton pseudo et ton <b>code</b>. Sur l’autre appareil, touche <b>Moi</b>, puis <b>« J’ai déjà un compte »</b>, et mets les deux. Fais une capture d’écran du code, c’est le plus simple.</p>')
         + Q('Vous m’envoyez des mails ?', '<p>Non, jamais. On ne te demande même pas ton adresse.</p>') : '')
