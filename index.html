@@ -990,17 +990,15 @@ body { background-image: radial-gradient(color-mix(in srgb, var(--ink) 7%, trans
 @media (max-width: 360px) { .brand, .top.scrolled .brand { font-size: 18px; } }
 @keyframes heart { 40% { transform: scale(1.18) rotate(-6deg); } }
 .aide-btn { font: 900 21px/1 var(--f-display); }
-/* bouton « inviter un pote » : pastille jaune à droite du titre */
-.invite-top { display: none; }
+/* bouton « inviter un pote » : pastille jaune (à droite du titre sur téléphone, après la recherche sur grand écran) */
+.invite-top { display: grid; place-items: center; order: 5; flex: none; width: 38px; height: 38px; padding: 0; border: 0; border-radius: 50%; background: var(--cire); color: var(--cire-ink); box-shadow: 2px 2px 0 #000; cursor: pointer; }
+.invite-top svg { width: 20px; height: 20px; }
+.invite-top:active { transform: scale(.88); }
 @media (max-width: 680px) {
   .a-onglets .top .brand:has(+ .invite-top) { flex: 0 1 auto; min-width: 0; }
-  .a-onglets .top .search { flex: 0 0 100%; }
-  .invite-top { display: grid; place-items: center; order: 1; margin: -3px 0 -3px auto; flex: none; width: 38px; height: 38px; padding: 0; border: 0; border-radius: 50%; background: var(--cire); color: var(--cire-ink); box-shadow: 2px 2px 0 #000; cursor: pointer; animation: invite-hop 6s ease-in-out 3s infinite; }
-  .invite-top svg { width: 20px; height: 20px; }
-  .invite-top:active { transform: scale(.88); }
-  .a-onglets .top .search { order: 2; }
+  .a-onglets .top .search { flex: 0 0 100%; order: 2; }
+  .invite-top { order: 1; margin: -3px 0 -3px auto; }
 }
-@keyframes invite-hop { 0%, 88%, 100% { transform: none; } 91% { transform: translateY(-5px); } 94% { transform: none; } 96% { transform: translateY(-2px); } }
 .tuto-bulle.aide-bulle h3 { margin-top: 0; }
 .ing .ing-det { display: block; font-size: 12.5px; color: var(--muted); margin-top: 2px; }
 .btn.bump { animation: heart .45s cubic-bezier(.3, 2, .5, 1); }
