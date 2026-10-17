@@ -1498,7 +1498,24 @@ function cartText() {
 }
 
 /* ---------- list ---------- */
-const state = { types: new Set(), efforts: new Set(), bases: new Set(), favs: false, q: '' };
+const state = { types: new Set(), efforts: new Set(), bases: new Set(), favs: false, lactose: false, q: '' };
+/* sans lactose : repéré tout seul dans les ingrédients (et dans les recettes liées [[…]]) ; lait/crème de coco et beurre de cacahuète ne comptent pas */
+const LAITIER = /\b(lait|laits|beurre|creme|cremes|fromage|fromages|parmesan|mozzarella|feta|comte|cheddar|reblochon|gorgonzola|ricotta|burrata|yaourt|yaourts|mascarpone|bleu|mont d.or|fourme|emmental|gruyere|chevre|bechamel|pecorino|ghee|raclette|brie|camembert|roquefort|skyr|kefir|petit suisse|fromage blanc|lactose)\b/;
+const PAS_LAITIER = /\b(lait|creme) de coco\b|\bbeurre de cacahuetes?\b|\bsans lactose\b/g;
+const LACTOSE_FORCE = { 'gua-bao-au-porc-braise': true };   /* pains bao du commerce : souvent du lait en poudre */
+const _lact = {};
+function aLactose(r, vus = new Set()) {
+  if (r.id in LACTOSE_FORCE) return LACTOSE_FORCE[r.id];
+  if (r.id in _lact) return _lact[r.id];
+  vus.add(r.id);
+  let oui = false;
+  for (const l of r.ingr.flatMap(g => g.items)) {
+    for (const [, t] of l.matchAll(/\[\[(.+?)\]\]/g)) { const x = RECIPES.find(y => y.title === t); if (x && !vus.has(x.id) && aLactose(x, vus)) oui = true; }
+    if (LAITIER.test(norm(l.replace(/\[\[.+?\]\]/g, '')).replace(PAS_LAITIER, ''))) oui = true;
+  }
+  return (_lact[r.id] = oui);
+}
+const sansLactose = r => !r.prank && !aLactose(r);
 const EFFORTS = ['⚡ Express', '🍳 Normal', "🔥 Plus d'1 h"];
 const BASE_LABEL = { 'Veggie': 'Végé 🌱', 'Boeuf': 'Bœuf' };
 const baseLabel = b => BASE_LABEL[b] || b;
@@ -1508,8 +1525,8 @@ const FILTRES = {
   efforts: { titre: 'Temps', val: r => [r.effort], options: () => EFFORTS, label: effortLabel },
   bases: { titre: 'Ingrédient principal', val: r => r.base, options: () => [...new Set(RECIPES.flatMap(r => r.base))].sort((a, b) => RECIPES.filter(r => r.base.includes(b)).length - RECIPES.filter(r => r.base.includes(a)).length), label: baseLabel }
 };
-const filtrage = () => state.types.size + state.efforts.size + state.bases.size > 0 || state.favs || !!state.q;
-const nbFiltres = () => state.types.size + state.efforts.size + state.bases.size + (state.favs ? 1 : 0);
+const filtrage = () => state.types.size + state.efforts.size + state.bases.size > 0 || state.favs || state.lactose || !!state.q;
+const nbFiltres = () => state.types.size + state.efforts.size + state.bases.size + (state.favs ? 1 : 0) + (state.lactose ? 1 : 0);
 function renderChips() {
   const types = FILTRES.types.options();
   $('#types').innerHTML = [`<button class="chip" type="button" data-type="" aria-pressed="${!state.types.size}">Tout</button>`]
@@ -1519,6 +1536,7 @@ function renderChips() {
   $('#extras').innerHTML =
     ['types', 'efforts', 'bases'].map(k => `<button class="chip dd-btn" type="button" data-open="${k}" aria-haspopup="dialog" aria-pressed="${state[k].size > 0}">${FILTRES[k].titre}${state[k].size ? ` <b>${state[k].size}</b>` : ''} ▾</button>`).join('') +
     `<button class="chip fav" type="button" data-x="favs" aria-pressed="${state.favs}">♥ Mes favoris</button>` +
+    `<button class="chip lact" type="button" data-x="lactose" aria-pressed="${state.lactose}">Sans lactose</button>` +
     actifs.join('') +
     (n ? `<button class="chip efface" type="button" data-efface>Tout effacer</button>` : '');
   if (!$('#fp').hidden) renderPanneau();
@@ -1529,6 +1547,7 @@ function matches(r, sauf) {
     if (!FILTRES[k].val(r).some(v => state[k].has(v))) return false;
   }
   if (state.favs && !favs.has(r.id)) return false;
+  if (state.lactose && !sansLactose(r)) return false;
   if (state.q) {
     const hay = norm([r.title, r.intro, ...r.ingr.flatMap(g => g.items), ...r.base.map(baseLabel), ...r.origine].join(' '));
     if (!norm(state.q).split(/\s+/).filter(Boolean).every(w => hay.includes(w))) return false;
@@ -1671,14 +1690,15 @@ function renderPanneau() {
       const c = compte(k, o), on = state[k].has(o);
       return `<button type="button" class="fp-o" data-k="${k}" data-v="${esc(o)}" aria-pressed="${on}" ${!c && !on ? 'disabled' : ''}>${esc(FILTRES[k].label(o))}<span>${c}</span></button>`;
     }).join('') + '</div></section>').join('') +
-    (panneauVue === 'all' ? `<section><h3>Moi</h3><div class="fp-opts"><button type="button" class="fp-o" data-favs aria-pressed="${state.favs}">♥ Mes favoris<span>${RECIPES.filter(r => favs.has(r.id)).length}</span></button></div></section>` : '') +
+    (panneauVue === 'all' ? `<section><h3>Moi</h3><div class="fp-opts"><button type="button" class="fp-o" data-favs aria-pressed="${state.favs}">♥ Mes favoris<span>${RECIPES.filter(r => favs.has(r.id)).length}</span></button></div></section><section><h3>Régime</h3><div class="fp-opts"><button type="button" class="fp-o" data-lactose aria-pressed="${state.lactose}">Sans lactose<span>${RECIPES.filter(sansLactose).length}</span></button></div></section>` : '') +
     `<div class="fp-foot"><button type="button" class="btn" data-fp-efface ${nbFiltres() ? '' : 'disabled'}>Tout effacer</button><button type="button" class="btn primary" data-fp-close>${n ? `Voir ${n} recette${n > 1 ? 's' : ''}` : 'Aucune recette'}</button></div>`;
 }
-function toutEffacer() { state.types.clear(); state.efforts.clear(); state.bases.clear(); state.favs = false; }
+function toutEffacer() { state.types.clear(); state.efforts.clear(); state.bases.clear(); state.favs = false; state.lactose = false; }
 $('#fp').addEventListener('click', e => {
   if (e.target === $('#fp') || e.target.closest('[data-fp-close]')) { fermerPanneau(); return; }
   const o = e.target.closest('.fp-o');
   if (o && o.hasAttribute('data-favs')) state.favs = !state.favs;
+  else if (o && o.hasAttribute('data-lactose')) state.lactose = !state.lactose;
   else if (o) { const s = state[o.dataset.k], v = o.dataset.v; s.has(v) ? s.delete(v) : s.add(v); }
   else if (e.target.closest('[data-fp-efface]')) toutEffacer();
   else return;
