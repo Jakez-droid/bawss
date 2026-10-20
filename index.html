@@ -1578,11 +1578,7 @@ const carteHTML = r => `
         <div class="meta">${tempsHTML(r)}${r.photo ? `<span>${esc(r.type)}</span>` : ''}</div>
       </div>
     </a>`;
-/* accueil : « Tes favoris » et « Ce soir, vite fait » au-dessus de la grille (cachées dès qu'on filtre ou cherche) */
-/* « Ce soir, vite fait » : les plats express les plus simples (le moins d'ingrédients et d'étapes), 8 au plus */
-const RAPIDE = ['Plat', 'Sandwich & snack'];
-const PAS_CE_SOIR = ['croissant-aplati-grille-au-miel'];   /* sucré : c'est un goûter, pas un dîner */
-const simplicite = r => r.ingr.reduce((n, g) => n + g.items.length, 0) + r.steps.length;
+/* accueil : « Tes favoris » au-dessus de la grille (caché dès qu'on filtre ou cherche) */
 /* les bases (béchamel, bouillon…) ont leur rangée sous la grille ; focaccia et ragù restent avec les recettes */
 const DANS_LA_GRILLE = ['focaccia', 'ragu-a-la-bolognaise'];
 const aPart = r => r.type === 'Base' && !DANS_LA_GRILLE.includes(r.id);
@@ -1591,11 +1587,8 @@ function renderRangs() {
   if (filtrage()) { el.innerHTML = ''; el.hidden = true; return; }
   const tri = (a, b) => rang(a) - rang(b);
   const fav = RECIPES.filter(r => favs.has(r.id)).sort(tri);
-  const vite = RECIPES.filter(r => r.effort === '⚡ Express' && RAPIDE.includes(r.type) && !r.prank && !PAS_CE_SOIR.includes(r.id))
-    .sort((a, b) => simplicite(a) - simplicite(b) || tri(a, b)).slice(0, 8);
   const bloc = (t, s, L, plus) => L.length ? `<section class="rang"><div class="rang-h"><h2>${t}</h2>${plus ? `<button type="button" class="rang-plus" data-rang="${plus}">Tout voir</button>` : ''}</div>${s ? `<p class="rang-s">${s}</p>` : ''}<div class="rang-l">${L.map(carteHTML).join('')}</div></section>` : '';
-  el.innerHTML = bloc('Tes <span>favoris</span>', '', fav, fav.length > 3 ? 'favs' : '')
-    + bloc('Ce soir, <span>vite fait</span>', 'Les plus simples de la maison : peu d’ingrédients, peu d’étapes.', vite, '');
+  el.innerHTML = bloc('Tes <span>favoris</span>', '', fav, fav.length > 3 ? 'favs' : '');
   el.hidden = !el.innerHTML;
 }
 /* recherche sans résultat : des idées proches, et on demande la recette à Jakez */
